@@ -1,0 +1,13 @@
+<!-- FoxNox SVG Logo -->
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="xGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF5500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M45 45 C60 70 80 90 100 100 C120 110 140 130 155 155"
+        stroke="url(#xGrad)" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <path d="M155 45 C140 70 120 90 100 100 C80 110 60 130 45 155"
+        stroke="url(#xGrad)" stroke-width="26" stroke-linecap="round" fill="none"/>
+</svg>
