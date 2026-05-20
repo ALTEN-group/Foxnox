@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <!-- history -->
+  <changeSet id="01-hist-01" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/01-hist/01-struct.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="01-hist-02" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/01-hist/02-log.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="01-hist-03" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/01-hist/03-del.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="01-hist-04" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/01-hist/04-get.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="01-hist-05" author="lcluber">
+    <comment>Functional index on log.history record id for fast entity history lookups</comment>
+    <sqlFile path="versions/01-hist/05-index.sql" splitStatements="false"/>
+  </changeSet>
+
+  <!-- functions -->
+  <changeSet id="02-func-01" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/02-func/01-delete.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="02-func-02" author="lcluber">
+    <comment></comment>
+    <sqlFile path="versions/02-func/02-set-archived.sql" splitStatements="false"/>
+  </changeSet>
+  
+  <!-- structures -->
+  
+  <!-- views -->
+  
+  <!-- data -->
+
+</databaseChangeLog>
