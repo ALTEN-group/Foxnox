@@ -1,7 +1,7 @@
 name: ${APP_NAME}
 
 x-service-healthcheck: &healthcheck
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/gateway/health"]
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/auth/health"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -149,13 +149,10 @@ services:
     environment:
       PORT: ${DEFAULT_PORT}
       TZ: ${TZ}
-      MSAUTH_VERIFY_URL: ${MSAUTH_VERIFY_URL}
-      MSUSER_SEARCH_URL: ${MSUSER_SEARCH_URL}
       DB_HOST: ${POSTGRES_HOST}
       DB_NAME: ${FOXNOX_DB_NAME}
       DB_USER: ${FOXNOX_DB_USER}
       DB_PWD: ${FOXNOX_DB_PWD}
-      TOKEN_SECRET: ${MSUSER_TOKEN_SECRET}
       PWD_SECRET: ${MSAUTH_PWD_SECRET}
       APP_NAME: ${APP_NAME}
       ENV_NAME: ${ENV_NAME}
@@ -178,13 +175,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.gateway.entrypoints=web"
-      - "traefik.http.routers.gateway.service=gateway"
-      - "traefik.http.routers.gateway.middlewares=strip-prefix"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.routers.auth.service=auth"
+      - "traefik.http.routers.auth.middlewares=strip-prefix"
       - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
       - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
-      - "traefik.http.services.gateway.loadBalancer.server.port=${DEFAULT_PORT}"
+      - "traefik.http.services.auth.loadBalancer.server.port=${DEFAULT_PORT}"
     healthcheck: *healthcheck
   
   admin:
@@ -306,46 +303,6 @@ services:
       - "traefik.http.routers.website.service=website"
       - "traefik.http.services.website.loadbalancer.server.port=5173"
 
-  ms_user_mock:
-    build:
-      context: ${PWD}/mocks/ms_user
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${MSUSER_HOST}
-    hostname: ${MSUSER_HOST}
-    environment:
-      PORT: ${DEFAULT_PORT}
-    networks:
-      - internal
-    volumes:
-      - ${PWD}/mocks/ms_user/src:/usr/src/app/src
-      - ms_user_mock_node_modules:/usr/src/app/node_modules
-
-  ms_auth_mock:
-    build:
-      context: ${PWD}/mocks/ms_auth
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${MSAUTH_HOST}
-    hostname: ${MSAUTH_HOST}
-    environment:
-      PORT: ${DEFAULT_PORT}
-    networks:
-      - internal
-    volumes:
-      - ${PWD}/mocks/ms_auth/src:/usr/src/app/src
-      - ms_auth_mock_node_modules:/usr/src/app/node_modules
-
 networks:
   internal:
     name: ${APP_NAME}-internal-${ENV_NAME}
@@ -366,7 +323,7 @@ secrets:
 volumes:
   postgres_data:
     driver: local
-  gateway_node_modules:
+  foxnox_node_modules:
     driver: local
     driver_opts:
       type: none
@@ -380,5 +337,3 @@ volumes:
       device: ${PWD}/admin/node_modules
   swagger_node_modules:
   website_node_modules:
-  ms_user_mock_node_modules:
-  ms_auth_mock_node_modules:

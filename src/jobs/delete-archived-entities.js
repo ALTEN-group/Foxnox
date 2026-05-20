@@ -1,15 +1,8 @@
 // @ts-check
 import { log } from "@dwtechs/winstan";
 import { scheduleDailyAt } from "./scheduler.js";
-import consumerSvc from "../services/consumer.js";
-import serviceSvc from "../services/service.js";
-import corsSvc from "../services/cors.js";
-import operationSvc from "../services/operation.js";
-import resourceSvc from "../services/resource.js";
-import routeSvc from "../services/route.js";
-import roleSvc from "../services/role.js";
-import applicationSvc from "../services/application.js";
-import scopeSvc from "../services/scope.js";
+// import consumerSvc from "../services/consumer.js";
+
 
 /**
  * Cron job to delete archived entities from the database.
@@ -38,15 +31,7 @@ export function startDeleteArchivedEntitiesJob() {
 
       // Define all entities to process
       const entities = [
-        { name: "consumers", service: consumerSvc },
-        { name: "services", service: serviceSvc },
-        { name: "CORS origins", service: corsSvc },
-        { name: "operations", service: operationSvc },
-        { name: "resources", service: resourceSvc },
-        { name: "routes", service: routeSvc },
-        { name: "roles", service: roleSvc },
-        { name: "applications", service: applicationSvc },
-        { name: "scopes", service: scopeSvc },
+        // { name: "consumers", service: consumerSvc },
       ];
 
       let totalDeleted = 0;

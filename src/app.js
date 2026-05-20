@@ -13,11 +13,7 @@ const app = express();
 app.use(security);
 app.disable("x-powered-by");
 
-import consumerSvc from "./services/consumer.js";
-import routeSvc from "./services/route.js";
-import corsSvc from "./services/cors.js";
-import roleSvc from "./services/role.js";
-import scopeSvc from "./services/scope.js";
+// import consumerSvc from "./services/consumer.js";
 
 // Cron jobs
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
@@ -29,62 +25,19 @@ import checkRoute from "./middlewares/validators/check-route.js";
 import { checkRequest as cr } from "./middlewares/validators/check-request.js"; // Authenticate request and load consumer session
 
 // Routes
-import session from "./routes/session.js";
-import consumer from "./routes/consumer.js";
-import proxy from "./routes/proxy.js";
-import route from "./routes/route.js";
-import service from "./routes/service.js";
-import resource from "./routes/resource.js";
-import operation from "./routes/operation.js";
-import cors from "./routes/cors.js";
-import field from "./routes/field.js";
-import scope from "./routes/scope.js";
-import preference from "./routes/preference.js";
-import role from "./routes/role.js";
-import permission from "./routes/permission.js";
-import method from "./routes/method.js";
-import application from "./routes/application.js";
-import condition from "./routes/condition.js";
+// import session from "./routes/session.js";
 
-const s = "/gateway/";
+const s = "/auth/";
 
-// Rate limiters
-const sessionLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // max 20 login/refresh attempts per IP per window
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-const proxyLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 200, // max 200 proxied requests per IP per minute
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use(express.json({ limit: "100kb" }));
+// app.use(express.json({ limit: "100kb" }));
 app.use(`${s}health`, healixRouter);
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
 // Validate route
 app.use(checkRoute);
 // Routes
-app.use(`${s}sessions`, sessionLimiter, session);
-app.use(`${s}consumers`, ...cr, consumer);
-app.use(`${s}routes`, ...cr, route, send);
-app.use(`${s}services`, ...cr, service, send);
-app.use(`${s}resources`, ...cr, resource, send);
-app.use(`${s}operations`, ...cr, operation, send);
-app.use(`${s}cors`, ...cr, cors, send);
-app.use(`${s}fields`, ...cr, field, send);
-app.use(`${s}scopes`, ...cr, scope, send);
-app.use(`${s}preferences`, ...cr, preference, send);
-app.use(`${s}roles`, ...cr, role, send);
-app.use(`${s}permissions`, ...cr, permission, send);
-app.use(`${s}methods`, ...cr, method, send);
-app.use(`${s}applications`, ...cr, application, send);
-app.use(`${s}conditions`, ...cr, condition, send);
-app.use("/", proxyLimiter, ...cr, proxy);
+// app.use(`${s}sessions`, sessionLimiter, session);
+
 
 // Performance measurement ends
 app.use(endTimer);
@@ -94,11 +47,7 @@ errorHandler(app);
 
 // Init cached reference data
 Promise.all([
-  routeSvc.init(),
-  consumerSvc.init(),
-  corsSvc.init(),
-  roleSvc.init(),
-  scopeSvc.init(),
+  // routeSvc.init(),
 ])
   .then(() => {
     app.use(corsMiddleware);
