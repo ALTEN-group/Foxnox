@@ -20,9 +20,8 @@ import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
 
 // middlewares
-import { send } from "./middlewares/res/send.js";
+// import { send } from "./middlewares/res/send.js";
 import checkRoute from "./middlewares/validators/check-route.js";
-import { checkRequest as cr } from "./middlewares/validators/check-request.js"; // Authenticate request and load consumer session
 
 // Routes
 // import session from "./routes/session.js";
