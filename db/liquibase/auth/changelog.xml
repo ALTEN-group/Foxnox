@@ -19,12 +19,8 @@
     <sqlFile path="versions/01-hist/03-del.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="01-hist-04" author="lcluber">
-    <comment></comment>
-    <sqlFile path="versions/01-hist/04-get.sql" splitStatements="false"/>
-  </changeSet>
-  <changeSet id="01-hist-05" author="lcluber">
     <comment>Functional index on log.history record id for fast entity history lookups</comment>
-    <sqlFile path="versions/01-hist/05-index.sql" splitStatements="false"/>
+    <sqlFile path="versions/01-hist/04-index.sql" splitStatements="false"/>
   </changeSet>
 
   <!-- functions -->
@@ -36,11 +32,89 @@
     <comment></comment>
     <sqlFile path="versions/02-func/02-set-archived.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="02-func-03" author="lcluber">
+    <comment>Password functions</comment>
+    <sqlFile path="versions/02-func/03-pwd-func.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="02-func-04" author="lcluber">
+    <comment>Password policy functions</comment>
+    <sqlFile path="versions/02-func/04-pwd-policy-func.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- structures -->
+  <changeSet id="03-struct-01" author="lcluber">
+    <comment>Password table structure</comment>
+    <sqlFile path="versions/03-struct/01-pwd-struct.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="03-struct-02" author="lcluber">
+    <comment>Password policy table structure</comment>
+    <sqlFile path="versions/03-struct/02-pwd-policy-struct.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="03-struct-03" author="lcluber">
+    <comment>Security question tables structure</comment>
+    <sqlFile path="versions/03-struct/03-question-struct.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="03-struct-06" author="lcluber">
+    <comment>Token tables structure</comment>
+    <sqlFile path="versions/03-struct/06-token-struct.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="03-struct-07" author="lcluber">
+    <comment>Trusted device table structure for 2FA</comment>
+    <sqlFile path="versions/03-struct/07-trusted-device-struct.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- views -->
+  <changeSet id="04-view-01" author="lcluber">
+    <comment>Password policy view</comment>
+    <sqlFile path="versions/04-view/01-pwd-view.sql" splitStatements="false"/>
+  </changeSet>
+  
+  <!-- triggers -->
+  <changeSet id="05-trig-01" author="lcluber">
+    <comment>Password history trigger</comment>
+    <sqlFile path="versions/05-trig/01-pwd-trig.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="05-trig-02" author="lcluber">
+    <comment>Password policy history trigger</comment>
+    <sqlFile path="versions/05-trig/02-pwd-policy-trig.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="05-trig-03" author="lcluber">
+    <comment>Security question history triggers</comment>
+    <sqlFile path="versions/05-trig/03-question-trig.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="05-trig-06" author="lcluber">
+    <comment>Token history triggers</comment>
+    <sqlFile path="versions/05-trig/06-token-trig.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="05-trig-07" author="lcluber">
+    <comment>Trusted device history trigger</comment>
+    <sqlFile path="versions/05-trig/07-trusted-device-trig.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- data -->
+  <changeSet id="06-data-01" author="lcluber">
+    <comment>Password seed data</comment>
+    <sqlFile path="versions/06-data/01-pwd-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-02" author="lcluber">
+    <comment>Password policy seed data</comment>
+    <sqlFile path="versions/06-data/02-pwd-policy-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-03" author="lcluber">
+    <comment>Security question seed data</comment>
+    <sqlFile path="versions/06-data/03-question-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-05" author="lcluber">
+    <comment>Initial seed data</comment>
+    <sqlFile path="versions/06-data/05-initial-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-06" author="lcluber">
+    <comment>Bulk user seed data</comment>
+    <sqlFile path="versions/06-data/06-bulk-user-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-07" author="lcluber">
+    <comment>Token types seed data</comment>
+    <sqlFile path="versions/06-data/07-token-data.sql" splitStatements="false"/>
+  </changeSet>
 
 </databaseChangeLog>

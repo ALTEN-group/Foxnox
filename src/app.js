@@ -7,7 +7,6 @@ import { errorHandler } from "@dwtechs/errandler-express";
 import healixRouter from "@dwtechs/healix-express";
 import { security } from "./conf/sec.js";
 import { corsMiddleware } from "./conf/cors.js";
-import rateLimit from "express-rate-limit";
 
 const app = express();
 app.use(security);
