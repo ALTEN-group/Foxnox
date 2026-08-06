@@ -97,6 +97,27 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  ms_gateway_mock:
+    build:
+      context: ${PWD}/mocks/ms_gateway
+      dockerfile: dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        TZ: ${TZ}
+        NODE_VERSION: ${NODE_VERSION}
+        NODE_ENV: ${NODE_ENV}
+    container_name: ${MSGATEWAY_HOST}
+    hostname: ${MSGATEWAY_HOST}
+    environment:
+      PORT: ${DEFAULT_PORT}
+      PWD_SECRET: ${MSGATEWAY_PWD_SECRET}
+    networks:
+      - internal
+    volumes:
+      - ${PWD}/mocks/ms_gateway/src:/usr/src/app/src
+      - ms_gateway_mock_node_modules:/usr/src/app/node_modules
+
   foxnox_migration:
     build:
       context: ${PWD}/db/liquibase
