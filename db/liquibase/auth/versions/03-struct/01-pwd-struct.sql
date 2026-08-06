@@ -2,10 +2,10 @@
 CREATE TABLE pwd (
 	id SERIAL PRIMARY KEY,
 	"userId" INTEGER NOT NULL,
-	"pwHash" VARCHAR(255) NOT NULL,
+	"pwdHash" VARCHAR(255) NOT NULL,
 	"pwdResetToken" VARCHAR(150) NULL,
-	"pwUpdatedAt" TIMESTAMP,
-	"pwExpiry" TIMESTAMP,
+	"pwdUpdatedAt" TIMESTAMP,
+	"pwdExpiry" TIMESTAMP,
 	"failedAttempts" INTEGER DEFAULT 0,
 	"lockedUntil" TIMESTAMP,
 	"lastLoginAt" TIMESTAMP,
@@ -24,6 +24,6 @@ CREATE TABLE pwd (
 );
 
 -- Index for fast lookup by user_id
-CREATE INDEX idx_password_userId ON password("userId");
+CREATE INDEX idx_pwd_userId ON pwd("userId");
 
     

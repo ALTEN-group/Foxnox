@@ -1,6 +1,5 @@
 // @ts-check
 import express from "express";
-import { log } from "@dwtechs/winstan";
 import { endTimer, startTimer } from "@dwtechs/winstan-plugin-express-perf";
 import { listen } from "@dwtechs/servpico-express";
 import { errorHandler } from "@dwtechs/errandler-express";
@@ -12,30 +11,25 @@ const app = express();
 app.use(security);
 app.disable("x-powered-by");
 
-// import consumerSvc from "./services/consumer.js";
-
 // Cron jobs
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
 
 // middlewares
-// import { send } from "./middlewares/res/send.js";
-import checkRoute from "./middlewares/validators/check-route.js";
+import { send } from "./middlewares/res/send.js";
 
 // Routes
-// import session from "./routes/session.js";
+import login from "./routes/password.js";
 
-const s = "/auth/";
+const s = "/pwd/";
 
 // app.use(express.json({ limit: "100kb" }));
 app.use(`${s}health`, healixRouter);
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
-// Validate route
-app.use(checkRoute);
-// Routes
-// app.use(`${s}sessions`, sessionLimiter, session);
 
+// Routes
+app.use("/", login, send);
 
 // Performance measurement ends
 app.use(endTimer);

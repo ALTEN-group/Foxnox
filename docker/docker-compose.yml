@@ -302,6 +302,26 @@ services:
       - "traefik.http.routers.website.entrypoints=web"
       - "traefik.http.routers.website.service=website"
       - "traefik.http.services.website.loadbalancer.server.port=5173"
+  
+  ms_user_mock:
+    build:
+      context: ${PWD}/mocks/ms_user
+      dockerfile: dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        TZ: ${TZ}
+        NODE_VERSION: ${NODE_VERSION}
+        NODE_ENV: ${NODE_ENV}
+    container_name: ${MSUSER_HOST}
+    hostname: ${MSUSER_HOST}
+    environment:
+      PORT: ${DEFAULT_PORT}
+    networks:
+      - internal
+    volumes:
+      - ${PWD}/mocks/ms_user/src:/usr/src/app/src
+      - ms_user_mock_node_modules:/usr/src/app/node_modules
 
 networks:
   internal:
@@ -337,3 +357,4 @@ volumes:
       device: ${PWD}/admin/node_modules
   swagger_node_modules:
   website_node_modules:
+  ms_user_mock_node_modules:

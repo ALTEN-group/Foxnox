@@ -1,26 +1,28 @@
 // @ts-check
 import express from "express";
-
-import { when } from "../middlewares/conditional.js";
-
+import { compare } from "@dwtechs/passken-express";
 const router = express.Router();
 
-import uEnt from "../entities/user.js";
-import getUserByEmail from "../middlewares/queries/getUserByEmail.js";
-import activateUser from "../middlewares/queries/activateUser.js";
-
+import pEnt from "../entities/pwd.js";
+import history from "../middlewares/history.js";
+import schema from "../middlewares/schema.js";
+  
 // middleware sub-stacks
-const getUser = [ uEnt.normalize, uEnt.validate, getUserByEmail, uEnt.get ];
-const activate = [ activateUser, uEnt.update ];
-const login = [
-  getUser,
-  compare,
-  when(res => !res.body.rows[0].active, activate),
-  refresh,
-];
+const getPwd = [ pEnt.normalize, pEnt.validate, pEnt.get ];
 
 //Routes
-// add a consumer. Log a user
-router.post("/", login);
+router.post("/compare", getPwd, compare);
+// Search fields
+router.post("/search", pEnt.get);
+// Get version history of a specific field
+router.get("/:id/history", history.get("field"));
+// Add pwds
+router.post("/", pEnt.addArraySubstack);
+// Update fields
+router.put("/", pEnt.updateArraySubstack);
+// Bulk archive
+router.post("/archive", pEnt.archive);
+// Get entity schema
+router.get("/schema", schema.get(pEnt));
 
 export default router;
