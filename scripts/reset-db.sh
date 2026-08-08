@@ -21,7 +21,7 @@ if [[ -f docker/conf/.env.dev ]]; then
 fi
 
 # Set defaults if not loaded
-APP_NAME=${APP_NAME:-gatelin}
+APP_NAME=${APP_NAME:-foxnox}
 ENV_NAME=${ENV_NAME:-local}
 
 POSTGRES_CONTAINER="${APP_NAME}-postgres-${ENV_NAME}"
@@ -36,7 +36,14 @@ docker rm -f $MIGRATION_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Remov
 
 # Remove volume
 echo -e "💾 Removing volume..."
-docker volume rm $VOLUME_NAME 2>/dev/null && echo -e "${GREEN}✓${NC} Removed volume $VOLUME_NAME" || echo -e "${YELLOW}⚠${NC}  Volume $VOLUME_NAME not found"
+if ! docker volume inspect "$VOLUME_NAME" >/dev/null 2>&1; then
+  echo -e "${YELLOW}⚠${NC}  Volume $VOLUME_NAME not found"
+elif docker volume rm "$VOLUME_NAME"; then
+  echo -e "${GREEN}✓${NC} Removed volume $VOLUME_NAME"
+else
+  echo -e "${RED}✗${NC} Failed to remove volume $VOLUME_NAME (still in use?) — aborting so the fresh restart doesn't reuse stale data"
+  exit 1
+fi
 
 echo -e "${GREEN}✅ Database reset complete!${NC}"
 
