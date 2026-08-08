@@ -26,6 +26,7 @@ ENV_NAME=${ENV_NAME:-local}
 
 POSTGRES_CONTAINER="${APP_NAME}-postgres-${ENV_NAME}"
 MIGRATION_CONTAINER="${APP_NAME}-${APP_NAME}-migration-${ENV_NAME}"
+GATELIN_MIGRATION_CONTAINER="${APP_NAME}-gatelin-migration-${ENV_NAME}"
 GATELIN_CONTAINER="${APP_NAME}"
 VOLUME_NAME="${APP_NAME}_postgres_data"
 
@@ -33,6 +34,7 @@ VOLUME_NAME="${APP_NAME}_postgres_data"
 echo -e "📦 Removing containers..."
 docker rm -f $POSTGRES_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $POSTGRES_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $POSTGRES_CONTAINER not found"
 docker rm -f $MIGRATION_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $MIGRATION_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $MIGRATION_CONTAINER not found"
+docker rm -f $GATELIN_MIGRATION_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $GATELIN_MIGRATION_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $GATELIN_MIGRATION_CONTAINER not found"
 
 # Remove volume
 echo -e "💾 Removing volume..."

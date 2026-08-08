@@ -93,10 +93,6 @@
     <comment>Security question seed data</comment>
     <sqlFile path="versions/06-data/04-question-data.sql" splitStatements="false"/>
   </changeSet>
-  <changeSet id="06-data-05" author="lcluber">
-    <comment>Initial seed data</comment>
-    <sqlFile path="versions/06-data/06-initial-data.sql" splitStatements="false"/>
-  </changeSet>
   <changeSet id="06-data-06" author="lcluber">
     <comment>Trusted device seed data</comment>
     <sqlFile path="versions/06-data/05-trusted-device-data.sql" splitStatements="false"/>

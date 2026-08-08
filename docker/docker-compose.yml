@@ -123,8 +123,8 @@ services:
         condition: service_healthy
     networks:
       - internal
-    # volumes:
-    #     - ${PWD}/db/liquibase/data/:/liquibase/data
+    volumes:
+      - ${PWD}/db/liquibase/gatelin-data/:/liquibase/data
 
   gatelin:
     image: ghcr.io/alten-group/gatelin:${GATELIN_VERSION:-latest}
