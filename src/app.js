@@ -24,7 +24,7 @@ app.use(`${s}health`, healixRouter);
 app.use(startTimer);
 
 // Routes
-app.use("/", login, send);
+app.use(`${s}`, login, send);
 app.use(`${s}tokens`, token, send);
 app.use(`${s}policies`, pwdPolicy, send);
 app.use(`${s}trusted-devices`, trustedDevice, send);

@@ -5,7 +5,7 @@
 --
 
 INSERT INTO resources ("serviceId", name, core, "creatorId", "creatorName") VALUES
-  ((SELECT id FROM service WHERE name = 'foxnox'), '',                    false, -1, 'system'),
+  ((SELECT id FROM service WHERE name = 'foxnox'), 'pwd',                    false, -1, 'system'),
   ((SELECT id FROM service WHERE name = 'foxnox'), 'pwd/tokens',          false, -1, 'system'),
   ((SELECT id FROM service WHERE name = 'foxnox'), 'pwd/policies',        false, -1, 'system'),
   ((SELECT id FROM service WHERE name = 'foxnox'), 'pwd/trusted-devices', false, -1, 'system')

@@ -6,13 +6,13 @@
 
 INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "operationId", "methodIds", "creatorId", "creatorName") VALUES
   -- password (mounted at Foxnox's Express root, matches password.js exactly)
-  ((SELECT id FROM resource WHERE name = ''),                    '/compare',            'comparePwd',       'Compare a plaintext password against its hash', true, false, ARRAY[13], ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '/search',             'searchPwds',       'Search passwords',                              true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '/(?<id>\d+)/history', 'getPwdHistory',    'Manage password history',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '',                    'addPwds',          'Add passwords',                                 true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '',                    'updatePwds',       'Update passwords',                              true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '/archive',            'archivePwds',      'Archive passwords',                             true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = ''),                    '/schema',             'getPwdSchema',     'Get password entity schema',                    true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '/compare',            'comparePwd',       'Compare a plaintext password against its hash', true, false, ARRAY[13], ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '/search',             'searchPwds',       'Search passwords',                              true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '/(?<id>\d+)/history', 'getPwdHistory',    'Manage password history',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '',                    'addPwds',          'Add passwords',                                 true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '',                    'updatePwds',       'Update passwords',                              true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '/archive',            'archivePwds',      'Archive passwords',                             true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'pwd'),                    '/schema',             'getPwdSchema',     'Get password entity schema',                    true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
   -- tokens (/pwd/tokens)
   ((SELECT id FROM resource WHERE name = 'pwd/tokens'),          '/search',             'searchTokens',     'Search tokens',                                 true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
