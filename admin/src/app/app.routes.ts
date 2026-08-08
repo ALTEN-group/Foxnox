@@ -3,16 +3,6 @@ import { aclGuard } from "@core/acl/acl.guard";
 import { ADMIN_ENTITIES, AdminEntity } from "@core/app-config/app.entities";
 import { loginGuard } from "@core/auth/login.guard";
 import { NotFoundComponent } from "@core/pages/not-found/not-found.component";
-import { gatewayApplicationsResolver } from "app/authorizations/data-access/applications/applications.resolver";
-import { conditionsResolver } from "app/authorizations/data-access/conditions/conditions.resolver";
-import { fieldsResolver } from "app/authorizations/data-access/fields/fields.resolver";
-import { methodsResolver } from "app/routing/data-access/methods/methods.resolver";
-import { operationsResolver } from "app/routing/data-access/operations/operations.resolver";
-import { resourcesResolver } from "app/routing/data-access/resources/resources.resolver";
-import { gatewayRolesResolver } from "app/authorizations/data-access/roles/roles.resolver";
-import { routesResolver } from "app/routing/data-access/routes/routes.resolver";
-import { scopesResolver } from "app/authorizations/data-access/scopes/scopes.resolver";
-import { serviceResolver } from "app/routing/data-access/services/service.resolver";
 
 type EntityPaths = { readonly [K in AdminEntity as Uppercase<K>]: K };
 
@@ -39,208 +29,55 @@ export const ROUTES: Routes = [
     canActivate: [loginGuard()],
   },
   {
-    path: AppPaths.ROUTES,
+    path: AppPaths.PASSWORDS,
     loadComponent: () =>
-      import("./routing/features/routes/routes.component").then(
-        (m) => m.RoutesComponent,
+      import("./passwords/features/passwords/passwords.component").then(
+        (m) => m.PasswordsComponent,
       ),
-    title: "Routes",
+    title: "Passwords",
     canActivate: [aclGuard()],
     data: {
-      breadcrumb: $localize`:@@Admin_RoutesNav:Routes`,
-      functionality: AppPaths.ROUTES,
-    },
-    resolve: {
-      operations: operationsResolver,
-      services: serviceResolver,
-      resources: resourcesResolver,
-      methods: methodsResolver,
+      breadcrumb: $localize`:@@Admin_PasswordsNav:Passwords`,
+      functionality: AppPaths.PASSWORDS,
     },
   },
   {
-    path: AppPaths.CONSUMERS,
+    path: AppPaths.POLICIES,
     loadComponent: () =>
-      import("./consumers/features/consumers/consumers.component").then(
-        (m) => m.ConsumersComponent,
+      import("./passwords/features/policies/policies.component").then(
+        (m) => m.PoliciesComponent,
       ),
-    title: "Consumers",
+    title: "Policies",
     canActivate: [aclGuard()],
     data: {
-      breadcrumb: $localize`:@@Admin_ConsumersNav:Consumers`,
-      functionality: AppPaths.CONSUMERS,
-    },
-    resolve: {
-      roles: gatewayRolesResolver,
+      breadcrumb: $localize`:@@Admin_PoliciesNav:Policies`,
+      functionality: AppPaths.POLICIES,
     },
   },
   {
-    path: AppPaths.SERVICES,
+    path: AppPaths.TOKENS,
     loadComponent: () =>
-      import("./routing/features/services/services.component").then(
-        (m) => m.ServicesComponent,
+      import("./passwords/features/tokens/tokens.component").then(
+        (m) => m.TokensComponent,
       ),
-    title: "Services",
+    title: "Tokens",
     canActivate: [aclGuard()],
     data: {
-      breadcrumb: $localize`:@@Admin_ServicesNav:Services`,
-      functionality: AppPaths.SERVICES,
+      breadcrumb: $localize`:@@Admin_TokensNav:Tokens`,
+      functionality: AppPaths.TOKENS,
     },
   },
   {
-    path: AppPaths.RESOURCES,
+    path: AppPaths.TRUSTEDDEVICES,
     loadComponent: () =>
-      import("./routing/features/resources/resources.component").then(
-        (m) => m.ResourcesComponent,
-      ),
-    title: "Resources",
+      import(
+        "./passwords/features/trusted-devices/trusted-devices.component"
+      ).then((m) => m.TrustedDevicesComponent),
+    title: "Trusted devices",
     canActivate: [aclGuard()],
     data: {
-      breadcrumb: $localize`:@@Admin_ResourcesNav:Resources`,
-      functionality: AppPaths.RESOURCES,
-    },
-    resolve: {
-      services: serviceResolver,
-    },
-  },
-  {
-    path: AppPaths.CORS,
-    loadComponent: () =>
-      import("./authorizations/features/cors/cors.component").then(
-        (m) => m.CorsComponent,
-      ),
-    title: "CORS",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_CorsNav:CORS`,
-      functionality: AppPaths.CORS,
-    },
-  },
-  {
-    path: AppPaths.OPERATIONS,
-    loadComponent: () =>
-      import("./routing/features/operations/operations.component").then(
-        (m) => m.OperationsComponent,
-      ),
-    title: "Operations",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_OperationsNav:Operations`,
-      functionality: AppPaths.OPERATIONS,
-    },
-  },
-  {
-    path: AppPaths.METHODS,
-    loadComponent: () =>
-      import("./routing/features/methods/methods.component").then(
-        (m) => m.MethodsComponent,
-      ),
-    title: "Methods",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_MethodsNav:Methods`,
-      functionality: AppPaths.METHODS,
-    },
-    resolve: {
-      methods: methodsResolver,
-    },
-  },
-  {
-    path: AppPaths.FIELDS,
-    loadComponent: () =>
-      import("./authorizations/features/fields/fields.component").then(
-        (m) => m.FieldsComponent,
-      ),
-    title: "Fields",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_FieldsNav:Fields`,
-      functionality: AppPaths.FIELDS,
-    },
-    resolve: {
-      resources: resourcesResolver,
-      services: serviceResolver,
-    },
-  },
-  {
-    path: AppPaths.SCOPES,
-    loadComponent: () =>
-      import("./authorizations/features/scopes/scopes.component").then(
-        (m) => m.ScopesComponent,
-      ),
-    title: "Scopes",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_ScopesNav:Scopes`,
-      functionality: AppPaths.SCOPES,
-    },
-    resolve: {
-      routes: routesResolver,
-      resources: resourcesResolver,
-    },
-  },
-  {
-    path: AppPaths.ROLES,
-    loadComponent: () =>
-      import("./authorizations/features/roles/roles.component").then(
-        (m) => m.RolesComponent,
-      ),
-    title: "Roles",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_RolesNav:Roles`,
-      functionality: AppPaths.ROLES,
-    },
-    resolve: {
-      applications: gatewayApplicationsResolver,
-    },
-  },
-  {
-    path: AppPaths.APPLICATIONS,
-    loadComponent: () =>
-      import("./authorizations/features/applications/applications.component").then(
-        (m) => m.ApplicationsComponent,
-      ),
-    title: "Applications",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_ApplicationsNav:Applications`,
-      functionality: AppPaths.APPLICATIONS,
-    },
-  },
-  {
-    path: AppPaths.CONDITIONS,
-    loadComponent: () =>
-      import("./authorizations/features/conditions/conditions.component").then(
-        (m) => m.ConditionsComponent,
-      ),
-    title: "Conditions",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_ConditionsNav:Conditions`,
-      functionality: AppPaths.CONDITIONS,
-    },
-    resolve: {
-      fields: fieldsResolver,
-    },
-  },
-  {
-    path: AppPaths.PERMISSIONS,
-    loadComponent: () =>
-      import("./authorizations/features/permissions/permissions-tree.component").then(
-        (m) => m.PermissionsTreeComponent,
-      ),
-    title: "Permissions Tree",
-    canActivate: [aclGuard()],
-    data: {
-      breadcrumb: $localize`:@@Admin_PermissionsTreeNav:Permissions Tree`,
-      functionality: AppPaths.PERMISSIONS,
-    },
-    resolve: {
-      roles: gatewayRolesResolver,
-      routes: routesResolver,
-      scopes: scopesResolver,
-      conditions: conditionsResolver,
-      operations: operationsResolver,
+      breadcrumb: $localize`:@@Admin_TrustedDevicesNav:Trusted devices`,
+      functionality: AppPaths.TRUSTEDDEVICES,
     },
   },
   {
@@ -264,7 +101,7 @@ export const ROUTES: Routes = [
   },
   {
     path: "",
-    redirectTo: `/${AppPaths.CONSUMERS}`,
+    redirectTo: `/${AppPaths.PASSWORDS}`,
     pathMatch: "full",
   },
   {

@@ -4,19 +4,10 @@
  * Used by ACL, navigation, table configuration, preferences, etc.
  */
 export const ADMIN_ENTITIES = [
-  "routes",
-  "consumers",
-  "services",
-  "resources",
-  "cors",
-  "operations",
-  "methods",
-  "fields",
-  "scopes",
-  "roles",
-  "permissions",
-  "applications",
-  "conditions",
+  "passwords",
+  "policies",
+  "tokens",
+  "trustedDevices",
 ] as const;
 
 export type AdminEntity = (typeof ADMIN_ENTITIES)[number];

@@ -2,167 +2,139 @@
 
 ```mermaid
 ---
-caption: Entity Relationship Diagram - Routes & ACL
+caption: Entity Relationship Diagram - Password, Tokens & Trusted Devices
 ---
 
 erDiagram
 
-  application ||--o{ service : ""
-  application ||--o{ role : ""
-  service ||--o{ resource : ""
-  role ||--o{ permission : ""
-  resource ||--o{ field : ""
-  resource ||--o{ route : ""
-  route ||--o{ scope : ""
-  route }o--|{ method : ""
-  route ||--o{ route_operation : ""
-  route_operation }o--|| operation : ""
+  pwd }o--|| user : "(external)"
+  token_type ||--o{ token : ""
+  token }o--|| user : "(external)"
+  user_trusted_device }o--|| user : "(external)"
 
-  permission }o--|| route : ""
-  permission }o--|| operation : ""
-  permission ||--o{ permission_condition : ""
-  permission_condition }o--|| condition : ""
-
-  route_operation {
-    int routeId FK
-    int operationId FK
-  }
-  application {
+  pwd {
     int id PK
-    varchar name UK
-    text description
-    boolean core
-  }
-
-  role {
-    int id PK
-    int appId FK
-    varchar name
-    varchar description
-    varchar color
-    boolean active
-    boolean locked
-  }
-
-  permission {
-    int id PK
-    int roleId FK
-    int routeId FK
-    int operationId FK
-    text[] fields
-    text[] scopes
-  }
-
-  permission_condition {
-    int permissionId FK
-    int conditionId FK
-  }
-
-  condition {
-    int id PK
-    int fieldId FK
-    varchar name UK
-    varchar op
-    text value
-    varchar color
-  }
-
-  service {
-    int id PK
-    int appId FK
-    varchar name
-    text pattern
-    boolean core
-  }
-
-  resource {
-    int id PK
-    int serviceId FK
-    varchar name
-    boolean core
-  }
-
-  route {
-    int id PK
-    int resourceId FK
-    varchar pattern
-    varchar name
-    varchar description
-    boolean protected
-    boolean core
+    int userId FK "ms_user"
+    varchar pwdHash
+    timestamp pwdUpdatedAt
+    timestamp pwdExpiry
+    int failedAttempts
+    timestamp lockedUntil
+    timestamp lastLoginAt
+    boolean twoFactorEnabled
+    varchar twoFactorSecret
     boolean archived
     timestamp archivedAt
   }
 
-  method {
-    int id PK
-    varchar name UK
-    varchar color
-  }
-
-  operation {
-    int id PK
-    varchar name UK
-    text description
-    varchar color
-    boolean core
-  }
-
-  field {
-    int id PK
-    int resourceId FK
-    text name
-    boolean locked
-  }
-
-  scope {
-    int id PK
-    int routeId FK
-    varchar name UK
-  }
-```
-
-```mermaid
----
-caption: Entity Relationship Diagram - Consumer & Preferences
----
-
-erDiagram
-
-  consumer }o--|| user : "(external)"
-  consumer }o--|{ role : "(denormalized int[])"
-  preference }o--|| user : "(external)"
-
-  cors {
+  pwd_policy {
     int id PK
     varchar name
     varchar description
-    boolean credentials
+    int length
+    boolean number
+    boolean symbol
+    boolean lowerCase
+    boolean upperCase
+    boolean strict
+    varchar symbols
+    int expiryDays
+    boolean active
+    boolean archived
+    timestamp archivedAt
   }
 
-  consumer {
+  token_type {
     int id PK
-    int userId FK "ms_user"
-    varchar nickname
-    varchar accessToken UK
-    varchar refreshToken UK
-    int[] roles "array of role IDs"
-  }
-
-  preference {
-    int id PK
-    int userId FK "ms_user"
-    varchar resource
     varchar name
-    jsonb conf
-    boolean isActive
+    text description
+    int ttl
+    int maxAttempts
+    boolean archived
+    timestamp archivedAt
+  }
+
+  token {
+    int id PK
+    varchar hash UK
+    int typeId FK
+    int userId FK "ms_user"
+    int attempts
+    timestamp expiresAt
+    timestamp verifiedAt
+    boolean archived
+    timestamp archivedAt
+  }
+
+  user_trusted_device {
+    int id PK
+    int userId FK "ms_user"
+    varchar deviceTokenHash UK
+    varchar deviceName
+    varchar ipAddress
+    text userAgent
+    timestamp expiresAt
+    timestamp lastUsedAt
+    boolean archived
+    timestamp archivedAt
   }
 
   user {
 
   }
+```
 
-  role {
+```mermaid
+---
+caption: Entity Relationship Diagram - Security Questions
+---
+
+erDiagram
+
+  security_question_category ||--o{ security_question_category_trans : ""
+  security_question_category ||--o{ security_question : ""
+  security_question ||--o{ security_question_trans : ""
+  security_question ||--o{ user_security_answer : ""
+  user_security_answer }o--|| user : "(external)"
+
+  security_question_category {
+    int id PK
+    varchar name UK
+    boolean archived
+    timestamp archivedAt
+  }
+
+  security_question_category_trans {
+    int categoryId PK, FK
+    language lang PK
+    varchar trans
+  }
+
+  security_question {
+    int id PK
+    varchar question
+    int categoryId FK
+    boolean active
+    boolean archived
+    timestamp archivedAt
+  }
+
+  security_question_trans {
+    int questionId PK, FK
+    language lang PK
+    varchar trans
+  }
+
+  user_security_answer {
+    int id PK
+    int userId FK "ms_user"
+    int questionId FK
+    varchar answerHash
+    boolean archived
+    timestamp archivedAt
+  }
+
+  user {
 
   }
 ```

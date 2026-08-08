@@ -1,7 +1,5 @@
 import { execute } from "@dwtechs/antity-pgsql";
 
-const ALLOWED_HISTORY_FIELDS = new Set(["routeId"]);
-
 /**
  * Groups history rows that belong to the same logical action (e.g. a route
  * update that also rewrites its route_operation/route_method junction rows)
@@ -85,42 +83,7 @@ function query(tableName, id, schema = "public") {
   return execute(sql, [schema, tableNames, id], null);
 }
 
-function getByField(tableName, field, schema = "public") {
-  return (req, res, next) => {
-    const value = req.params[field];
-    if (!value) return next({ status: 400, msg: `Missing ${field}` });
-
-    queryByField(tableName, field, value, schema)
-      .then((r) => {
-        if (!r.rowCount) return next({ status: 404, msg: "history not found" });
-        const rows = groupByAction(r.rows);
-        if (rows.length === 1 && rows[0].operation === "INSERT")
-          return next({ status: 404, msg: "history not found" });
-        res.locals.rows = rows;
-        res.locals.total = rows.length;
-        next();
-      })
-      .catch((err) => next(err));
-  };
-}
-
-function queryByField(tableName, field, value, schema = "public") {
-  if (!ALLOWED_HISTORY_FIELDS.has(field))
-    throw new Error(`Invalid history field: ${field}`);
-  const tableNames = Array.isArray(tableName) ? tableName : [tableName];
-  const sql = `
-    SELECT id, tstamp, operation, "userId" AS "consumerId", "userName" AS "consumerName", record
-    FROM log.history
-    WHERE "schemaName" = $1
-      AND "tableName" = ANY($2::text[])
-      AND CAST(record->>'${field}' AS INT) = $3
-    ORDER BY tstamp ASC, id ASC
-  `;
-  return execute(sql, [schema, tableNames, value], null);
-}
-
 export default {
   get,
-  getByField,
   groupByAction,
 };

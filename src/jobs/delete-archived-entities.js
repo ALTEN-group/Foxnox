@@ -1,15 +1,18 @@
 // @ts-check
 import { log } from "@dwtechs/winstan";
+import { execute } from "@dwtechs/antity-pgsql";
 import { scheduleDailyAt } from "./scheduler.js";
-// import consumerSvc from "../services/consumer.js";
-
+import pEnt from "../entities/pwd.js";
+import tEnt from "../entities/token.js";
+import ppEnt from "../entities/pwd-policy.js";
+import tdEnt from "../entities/user-trusted-device.js";
 
 /**
  * Cron job to delete archived entities from the database.
  * All entities must be archived for at least 2 months before deletion.
  * Runs once daily at 2:00 AM.
  *
- * Deletes archived records from: consumers, services, CORS origins, operations, resources, routes, roles, applications, and scopes.
+ * Deletes archived records from: pwds, tokens, password policies, and trusted devices.
  *
  * Cron schedule format: "second minute hour day month weekday"
  * Current schedule: "0 0 2 * * *" means every day at 2:00 AM
@@ -18,6 +21,10 @@ import { scheduleDailyAt } from "./scheduler.js";
  * // Start the cron job
  * startDeleteArchivedEntitiesJob();
  */
+function deleteArchived(entity, date) {
+  const q = entity.query.deleteArchive();
+  return execute(q, [date], null).then((r) => r.rowCount || 0);
+}
 export function startDeleteArchivedEntitiesJob() {
   scheduleDailyAt(2, async () => {
     try {
@@ -31,7 +38,10 @@ export function startDeleteArchivedEntitiesJob() {
 
       // Define all entities to process
       const entities = [
-        // { name: "consumers", service: consumerSvc },
+        { name: "pwds", entity: pEnt },
+        { name: "tokens", entity: tEnt },
+        { name: "password policies", entity: ppEnt },
+        { name: "trusted devices", entity: tdEnt },
       ];
 
       let totalDeleted = 0;
@@ -39,7 +49,7 @@ export function startDeleteArchivedEntitiesJob() {
       // Process all entities concurrently
       const results = await Promise.allSettled(
         entities.map((entity) =>
-          entity.service.deleteArchived(twoMonthsAgo).then((count) => ({ entity, count }))
+          deleteArchived(entity.entity, twoMonthsAgo).then((count) => ({ entity, count }))
         )
       );
 

@@ -8,14 +8,14 @@ import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
   
 // middleware sub-stacks
-const getPwd = [ pEnt.normalize, pEnt.validate, pEnt.get ];
+const getPwd = [ pEnt.normalizeOne, pEnt.validateOne, pEnt.get ];
 
 //Routes
 router.post("/compare", getPwd, compare);
 // Search fields
 router.post("/search", pEnt.get);
 // Get version history of a specific field
-router.get("/:id/history", history.get("field"));
+router.get("/:id/history", history.get("pwd"));
 // Add pwds
 router.post("/", pEnt.addArraySubstack);
 // Update fields

@@ -1,35 +1,33 @@
 // @ts-check
 import express from "express";
 import { endTimer, startTimer } from "@dwtechs/winstan-plugin-express-perf";
-import { listen } from "@dwtechs/servpico-express";
 import { errorHandler } from "@dwtechs/errandler-express";
 import healixRouter from "@dwtechs/healix-express";
-import { security } from "./conf/sec.js";
-import { corsMiddleware } from "./conf/cors.js";
 
 const app = express();
-app.use(security);
 app.disable("x-powered-by");
-
-// Cron jobs
-import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
-import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
 
 // middlewares
 import { send } from "./middlewares/res/send.js";
 
 // Routes
 import login from "./routes/password.js";
+import token from "./routes/token.js";
+import pwdPolicy from "./routes/pwd-policy.js";
+import trustedDevice from "./routes/user-trusted-device.js";
 
 const s = "/pwd/";
 
-// app.use(express.json({ limit: "100kb" }));
+app.use(express.json({ limit: "100kb" }));
 app.use(`${s}health`, healixRouter);
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
 
 // Routes
 app.use("/", login, send);
+app.use(`${s}tokens`, token, send);
+app.use(`${s}policies`, pwdPolicy, send);
+app.use(`${s}trusted-devices`, trustedDevice, send);
 
 // Performance measurement ends
 app.use(endTimer);
@@ -37,15 +35,4 @@ app.use(endTimer);
 // Error handling
 errorHandler(app);
 
-// Init cached reference data
-Promise.all([
-  // routeSvc.init(),
-])
-  .then(() => {
-    app.use(corsMiddleware);
-    // Start cron jobs
-    startDeleteArchivedEntitiesJob();
-    startDeleteOldHistoryJob();
-    listen(app);
-  })
-  .catch((err) => log.error(`App cannot start: ${err.message || err.msg}`));
+export default app;

@@ -2,90 +2,41 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
 
 /**
  * Base entity-routes mapping, defining mapping between routes and their id in the database.
+ *
+ * NOTE: Gatelin's gateway does not have any route/permission registered for Foxnox's
+ * endpoints yet (separate DB task on the Gatelin side), so there are no real ids to put
+ * here. ACL route-id gating is disabled for this app (see acl.guard.ts, which no longer
+ * calls AclService.hasAccess) — every authenticated user has access to every page. These
+ * ids are unused placeholders kept only to satisfy AclService's type contract; update them
+ * once Gatelin registers real routes for Foxnox's resources.
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
-  consumers: {
-    get: 4, // getConsumers
+  passwords: {
+    get: 1,
+    getHistory: 2,
+    create: 3,
+    update: 4,
+    archive: 5,
   },
-  routes: {
-    get: 6, // searchRoutes
+  policies: {
+    get: 6,
     getHistory: 7,
-    update: 8,
-    create: 9,
+    create: 8,
+    update: 9,
     archive: 10,
   },
-  services: {
-    get: 11, // searchServices
+  tokens: {
+    get: 11,
     getHistory: 12,
-    update: 13,
-    create: 14,
+    create: 13,
+    update: 14,
     archive: 15,
   },
-  resources: {
-    get: 16, // searchResources
+  trustedDevices: {
+    get: 16,
     getHistory: 17,
-    update: 18,
-    create: 19,
+    create: 18,
+    update: 19,
     archive: 20,
-  },
-  operations: {
-    get: 21, // searchOperations
-    getHistory: 22,
-    update: 23,
-    create: 24,
-    archive: 25,
-  },
-  cors: {
-    get: 26, // searchCors
-    getHistory: 27,
-    update: 28,
-    create: 29,
-    archive: 30,
-  },
-  fields: {
-    get: 31, // searchFields
-    getHistory: 32,
-    update: 33,
-    create: 34,
-    archive: 35,
-  },
-  scopes: {
-    get: 36, // searchScopes
-    getHistory: 37,
-    update: 38,
-    create: 39,
-    archive: 40,
-  },
-  roles: {
-    get: 41, // searchRoles
-    getHistory: 42,
-    create: 43,
-    update: 44,
-    archive: 45,
-  },
-  permissions: {
-    get: 46, // searchPermissions
-    getHistory: 47, // getPermissionHistory
-    create: 48, // addPermissions
-    update: 49, // updatePermissions
-    archive: 50, // deletePermissions
-  },
-  methods: {
-    get: 51, // searchMethods
-    update: 52, // updateMethods
-  },
-  applications: {
-    get: 53, // searchApplications
-    getHistory: 54, // getApplicationHistory
-    create: 55, // addApplications
-    update: 56, // updateApplications
-    archive: 57, // archiveApplications
-  },
-  conditions: {
-    get: 58, // searchConditions
-    getHistory: 59, // getConditionHistory
-    update: 60, // updateConditions
-    create: 61, // addConditions
-    archive: 62, // archiveConditions
   },
 };

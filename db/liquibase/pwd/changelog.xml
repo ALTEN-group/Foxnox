@@ -32,14 +32,6 @@
     <comment></comment>
     <sqlFile path="versions/02-func/02-set-archived.sql" splitStatements="false"/>
   </changeSet>
-  <changeSet id="02-func-03" author="lcluber">
-    <comment>Password functions</comment>
-    <sqlFile path="versions/02-func/03-pwd-func.sql" splitStatements="false"/>
-  </changeSet>
-  <changeSet id="02-func-04" author="lcluber">
-    <comment>Password policy functions</comment>
-    <sqlFile path="versions/02-func/04-pwd-policy-func.sql" splitStatements="false"/>
-  </changeSet>
   
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">
@@ -51,23 +43,20 @@
     <sqlFile path="versions/03-struct/02-pwd-policy-struct.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="03-struct-03" author="lcluber">
-    <comment>Security question tables structure</comment>
-    <sqlFile path="versions/03-struct/03-question-struct.sql" splitStatements="false"/>
-  </changeSet>
-  <changeSet id="03-struct-06" author="lcluber">
     <comment>Token tables structure</comment>
-    <sqlFile path="versions/03-struct/06-token-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/03-token-struct.sql" splitStatements="false"/>
   </changeSet>
-  <changeSet id="03-struct-07" author="lcluber">
+  <changeSet id="03-struct-04" author="lcluber">
+    <comment>Security question tables structure</comment>
+    <sqlFile path="versions/03-struct/04-question-struct.sql" splitStatements="false"/>
+  </changeSet>
+  
+  <changeSet id="03-struct-05" author="lcluber">
     <comment>Trusted device table structure for 2FA</comment>
-    <sqlFile path="versions/03-struct/07-trusted-device-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/05-trusted-device-struct.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- views -->
-  <changeSet id="04-view-01" author="lcluber">
-    <comment>Password policy view</comment>
-    <sqlFile path="versions/04-view/01-pwd-view.sql" splitStatements="false"/>
-  </changeSet>
   
   <!-- triggers -->
   <changeSet id="05-trig-01" author="lcluber">
@@ -102,19 +91,19 @@
   </changeSet>
   <changeSet id="06-data-03" author="lcluber">
     <comment>Security question seed data</comment>
-    <sqlFile path="versions/06-data/03-question-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/04-question-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-05" author="lcluber">
     <comment>Initial seed data</comment>
-    <sqlFile path="versions/06-data/05-initial-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/06-initial-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-06" author="lcluber">
-    <comment>Bulk user seed data</comment>
-    <sqlFile path="versions/06-data/06-bulk-user-data.sql" splitStatements="false"/>
+    <comment>Trusted device seed data</comment>
+    <sqlFile path="versions/06-data/05-trusted-device-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-07" author="lcluber">
     <comment>Token types seed data</comment>
-    <sqlFile path="versions/06-data/07-token-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/03-token-data.sql" splitStatements="false"/>
   </changeSet>
 
 </databaseChangeLog>

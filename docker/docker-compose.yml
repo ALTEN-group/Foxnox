@@ -1,7 +1,7 @@
 name: ${APP_NAME}
 
 x-service-healthcheck: &healthcheck
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/auth/health"]
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -48,7 +48,10 @@ services:
       #liquibase
       LIQUIBASE_USER: ${LIQUIBASE_DB_USER}
       LIQUIBASE_PWD: ${LIQUIBASE_DB_PWD}
-      # ms_gateway
+      # gatelin
+      GATELIN_USER: ${GATELIN_DB_USER}
+      GATELIN_PWD: ${GATELIN_DB_PWD}
+      # foxnox
       FOXNOX_USER: ${FOXNOX_DB_USER}
       FOXNOX_PWD: ${FOXNOX_DB_PWD}
     stdin_open: true
@@ -81,7 +84,7 @@ services:
       - --ping=true
       - --api.dashboard=true
     labels:
-      - "traefik.http.middlewares.gateway.stripprefix.prefixes=/api"     
+      - "traefik.http.middlewares.pwd.stripprefix.prefixes=/api"
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
       - "traefik.http.routers.dashboard.rule=PathPrefix(`/api`) || PathPrefix(`/dashboard`)"
@@ -97,26 +100,76 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  ms_gateway_mock:
-    build:
-      context: ${PWD}/mocks/ms_gateway
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${MSGATEWAY_HOST}
-    hostname: ${MSGATEWAY_HOST}
+  gatelin_migration:
+    image: ghcr.io/alten-group/gatelin-migration:${GATELIN_VERSION:-latest}
+    container_name: ${GATELIN_MIGRATION_HOST}
+    hostname: ${GATELIN_MIGRATION_HOST}
     environment:
-      PORT: ${DEFAULT_PORT}
-      PWD_SECRET: ${MSGATEWAY_PWD_SECRET}
+      TZ: ${TZ}
+      LIQUIBASE_COMMAND_USERNAME: ${LIQUIBASE_DB_USER}
+      LIQUIBASE_COMMAND_PASSWORD: ${LIQUIBASE_DB_PWD}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${GATELIN_DB_NAME}
+      DB_USER: ${GATELIN_DB_USER}
+      DB_PWD: ${GATELIN_DB_PWD}
+      UPDATE: ${LIQUIBASE_UPDATE}
+      ROLLBACK: ${LIQUIBASE_ROLLBACK}
+      SNAPSHOT: snapshot/snapshot${LIQUIBASE_SNAPSHOT}
+      LIQUIBASE_LOG_LEVEL: ${LIQUIBASE_LOG_LEVEL}
+      LIQUIBASE_COMMAND_CONTEXTS: ${LIQUIBASE_COMMAND_CONTEXTS}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - internal
-    volumes:
-      - ${PWD}/mocks/ms_gateway/src:/usr/src/app/src
-      - ms_gateway_mock_node_modules:/usr/src/app/node_modules
+    # volumes:
+    #     - ${PWD}/db/liquibase/data/:/liquibase/data
+
+  gatelin:
+    image: ghcr.io/alten-group/gatelin:${GATELIN_VERSION:-latest}
+    container_name: ${GATELIN_HOST}
+    hostname: ${GATELIN_HOST}
+    environment:
+      PORT: ${DEFAULT_PORT}
+      TZ: ${TZ}
+      PWD_CHECK_URL: ${GATELIN_PWD_CHECK_URL}
+      USER_SEARCH_URL: ${GATELIN_USER_SEARCH_URL}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_NAME: ${GATELIN_DB_NAME}
+      DB_USER: ${GATELIN_DB_USER}
+      DB_PWD: ${GATELIN_DB_PWD}
+      TOKEN_SECRET: ${GATELIN_TOKEN_SECRET}
+      APP_NAME: ${APP_NAME}
+      ENV_NAME: ${ENV_NAME}
+      SERVER_SCHEME: ${SERVER_SCHEME}
+      SERVICE_NAME: ${GATELIN_HOST}
+      ACCESS_TOKEN_DURATION: ${GATELIN_ACCESS_TOKEN_DURATION}
+      REFRESH_TOKEN_DURATION: ${GATELIN_REFRESH_TOKEN_DURATION}
+      REFRESH_TOKEN_COOKIE: ${GATELIN_REFRESH_TOKEN_COOKIE}
+      REFRESH_TOKEN_COOKIE_HTTPS_ONLY: "false" # dev stack is plain HTTP
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gatelin_migration:
+        condition: service_completed_successfully
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "stack.name=${STACK_NAME}"
+      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.gateway.entrypoints=web"
+      - "traefik.http.routers.gateway.service=gateway"
+      - "traefik.http.routers.gateway.middlewares=strip-prefix"
+      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
+      - "traefik.http.services.gateway.loadBalancer.server.port=${DEFAULT_PORT}"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/gateway/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   foxnox_migration:
     build:
@@ -146,7 +199,7 @@ services:
     networks:
       - internal
     volumes:
-      - ${PWD}/db/liquibase/gateway/:/liquibase/changelog
+      - ${PWD}/db/liquibase/pwd/:/liquibase/changelog
       - ${PWD}/db/liquibase/data/:/liquibase/data
 
   foxnox:
@@ -174,7 +227,7 @@ services:
       DB_NAME: ${FOXNOX_DB_NAME}
       DB_USER: ${FOXNOX_DB_USER}
       DB_PWD: ${FOXNOX_DB_PWD}
-      PWD_SECRET: ${MSAUTH_PWD_SECRET}
+      PWD_SECRET: ${FOXNOX_PWD_SECRET}
       APP_NAME: ${APP_NAME}
       ENV_NAME: ${ENV_NAME}
       SERVER_SCHEME: ${SERVER_SCHEME}
@@ -192,17 +245,13 @@ services:
     volumes:
       - ${PWD}/src:/usr/src/app/src
       - ${PWD}/tests:/usr/src/app/tests
-      - gateway_node_modules:/usr/src/app/node_modules
-    labels:
-      - "traefik.enable=true"
-      - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.auth.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.auth.entrypoints=web"
-      - "traefik.http.routers.auth.service=auth"
-      - "traefik.http.routers.auth.middlewares=strip-prefix"
-      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
-      - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
-      - "traefik.http.services.auth.loadBalancer.server.port=${DEFAULT_PORT}"
+      - ${PWD}/jest.config.js:/usr/src/app/jest.config.js
+      - ${PWD}/babel.config.json:/usr/src/app/babel.config.json
+      - ${PWD}/package.json:/usr/src/app/package.json
+      - foxnox_node_modules:/usr/src/app/node_modules
+    # No public Traefik router: Foxnox now sits behind Gatelin (Traefik -> gatelin -> foxnox,
+    # reached over the internal network via PWD_CHECK_URL) — publicly exposing /api on both
+    # foxnox and gatelin would create two routers matching the same rule with undefined priority.
     healthcheck: *healthcheck
   
   admin:
@@ -252,23 +301,23 @@ services:
       - "traefik.http.middlewares.adminer-stripprefix.stripprefix.prefixes=/adminer"
       - "traefik.http.middlewares.adminer-stripprefix.stripprefix.forceSlash=false"
 
-  dozzle:
-    container_name: ${DOZZLE_HOST}
-    hostname: ${DOZZLE_HOST}
-    image: ghcr.io/amir20/dozzle:latest
-    environment:
-      DOZZLE_BASE: /dozzle
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - internal
-    labels:
-      - "traefik.enable=true"
-      - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.dozzle.rule=PathPrefix(`/dozzle`)"
-      - "traefik.http.routers.dozzle.entrypoints=web"
-      - "traefik.http.routers.dozzle.service=dozzle"
-      - "traefik.http.services.dozzle.loadbalancer.server.port=${DOZZLE_PORT}"
+  # dozzle:
+  #   container_name: ${DOZZLE_HOST}
+  #   hostname: ${DOZZLE_HOST}
+  #   image: ghcr.io/amir20/dozzle:latest
+  #   environment:
+  #     DOZZLE_BASE: /dozzle
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - internal
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "stack.name=${STACK_NAME}"
+  #     - "traefik.http.routers.dozzle.rule=PathPrefix(`/dozzle`)"
+  #     - "traefik.http.routers.dozzle.entrypoints=web"
+  #     - "traefik.http.routers.dozzle.service=dozzle"
+  #     - "traefik.http.services.dozzle.loadbalancer.server.port=${DOZZLE_PORT}"
 
   swagger:
     build:
@@ -299,30 +348,30 @@ services:
       - "traefik.http.routers.swagger.service=swagger"
       - "traefik.http.services.swagger.loadbalancer.server.port=${DEFAULT_PORT}"
 
-  website:
-    build:
-      context: ${PWD}/website
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${WEBSITE_HOST}
-    hostname: ${WEBSITE_HOST}
-    volumes:
-      - ${PWD}/website/docs:/usr/src/app/docs
-      - website_node_modules:/usr/src/app/node_modules
-    networks:
-      - internal
-    labels:
-      - "traefik.enable=true"
-      - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.website.rule=PathPrefix(`/docs`)"
-      - "traefik.http.routers.website.entrypoints=web"
-      - "traefik.http.routers.website.service=website"
-      - "traefik.http.services.website.loadbalancer.server.port=5173"
+  # website:
+  #   build:
+  #     context: ${PWD}/website
+  #     dockerfile: dockerfile
+  #     args:
+  #       UID: ${UID}
+  #       GID: ${GID}
+  #       TZ: ${TZ}
+  #       NODE_VERSION: ${NODE_VERSION}
+  #       NODE_ENV: ${NODE_ENV}
+  #   container_name: ${WEBSITE_HOST}
+  #   hostname: ${WEBSITE_HOST}
+  #   volumes:
+  #     - ${PWD}/website/docs:/usr/src/app/docs
+  #     - website_node_modules:/usr/src/app/node_modules
+  #   networks:
+  #     - internal
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "stack.name=${STACK_NAME}"
+  #     - "traefik.http.routers.website.rule=PathPrefix(`/docs`)"
+  #     - "traefik.http.routers.website.entrypoints=web"
+  #     - "traefik.http.routers.website.service=website"
+  #     - "traefik.http.services.website.loadbalancer.server.port=5173"
   
   ms_user_mock:
     build:

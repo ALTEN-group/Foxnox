@@ -1,7 +1,6 @@
 
 CREATE TABLE IF NOT EXISTS pwd_policy (
   id SERIAL PRIMARY KEY,
-  "appId" INT NOT NULL,
   name varchar(50) NOT NULL,
   description varchar(100) NULL,
   length INT DEFAULT 12 NOT NULL,
@@ -21,11 +20,6 @@ CREATE TABLE IF NOT EXISTS pwd_policy (
   "updatedAt" TIMESTAMP NULL,
   "updaterId" INT,
   "updaterName" TEXT,
-  CHECK ("appId">=0),
   CHECK (length > 5),
-  CHECK (number = TRUE OR symbol = TRUE OR "lowerCase" = TRUE OR "upperCase" = TRUE),
-  CONSTRAINT fk_password_policy_application
-    FOREIGN KEY ("appId") REFERENCES application (id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
+  CHECK (number = TRUE OR symbol = TRUE OR "lowerCase" = TRUE OR "upperCase" = TRUE)
 );

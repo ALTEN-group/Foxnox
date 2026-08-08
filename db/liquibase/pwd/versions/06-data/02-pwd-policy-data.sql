@@ -1,17 +1,18 @@
 
--- Mock data for password_policies table
-INSERT INTO password_policies (
-	"applicationId",
-	name,
-	minLength,
-	requireUppercase,
-	requireLowercase,
-	requireNumber,
-	requireSpecialChar,
-	maxAttempts,
-	expiryDays,
-	archived,
-	"archivedAt"
-) VALUES
-	(1, 'Default Policy', 8, TRUE, TRUE, TRUE, FALSE, 5, 90, FALSE, NULL),
-	(2, 'Strict Policy', 12, TRUE, TRUE, TRUE, TRUE, 3, 60, FALSE, NULL);
+-- Mock data for pwd_policy table
+-- INSERT INTO pwd_policy (
+-- 	name,
+-- 	length,
+-- 	number,
+-- 	symbol,
+-- 	"lowerCase",
+-- 	"upperCase",
+-- 	"expiryDays",
+-- 	archived,
+-- 	"archivedAt"
+-- ) VALUES
+-- 	('Default Policy', 8, TRUE, FALSE, TRUE, TRUE, 90, FALSE, NULL),
+-- 	('Strict Policy', 12, TRUE, TRUE, TRUE, TRUE, 60, FALSE, NULL),
+-- 	('Public User',   'Default password policy for regular users',              10, TRUE, TRUE, TRUE, TRUE, TRUE, '!@#%*_-+=:?><./()',   0, TRUE, FALSE, -1, 'system'),
+-- 	('High Security', 'Strong password policy for sensitive accounts in admin', 12, TRUE, TRUE, TRUE, TRUE, TRUE, '!@#%*_-+=:?><./()$£', 0, TRUE, FALSE, -1, 'system'),
+-- 	('Standard',      'Default password policy for regular users in admin',     12, TRUE, TRUE, TRUE, TRUE, TRUE, '!@#%*_-+=:?><./()$',  0, TRUE, FALSE, -1, 'system')

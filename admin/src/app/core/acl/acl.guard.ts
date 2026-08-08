@@ -1,15 +1,13 @@
 import { inject } from "@angular/core";
-import { ActivatedRouteSnapshot, CanActivateFn, Router } from "@angular/router";
-import { AclService } from "@core/acl/acl.service";
-import { AdminEntity } from "@core/app-config/app.entities";
+import { CanActivateFn, Router } from "@angular/router";
 import { AuthenticationService } from "@core/auth/auth.service";
 import { AppPaths } from "app/app.routes";
-import { map } from "rxjs";
 
+// ACL route-id gating is disabled (Gatelin has no routes/permissions registered for
+// Foxnox's endpoints yet) — every authenticated user has access to every page.
 export function aclGuard(): CanActivateFn {
-  return (route: ActivatedRouteSnapshot) => {
+  return () => {
     const router = inject(Router);
-    const aclService = inject(AclService);
     const authService = inject(AuthenticationService);
 
     if (!authService.isAuthenticated()) {
@@ -17,18 +15,6 @@ export function aclGuard(): CanActivateFn {
       return false;
     }
 
-    const functionality = route.data.functionality as AdminEntity | undefined;
-
-    return aclService.enrichAclWithSchema(functionality).pipe(
-      map(() => {
-        const hasAccess = aclService.hasAccess(functionality, "get");
-        if (!hasAccess) redirectsToUnauthorized(router);
-        return hasAccess;
-      }),
-    );
+    return true;
   };
-}
-
-function redirectsToUnauthorized(router: Router): void {
-  router.navigate([`/${AppPaths.UNAUTHORIZED}`]);
 }
