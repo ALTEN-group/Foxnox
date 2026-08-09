@@ -9,6 +9,7 @@ set -e
 
 # Colors for output
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
@@ -28,7 +29,7 @@ if [[ -f docker/conf/.env.dev ]]; then
 fi
 
 # Set defaults if not loaded
-APP_NAME=${APP_NAME:-gatelin}
+APP_NAME=${APP_NAME:-foxnox}
 ENV_NAME=${ENV_NAME:-local}
 
 VOLUME_NAME="${APP_NAME}_postgres_data"
@@ -45,9 +46,25 @@ fi
 # Execute command
 eval $COMPOSE_CMD
 
-# Remove postgres volume (after containers are stopped)
+# Remove postgres volume (after containers are stopped) so it can never keep stale credentials across runs
 echo -e "${YELLOW}🗑️  Removing postgres volume...${NC}"
-docker volume rm $VOLUME_NAME 2>/dev/null && echo -e "✓ Removed volume $VOLUME_NAME" || echo -e "⚠  Volume $VOLUME_NAME not found"
+if docker volume inspect "$VOLUME_NAME" >/dev/null 2>&1; then
+  # Force-remove any leftover containers (e.g. never-started/orphaned ones) still holding the volume
+  LEFTOVER_CONTAINERS=$(docker ps -a --filter "volume=$VOLUME_NAME" --format '{{.Names}}')
+  if [[ -n "$LEFTOVER_CONTAINERS" ]]; then
+    echo -e "${YELLOW}⚠${NC}  Removing leftover containers still using the volume: $LEFTOVER_CONTAINERS"
+    docker rm -f $LEFTOVER_CONTAINERS >/dev/null 2>&1 || true
+  fi
+
+  if docker volume rm "$VOLUME_NAME" >/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Removed volume $VOLUME_NAME"
+  else
+    echo -e "${RED}✗${NC} Failed to remove volume $VOLUME_NAME (still in use) — aborting so stale data isn't reused on next start"
+    exit 1
+  fi
+else
+  echo -e "⚠  Volume $VOLUME_NAME not found"
+fi
 
 echo -e "${RED}✅ Development environment stopped and cleaned!${NC}"
 if [[ "$REMOVE_IMAGES" == true ]]; then

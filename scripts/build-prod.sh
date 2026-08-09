@@ -93,7 +93,7 @@ fi
 
 # ─── Admin ──────────────────────────────────────────────────────────────────
 if [[ "$BUILD_ADMIN" == true ]]; then
-  IMAGE="ghcr.io/alten-group/gatelin-admin:${VERSION}"
+  IMAGE="dwtechs/foxnox-admin:${VERSION}"
   echo -e "${YELLOW}🏗️  Building admin image ${IMAGE}...${NC}"
   docker build \
     --file admin/dockerfile.prod \
@@ -104,7 +104,7 @@ if [[ "$BUILD_ADMIN" == true ]]; then
     --build-arg UID="${APP_UID}" \
     --build-arg GID="${APP_GID}" \
     --tag "${IMAGE}" \
-    --tag "ghcr.io/alten-group/gatelin-admin:latest" \
+    --tag "dwtechs/foxnox-admin:latest" \
     admin
   echo -e "${GREEN}✅ Admin image built: ${IMAGE}${NC}"
 fi

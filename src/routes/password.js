@@ -6,12 +6,10 @@ const router = express.Router();
 import pEnt from "../entities/pwd.js";
 import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
-  
-// middleware sub-stacks
-const getPwd = [ pEnt.normalizeOne, pEnt.validateOne, pEnt.get ];
+import { checkCompareBody } from "../middlewares/validators/check-compare.js";
 
 //Routes
-router.post("/compare", getPwd, compare);
+router.post("/compare", checkCompareBody, pEnt.get, compare);
 // Search fields
 router.post("/search", pEnt.get);
 // Get version history of a specific field

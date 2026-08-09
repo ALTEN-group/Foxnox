@@ -18,11 +18,11 @@ import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideRouter } from "@angular/router";
 import { provideAppConfig } from "@core/app-config/app.config";
+import { FoxnoxPreset } from "@core/app-config/primeng-preset";
 import { authInterceptor } from "@core/auth/auth.interceptor";
 import { errorInterceptor } from "@core/interceptors/error.interceptor";
 import { locationInterceptor } from "@core/interceptors/location.interceptor";
 import { preferencesInterceptor } from "@core/interceptors/preferences.interceptor";
-import Aura from "@primeng/themes/aura";
 import { ROUTES } from "app/app.routes";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { providePrimeNG } from "primeng/config";
@@ -45,7 +45,7 @@ bootstrapApplication(AppComponent, {
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura,
+        preset: FoxnoxPreset,
         options: {
           darkModeSelector: ".dark",
         },
