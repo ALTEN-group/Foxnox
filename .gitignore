@@ -6,3 +6,4 @@ src/public/*
 tests/coverage/
 docker/conf/.env.dev
 website/docs/.vitepress/cache
+swagger/src/foxnox.openapi.json

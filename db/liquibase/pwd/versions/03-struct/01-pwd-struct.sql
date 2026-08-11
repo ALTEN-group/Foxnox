@@ -3,7 +3,7 @@ CREATE TABLE pwd (
 	id SERIAL PRIMARY KEY,
 	"userId" INTEGER NOT NULL,
 	"pwdHash" VARCHAR(255) NOT NULL,
-	"pwdUpdatedAt" TIMESTAMP,
+	"pwdUpdatedAt" TIMESTAMP DEFAULT NOW(),
 	"pwdExpiry" TIMESTAMP,
 	"failedAttempts" INTEGER DEFAULT 0,
 	"lockedUntil" TIMESTAMP,

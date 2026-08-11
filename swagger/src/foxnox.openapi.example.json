@@ -1,0 +1,1054 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "version": "1.0.0",
+    "title": "Foxnox — password management service",
+    "description": "Manages password hashes, verification, rotation, tokens, password policies, and trusted devices for the Foxnox stack.\n\n**Dev credentials.** The `__PWD_<userId>__` placeholders in the `/pwd/compare` examples are replaced with real plaintext passwords by `scripts/setup-mocks.sh` after it seeds mock accounts via `POST /pwd/`. If you still see literal `__PWD_*__` tokens below, run `scripts/setup-mocks.sh`."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8100/api",
+      "description": "Local dev stack (via Traefik → Gatelin)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Password",
+      "description": "Generate, verify, rotate, and search password rows (`pwd` table). Hashes are produced by `@dwtechs/passken-express` and never leave the service — `res/send-pwd.js` strips them from responses."
+    },
+    {
+      "name": "Token",
+      "description": "Short-lived authentication and verification tokens (email confirmation, password reset, 2FA challenge, magic links, …). The `hash` column is server-only."
+    },
+    {
+      "name": "Password Policy",
+      "description": "Length/character/expiry rules used by `@dwtechs/passken` when Foxnox generates new passwords."
+    },
+    {
+      "name": "Trusted Device",
+      "description": "Devices a user has marked as trusted (skip 2FA for a period). Device tokens are stored as hashes and never returned."
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "idPath": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1
+        },
+        "description": "Row primary key"
+      }
+    },
+    "schemas": {
+      "pwd": {
+        "type": "object",
+        "description": "One password row per user. Set by `POST /pwd/` (which generates the plaintext and hash server-side) and rotated with `PUT /pwd/`.",
+        "properties": {
+          "id": { "type": "integer", "format": "int32", "readOnly": true },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "description": "Foreign key to the user (managed outside Foxnox)"
+          },
+          "pwdUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Set by the DB default `NOW()` on INSERT; stamp explicitly on rotation"
+          },
+          "pwdExpiry": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the password must be rotated"
+          },
+          "failedAttempts": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "default": 0
+          },
+          "lockedUntil": { "type": "string", "format": "date-time", "nullable": true },
+          "lastLoginAt": { "type": "string", "format": "date-time", "nullable": true },
+          "twoFactorEnabled": { "type": "boolean", "default": false },
+          "archived": { "type": "boolean", "readOnly": true },
+          "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
+          "creatorName": { "type": "string", "readOnly": true, "nullable": true },
+          "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "updaterName": { "type": "string", "readOnly": true, "nullable": true }
+        },
+        "required": ["userId"]
+      },
+      "token": {
+        "type": "object",
+        "description": "Short-lived credential (email confirmation, password reset, 2FA challenge, magic link, …).",
+        "properties": {
+          "id": { "type": "integer", "format": "int32", "readOnly": true },
+          "typeId": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "description": "FK to `token_type` (seeded by Liquibase `06-data/02-token-data.sql`)"
+          },
+          "userId": { "type": "integer", "format": "int32", "minimum": 1 },
+          "attempts": { "type": "integer", "format": "int32", "minimum": 0, "default": 0 },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "verifiedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "archived": { "type": "boolean", "readOnly": true },
+          "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
+          "creatorName": { "type": "string", "readOnly": true, "nullable": true },
+          "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "updaterName": { "type": "string", "readOnly": true, "nullable": true }
+        },
+        "required": ["typeId", "userId"]
+      },
+      "pwdPolicy": {
+        "type": "object",
+        "description": "Rules driving `@dwtechs/passken`'s random password generator. Only one row is `active: true` at a time.",
+        "properties": {
+          "id": { "type": "integer", "format": "int32", "readOnly": true },
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "minLength": 0, "maxLength": 100, "nullable": true },
+          "length": { "type": "integer", "format": "int32", "minimum": 6, "maximum": 64, "description": "Minimum generated-password length" },
+          "number": { "type": "boolean", "description": "Include digits" },
+          "symbol": { "type": "boolean", "description": "Include symbols" },
+          "lowerCase": { "type": "boolean" },
+          "upperCase": { "type": "boolean" },
+          "strict": { "type": "boolean", "description": "At least one character from each enabled pool" },
+          "symbols": { "type": "string", "minLength": 0, "maxLength": 50, "description": "Symbol pool (defaults to the passken built-in when empty)" },
+          "expiryDays": { "type": "integer", "format": "int32", "minimum": 0, "description": "How long a generated password stays valid; 0 = never expires" },
+          "active": { "type": "boolean" },
+          "archived": { "type": "boolean", "readOnly": true },
+          "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
+          "creatorName": { "type": "string", "readOnly": true, "nullable": true },
+          "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "updaterName": { "type": "string", "readOnly": true, "nullable": true }
+        },
+        "required": ["name", "length", "number", "symbol", "lowerCase", "upperCase", "strict", "active"]
+      },
+      "userTrustedDevice": {
+        "type": "object",
+        "description": "A device the user has marked as trusted (skips 2FA until `expiresAt`). `deviceTokenHash` is INSERT-only and never returned.",
+        "properties": {
+          "id": { "type": "integer", "format": "int32", "readOnly": true },
+          "userId": { "type": "integer", "format": "int32", "minimum": 1 },
+          "deviceName": { "type": "string", "minLength": 0, "maxLength": 100, "nullable": true, "example": "MacBook Pro (Chrome)" },
+          "ipAddress": { "type": "string", "minLength": 0, "maxLength": 45, "nullable": true, "example": "192.168.1.24" },
+          "userAgent": { "type": "string", "nullable": true },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "lastUsedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "archived": { "type": "boolean", "readOnly": true },
+          "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
+          "creatorName": { "type": "string", "readOnly": true, "nullable": true },
+          "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
+          "updaterName": { "type": "string", "readOnly": true, "nullable": true }
+        },
+        "required": ["userId", "expiresAt"]
+      },
+      "searchRequest": {
+        "type": "object",
+        "description": "Common body for every `POST /<entity>/search` route. All fields optional. `filters` is a per-column map: `{ <column>: { value, matchMode } }`.",
+        "properties": {
+          "pagination": { "type": "boolean", "default": false, "description": "When true, the response includes `total` = matching row count (before pagination)" },
+          "first": { "type": "integer", "format": "int32", "minimum": 0, "default": 0, "description": "Offset (rows to skip)" },
+          "rows": { "type": "integer", "format": "int32", "minimum": 1, "default": 10, "description": "Page size" },
+          "sortField": { "type": "string", "default": "id" },
+          "sortOrder": { "type": "string", "enum": ["ASC", "DESC"], "default": "ASC" },
+          "filters": {
+            "type": "object",
+            "description": "Map of column name to filter clause. See `antity-pgsql` for the full matchMode grammar.",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "value": {},
+                "matchMode": {
+                  "type": "string",
+                  "enum": ["=", "<", ">", "<=", ">=", "<>", "IS", "IS NOT", "IN", "NOT IN", "LIKE", "NOT LIKE", "startsWith", "endsWith", "contains", "notContains", "equals", "notEquals", "between", "in", "notIn", "lt", "lte", "gt", "gte", "before", "after"]
+                }
+              },
+              "required": ["value"]
+            },
+            "example": { "userId": { "value": 1, "matchMode": "=" } }
+          }
+        }
+      },
+      "archiveRequest": {
+        "type": "object",
+        "required": ["rows"],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": { "type": "integer", "format": "int32", "minimum": 1 }
+              }
+            },
+            "example": [{ "id": 1 }, { "id": 2 }]
+          }
+        }
+      },
+      "historyEntry": {
+        "type": "object",
+        "description": "One row of a `<entity>_hist` history table (written by the per-table triggers under `db/liquibase/pwd/versions/05-trig/`).",
+        "properties": {
+          "id": { "type": "integer", "format": "int32" },
+          "tstamp": { "type": "string", "format": "date-time" },
+          "schemaName": { "type": "string", "example": "public" },
+          "tableName": { "type": "string", "example": "pwd" },
+          "operation": { "type": "string", "enum": ["INSERT", "UPDATE", "DELETE"] },
+          "dbUser": { "type": "string", "example": "foxnox_user" },
+          "consumerId": { "type": "integer", "format": "int32", "nullable": true },
+          "consumerName": { "type": "string", "nullable": true },
+          "record": { "type": "object", "description": "JSON snapshot of the affected row" }
+        },
+        "required": ["tstamp", "schemaName", "tableName", "operation", "record"]
+      },
+      "errorResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "integer", "example": 400 },
+          "message": { "type": "string", "example": "Bad Request" },
+          "details": { "type": "string", "example": "Invalid request parameters" }
+        }
+      },
+      "entityProperty": {
+        "type": "object",
+        "description": "One row of the metadata returned by `GET /<entity>/schema`. Private properties are filtered out at that endpoint.",
+        "properties": {
+          "key": { "type": "string", "example": "userId" },
+          "type": { "type": "string", "example": "integer" },
+          "min": { "type": "integer", "nullable": true },
+          "max": { "type": "integer", "nullable": true },
+          "operations": { "type": "array", "items": { "type": "string" }, "example": ["SELECT", "INSERT"] },
+          "requiredFor": { "type": "array", "items": { "type": "string" }, "example": ["POST"] },
+          "isFilterable": { "type": "boolean" }
+        }
+      },
+      "entitySchemaResponse": {
+        "type": "object",
+        "properties": {
+          "rows": { "type": "array", "items": { "$ref": "#/components/schemas/entityProperty" } },
+          "total": { "type": "integer" }
+        }
+      }
+    },
+    "responses": {
+      "badRequestError": {
+        "description": "Missing or invalid parameters in body / path / query",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/errorResponse" } } }
+      },
+      "unauthorizedError": {
+        "description": "Password mismatch or missing/invalid access token",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/errorResponse" } } }
+      },
+      "notFoundError": {
+        "description": "No matching row",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/errorResponse" } } }
+      },
+      "unexpectedError": {
+        "description": "Unexpected server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/errorResponse" } } }
+      }
+    }
+  },
+  "paths": {
+    "/pwd/compare": {
+      "post": {
+        "tags": ["Password"],
+        "summary": "Verify a plaintext password against the stored hash for a user",
+        "description": "`checkCompareBody` narrows the SELECT to a single userId, `pEnt.get` fetches the row, `@dwtechs/passken-express.compare` compares the submitted plaintext to `pwdHash`. On success the row is returned with `pwdHash` stripped by `res/send-pwd.js`. On mismatch or unknown user the client always sees `401 Wrong password` (no user-existence oracle).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "pwd"],
+                "properties": {
+                  "userId": { "type": "integer", "format": "int32", "minimum": 1 },
+                  "pwd": { "type": "string", "minLength": 1, "maxLength": 255 }
+                }
+              },
+              "examples": {
+                "admin": { "summary": "Admin (userId 1)", "value": { "userId": 1, "pwd": "__PWD_1__" } },
+                "standard": { "summary": "Standard (userId 2)", "value": { "userId": 2, "pwd": "__PWD_2__" } },
+                "coco": { "summary": "Coco (userId 3)", "value": { "userId": 3, "pwd": "__PWD_3__" } },
+                "guest": { "summary": "Guest (userId 4)", "value": { "userId": 4, "pwd": "__PWD_4__" } },
+                "eboutique": { "summary": "eBoutique (userId 5)", "value": { "userId": 5, "pwd": "__PWD_5__" } },
+                "wrong_pwd": { "summary": "Wrong password — expect 401", "value": { "userId": 1, "pwd": "WrongPassword123!" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password matches. Row returned without `pwdHash`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwd" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "401": { "$ref": "#/components/responses/unauthorizedError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/search": {
+      "post": {
+        "tags": ["Password"],
+        "summary": "Search pwd rows",
+        "description": "Filter, sort, and paginate. Response rows are scrubbed of `pwdHash` by `res/send-pwd.js`.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/searchRequest" },
+              "example": {
+                "pagination": true,
+                "first": 0,
+                "rows": 10,
+                "sortField": "userId",
+                "sortOrder": "ASC",
+                "filters": { "userId": { "value": 1, "matchMode": "=" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching pwd rows (without `pwdHash`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwd" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/": {
+      "post": {
+        "tags": ["Password"],
+        "summary": "Generate a password for one or more users",
+        "description": "For every `{ userId }` in `rows`, `@dwtechs/passken-express.create` generates a random plaintext using the active `pwd_policy`, hashes it with `@dwtechs/hashitaka`, and the entity inserts `pwdHash`. `pwdUpdatedAt` is stamped by the DB default. Response echoes each row's `pwd` (plaintext) once so the caller can deliver it out-of-band; `pwdHash` is stripped.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["userId"],
+                      "properties": {
+                        "userId": { "type": "integer", "format": "int32", "minimum": 1 }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "single": {
+                  "summary": "Mint one password",
+                  "value": { "rows": [{ "userId": 1 }] }
+                },
+                "seed_mocks": {
+                  "summary": "Seed all mock users (called by scripts/setup-mocks.sh)",
+                  "value": {
+                    "rows": [
+                      { "userId": 1 },
+                      { "userId": 2 },
+                      { "userId": 3 },
+                      { "userId": 4 },
+                      { "userId": 5 }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Passwords generated and persisted. Plaintexts returned once on `row.pwd`; hashes stripped.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "rows": [
+                    { "id": 1, "userId": 1, "pwd": "__PWD_1__" },
+                    { "id": 2, "userId": 2, "pwd": "__PWD_2__" },
+                    { "id": 3, "userId": 3, "pwd": "__PWD_3__" },
+                    { "id": 4, "userId": 4, "pwd": "__PWD_4__" },
+                    { "id": 5, "userId": 5, "pwd": "__PWD_5__" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      },
+      "put": {
+        "tags": ["Password"],
+        "summary": "Update pwd rows (rotation, lock, 2FA state, …)",
+        "description": "Update UPDATE-flagged columns. To rotate a password, the caller must hash externally with `@dwtechs/hashitaka` (using the same `PWD_SECRET`) and pass the result as `pwdHash` + a fresh `pwdUpdatedAt`. For simple minting, prefer `POST /pwd/`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/components/schemas/pwd" }
+                  }
+                }
+              },
+              "examples": {
+                "lock_account": {
+                  "summary": "Lock account for 15 min after too many attempts",
+                  "value": { "rows": [{ "id": 1, "failedAttempts": 5, "lockedUntil": "2026-08-11T22:15:00Z" }] }
+                },
+                "record_login": {
+                  "summary": "Record a successful login",
+                  "value": { "rows": [{ "id": 1, "failedAttempts": 0, "lockedUntil": null, "lastLoginAt": "2026-08-11T22:00:00Z" }] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated rows (without `pwdHash`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwd" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/archive": {
+      "post": {
+        "tags": ["Password"],
+        "summary": "Archive pwd rows by id",
+        "description": "Soft delete: sets `archived = true` and `archivedAt = NOW()`. Archived rows are hidden from `POST /pwd/search` and `POST /pwd/compare`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/archiveRequest" } }
+          }
+        },
+        "responses": {
+          "204": { "description": "Rows archived" },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/{id}/history": {
+      "get": {
+        "tags": ["Password"],
+        "summary": "Get the change history for a pwd row",
+        "description": "Returns every INSERT/UPDATE/DELETE recorded by the `05-trig/01-pwd-trig.sql` trigger.",
+        "parameters": [{ "$ref": "#/components/parameters/idPath" }],
+        "responses": {
+          "200": {
+            "description": "History entries, newest first",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/historyEntry" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/schema": {
+      "get": {
+        "tags": ["Password"],
+        "summary": "Get the pwd entity schema (public fields only)",
+        "description": "Reflects the entity properties as configured by `src/entities/pwd.js`, with `isPrivate: true` fields filtered out.",
+        "responses": {
+          "200": {
+            "description": "Entity property metadata",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/entitySchemaResponse" } }
+            }
+          }
+        }
+      }
+    },
+
+    "/pwd/tokens/search": {
+      "post": {
+        "tags": ["Token"],
+        "summary": "Search tokens",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/searchRequest" },
+              "example": { "pagination": true, "sortField": "expiresAt", "sortOrder": "DESC", "filters": { "userId": { "value": 1, "matchMode": "=" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching token rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/token" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/tokens/": {
+      "post": {
+        "tags": ["Token"],
+        "summary": "Create tokens",
+        "description": "Callers pass `{ userId, typeId, expiresAt }`. Foxnox is expected to hash any raw token material before storing it (`hash` is INSERT-only, `isPrivate`, and never returned).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/components/schemas/token" }
+                  }
+                }
+              },
+              "example": {
+                "rows": [
+                  { "userId": 1, "typeId": 1, "expiresAt": "2026-08-11T22:15:00Z" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/token" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      },
+      "put": {
+        "tags": ["Token"],
+        "summary": "Update tokens (attempts / expiresAt / verifiedAt)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/components/schemas/token" }
+                  }
+                }
+              },
+              "example": { "rows": [{ "id": 1, "verifiedAt": "2026-08-11T22:05:00Z", "attempts": 1 }] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated token rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/token" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/tokens/archive": {
+      "post": {
+        "tags": ["Token"],
+        "summary": "Archive tokens by id",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/archiveRequest" } }
+          }
+        },
+        "responses": {
+          "204": { "description": "Rows archived" },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/tokens/{id}/history": {
+      "get": {
+        "tags": ["Token"],
+        "summary": "Get the change history for a token row",
+        "parameters": [{ "$ref": "#/components/parameters/idPath" }],
+        "responses": {
+          "200": {
+            "description": "History entries",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/historyEntry" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/tokens/schema": {
+      "get": {
+        "tags": ["Token"],
+        "summary": "Get the token entity schema",
+        "responses": {
+          "200": {
+            "description": "Entity property metadata",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/entitySchemaResponse" } }
+            }
+          }
+        }
+      }
+    },
+
+    "/pwd/policies/search": {
+      "post": {
+        "tags": ["Password Policy"],
+        "summary": "Search password policies",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/searchRequest" },
+              "example": { "filters": { "active": { "value": true, "matchMode": "=" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching policy rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwdPolicy" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/policies/": {
+      "post": {
+        "tags": ["Password Policy"],
+        "summary": "Create password policies",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/pwdPolicy" } }
+                }
+              },
+              "example": {
+                "rows": [
+                  {
+                    "name": "default",
+                    "description": "Baseline dev policy",
+                    "length": 12,
+                    "number": true,
+                    "symbol": true,
+                    "lowerCase": true,
+                    "upperCase": true,
+                    "strict": true,
+                    "symbols": "!@#$%^&*",
+                    "expiryDays": 365,
+                    "active": true
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created policy rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwdPolicy" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      },
+      "put": {
+        "tags": ["Password Policy"],
+        "summary": "Update password policies",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/pwdPolicy" } }
+                }
+              },
+              "example": { "rows": [{ "id": 1, "length": 16, "strict": true, "active": true }] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated policy rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/pwdPolicy" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/policies/archive": {
+      "post": {
+        "tags": ["Password Policy"],
+        "summary": "Archive password policies by id",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/archiveRequest" } }
+          }
+        },
+        "responses": {
+          "204": { "description": "Rows archived" },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/policies/{id}/history": {
+      "get": {
+        "tags": ["Password Policy"],
+        "summary": "Get the change history for a policy row",
+        "parameters": [{ "$ref": "#/components/parameters/idPath" }],
+        "responses": {
+          "200": {
+            "description": "History entries",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/historyEntry" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/policies/schema": {
+      "get": {
+        "tags": ["Password Policy"],
+        "summary": "Get the pwd_policy entity schema",
+        "responses": {
+          "200": {
+            "description": "Entity property metadata",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/entitySchemaResponse" } }
+            }
+          }
+        }
+      }
+    },
+
+    "/pwd/trusted-devices/search": {
+      "post": {
+        "tags": ["Trusted Device"],
+        "summary": "Search trusted devices",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/searchRequest" },
+              "example": { "filters": { "userId": { "value": 1, "matchMode": "=" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching trusted-device rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/userTrustedDevice" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/trusted-devices/": {
+      "post": {
+        "tags": ["Trusted Device"],
+        "summary": "Register trusted devices",
+        "description": "The caller must hash the raw device token before submitting; `deviceTokenHash` is INSERT-only, `isPrivate`, and never returned.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/userTrustedDevice" } }
+                }
+              },
+              "example": {
+                "rows": [
+                  {
+                    "userId": 1,
+                    "deviceName": "MacBook Pro (Chrome)",
+                    "ipAddress": "192.168.1.24",
+                    "userAgent": "Mozilla/5.0 …",
+                    "expiresAt": "2026-11-11T22:00:00Z"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registered device rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/userTrustedDevice" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      },
+      "put": {
+        "tags": ["Trusted Device"],
+        "summary": "Update trusted devices",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rows"],
+                "properties": {
+                  "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/userTrustedDevice" } }
+                }
+              },
+              "example": { "rows": [{ "id": 1, "lastUsedAt": "2026-08-11T22:00:00Z" }] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated device rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": { "type": "array", "items": { "$ref": "#/components/schemas/userTrustedDevice" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/trusted-devices/archive": {
+      "post": {
+        "tags": ["Trusted Device"],
+        "summary": "Archive trusted devices by id",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/archiveRequest" } }
+          }
+        },
+        "responses": {
+          "204": { "description": "Rows archived" },
+          "400": { "$ref": "#/components/responses/badRequestError" },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/trusted-devices/{id}/history": {
+      "get": {
+        "tags": ["Trusted Device"],
+        "summary": "Get the change history for a trusted-device row",
+        "parameters": [{ "$ref": "#/components/parameters/idPath" }],
+        "responses": {
+          "200": {
+            "description": "History entries",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/historyEntry" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/notFoundError" },
+          "5XX": { "$ref": "#/components/responses/unexpectedError" }
+        }
+      }
+    },
+    "/pwd/trusted-devices/schema": {
+      "get": {
+        "tags": ["Trusted Device"],
+        "summary": "Get the user_trusted_device entity schema",
+        "responses": {
+          "200": {
+            "description": "Entity property metadata",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/entitySchemaResponse" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

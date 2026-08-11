@@ -102,6 +102,7 @@ services:
 
   gatelin_migration:
     image: ghcr.io/alten-group/gatelin-migration:${GATELIN_VERSION:-latest}
+    # platform: linux/amd64 # image is only published for amd64
     container_name: ${GATELIN_MIGRATION_HOST}
     hostname: ${GATELIN_MIGRATION_HOST}
     environment:
@@ -128,6 +129,7 @@ services:
 
   gatelin:
     image: ghcr.io/alten-group/gatelin:${GATELIN_VERSION:-latest}
+    # platform: linux/amd64 # image is only published for amd64
     container_name: ${GATELIN_HOST}
     hostname: ${GATELIN_HOST}
     environment:

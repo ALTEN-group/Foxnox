@@ -11,6 +11,10 @@
     <changeSet id="data-01" author="you">
       <sqlFile path="insert-services.sql"/>
     </changeSet>
+
+    Note: Mock user passwords are seeded at runtime by scripts/setup-mocks.sh via
+    POST /pwd/ (which uses @dwtechs/passken-express `create` to hash server-side).
+    They are intentionally not part of this Liquibase changelog.
   -->
 
 </databaseChangeLog>

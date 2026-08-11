@@ -31,20 +31,30 @@ export default new SQLEntity("pwd", [
     validator: null,
   },
   {
+    // Stored as `salt + pbkdf2(...).toString("hex")` by @dwtechs/hashitaka.
+    // Type is `string` (not `password`) because this field holds the hash, not a
+    // plaintext password: the password-strength validator would reject hex output.
+    // The hash itself is produced by @dwtechs/passken-express `create` middleware
+    // before this entity runs, so callers never send a password directly.
+    // `isPrivate: true` lets the service SELECT the hash internally (for compare
+    // and rotation) while `res/send.js` strips it from outbound responses.
     key: "pwdHash",
-    type: "password",
-    min: null,
-    max: null,
+    type: "string",
+    min: 32,
+    max: 255,
     isTypeChecked: false,
     isFilterable: false,
     requiredFor: ["POST"],
-    operations: ["INSERT", "UPDATE"],
+    operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: true,
     sanitizer: null,
     normalizer: null,
     validator: null,
   },
   {
+    // On INSERT the DB fills this with NOW() (see 03-struct/01-pwd-struct.sql),
+    // so the entity only needs it in SELECT/UPDATE — password rotations can
+    // then stamp it explicitly.
     key: "pwdUpdatedAt",
     type: "date",
     min: null,
@@ -52,7 +62,7 @@ export default new SQLEntity("pwd", [
     isTypeChecked: true,
     isFilterable: true,
     requiredFor: [],
-    operations: ["SELECT"],
+    operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
     normalizer: null,

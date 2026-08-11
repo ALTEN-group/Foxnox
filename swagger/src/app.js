@@ -6,7 +6,7 @@ app.use(helmet());
 app.disable("x-powered-by");
 
 const swaggerUi = require("swagger-ui-express");
-const doc = require("./gatelin.openapi.json");
+const doc = require("./foxnox.openapi.json");
 const swaggerOptions = {
   explorer: false,
   swaggerOptions: {

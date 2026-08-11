@@ -7,23 +7,40 @@
 
 ## First-time Setup
 
-Copy and configure the development environment file with auto-generated secrets:
+### 1. Generate the dev environment file
 
 ```sh
 ./scripts/setup-env.sh
 ```
 
-This generates `docker/conf/.env.dev` from the example file and fills in random values for all passwords and secrets.
+This generates `docker/conf/.env.dev` from the example file and fills in random values for all passwords and secrets (including `FOXNOX_PWD_SECRET`).
 
-## Development
-
-### Start
+### 2. Start the stack
 
 ```sh
 ./scripts/start-dev.sh
 ```
 
-Builds and starts all services (gateway, admin, postgres, migrations, mocks) via Docker Compose using `docker/conf/.env.dev`.
+Builds and starts all services via Docker Compose using `docker/conf/.env.dev`. The DB comes up empty of user passwords — those are seeded in the next step.
+
+### 3. Seed mock user passwords
+
+```sh
+./scripts/setup-mocks.sh
+```
+
+Waits for foxnox to be healthy, then calls `POST /pwd/` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
+
+- printed once to your terminal so you can save them for manual login;
+- substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
+
+Re-run any time you want to rotate the mock credentials — the script clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes.
+
+## Development
+
+### Start / Restart
+
+After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so you don't need to re-run `setup-mocks.sh` unless you also ran `reset-db.sh` or want to rotate credentials.
 
 ### Stop
 

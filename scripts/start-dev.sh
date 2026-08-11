@@ -12,6 +12,13 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}🚀 Starting development environment...${NC}"
 
+# The swagger container hard-`require`s foxnox.openapi.json at boot. Stub it from the
+# checked-in example on first run so start-dev succeeds before setup-mocks.sh has run.
+# setup-mocks.sh regenerates it with real plaintexts and restarts swagger.
+if [[ ! -f swagger/src/foxnox.openapi.json ]]; then
+  cp swagger/src/foxnox.openapi.example.json swagger/src/foxnox.openapi.json
+fi
+
 # Ensure bind-mount directories exist before Docker tries to mount them
 mkdir -p node_modules admin/node_modules
 

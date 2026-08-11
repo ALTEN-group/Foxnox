@@ -1,6 +1,6 @@
 // @ts-check
 import express from "express";
-import { compare } from "@dwtechs/passken-express";
+import { compare, create } from "@dwtechs/passken-express";
 const router = express.Router();
 
 import pEnt from "../entities/pwd.js";
@@ -14,8 +14,8 @@ router.post("/compare", checkCompareBody, pEnt.get, compare);
 router.post("/search", pEnt.get);
 // Get version history of a specific field
 router.get("/:id/history", history.get("pwd"));
-// Add pwds
-router.post("/", pEnt.addArraySubstack);
+// Add pwds — server generates plaintext + hash for each { userId } row: passken-express
+router.post("/", create, pEnt.addArraySubstack);
 // Update fields
 router.put("/", pEnt.updateArraySubstack);
 // Bulk archive

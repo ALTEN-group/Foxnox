@@ -82,24 +82,20 @@
   
   <!-- data -->
   <changeSet id="06-data-01" author="lcluber">
-    <comment>Password seed data</comment>
-    <sqlFile path="versions/06-data/01-pwd-data.sql" splitStatements="false"/>
+    <comment>Password policy seed data</comment>
+    <sqlFile path="versions/06-data/01-pwd-policy-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-02" author="lcluber">
-    <comment>Password policy seed data</comment>
-    <sqlFile path="versions/06-data/02-pwd-policy-data.sql" splitStatements="false"/>
+    <comment>Token types seed data</comment>
+    <sqlFile path="versions/06-data/02-token-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-03" author="lcluber">
     <comment>Security question seed data</comment>
-    <sqlFile path="versions/06-data/04-question-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/03-question-data.sql" splitStatements="false"/>
   </changeSet>
-  <changeSet id="06-data-06" author="lcluber">
+  <changeSet id="06-data-04" author="lcluber">
     <comment>Trusted device seed data</comment>
-    <sqlFile path="versions/06-data/05-trusted-device-data.sql" splitStatements="false"/>
-  </changeSet>
-  <changeSet id="06-data-07" author="lcluber">
-    <comment>Token types seed data</comment>
-    <sqlFile path="versions/06-data/03-token-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/04-trusted-device-data.sql" splitStatements="false"/>
   </changeSet>
 
 </databaseChangeLog>
