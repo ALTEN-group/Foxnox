@@ -36,11 +36,43 @@
         overflow: hidden;
         flex: 1;
         cursor: pointer;
+        display: flex;
+        align-items: center;
 
         .title-line {
           height: 100%;
           display: flex;
           align-items: center;
+        }
+
+        .wordmark {
+          // Bottom-aligned so the F and the text share a common baseline.
+          display: inline-flex;
+          align-items: flex-end;
+          line-height: 1;
+          // `1cap` below resolves against this font, so keep it pinned to the
+          // same stack the brand preview uses.
+          font-family: sans-serif;
+          font-size: 40px;
+
+          svg {
+            display: block;
+            height: 1cap;
+            width: auto;
+            flex-shrink: 0;
+          }
+
+          .wordmark-text {
+            // Scaled so the text cap-top aligns with the F top when bottom-aligned.
+            font-size: 0.78em;
+            font-family: "Bebas Neue", sans-serif;
+            letter-spacing: 0.04em;
+            line-height: 1;
+            background: linear-gradient(135deg, #ffb347 0%, #ff5500 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
         }
       }
     }
