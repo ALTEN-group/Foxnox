@@ -97,5 +97,9 @@
     <comment>Trusted device seed data</comment>
     <sqlFile path="versions/06-data/04-trusted-device-data.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="06-data-05" author="lcluber">
+    <comment>Mock token rows for admin UI (per mock user × token type)</comment>
+    <sqlFile path="versions/06-data/05-token-row-data.sql" splitStatements="false"/>
+  </changeSet>
 
 </databaseChangeLog>

@@ -38,6 +38,7 @@ export const CONFIG: AppConfig = {
   appKey: APP_KEY,
   storageKeys: AppStorageKey,
   sidenavItems: SIDENAV,
+  apiRoot: environment.apiRoot,
   apiGateway: environment.apiGateway,
   apiUsers: environment.apiUsers,
   env: environment,
@@ -65,7 +66,10 @@ export function provideAppConfig() {
         title: CONFIG.title,
         appKey: CONFIG.appKey,
         storageKeys: CONFIG.storageKeys,
-        apiPrefix: environment.apiGateway,
+        // Foxnox entity CRUD is proxied at /api/pwd/… (not /api/gateway/…).
+        // Login/sessions stay on apiGateway; preferences are rewritten in
+        // preferences.interceptor.ts onto /api/gateway/preferences/….
+        apiPrefix: environment.apiRoot,
       },
     },
     provideCrudLabels(CRUD_LABELS_CONFIG, PrimeNgTranslations),

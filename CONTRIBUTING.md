@@ -34,13 +34,13 @@ Waits for foxnox to be healthy, then calls `POST /pwd/` (which uses `@dwtechs/pa
 - printed once to your terminal so you can save them for manual login;
 - substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
 
-Re-run any time you want to rotate the mock credentials — the script clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes.
+Re-run any time you want to rotate the mock credentials — the script clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes. `./scripts/reset-db.sh` also runs this step automatically after rebuilding the stack.
 
 ## Development
 
 ### Start / Restart
 
-After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so you don't need to re-run `setup-mocks.sh` unless you also ran `reset-db.sh` or want to rotate credentials.
+After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so you don't need to re-run `setup-mocks.sh` unless you want to rotate credentials (a DB reset already re-seeds them).
 
 ### Stop
 
@@ -58,11 +58,13 @@ Stops and removes all containers and the postgres volume.
 
 ### Reset the database only
 
-Removes the postgres and migration containers and the postgres data volume. The next `start-dev.sh` will re-run all migrations from scratch.
+Removes the postgres and migration containers and the postgres data volume, restarts the stack (migrations re-run from scratch), then seeds mock user passwords via `setup-mocks.sh`.
 
 ```sh
 ./scripts/reset-db.sh
 ```
+
+Save the plaintext passwords it prints — you’ll need them to log in.
 
 ### Reset the gateway service only
 

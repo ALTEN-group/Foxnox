@@ -3,12 +3,10 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
 /**
  * Base entity-routes mapping, defining mapping between routes and their id in the database.
  *
- * NOTE: Gatelin's gateway does not have any route/permission registered for Foxnox's
- * endpoints yet (separate DB task on the Gatelin side), so there are no real ids to put
- * here. ACL route-id gating is disabled for this app (see acl.guard.ts, which no longer
- * calls AclService.hasAccess) — every authenticated user has access to every page. These
- * ids are unused placeholders kept only to satisfy AclService's type contract; update them
- * once Gatelin registers real routes for Foxnox's resources.
+ * NOTE: Foxnox entity HTTP paths are `/pwd/…` (see ENTITY_API_PATHS). Route-id ACL
+ * gating is disabled for this app (see acl.guard.ts) — every authenticated user has
+ * access to every page. These ids are unused placeholders kept only to satisfy
+ * AclService's type contract; replace them with real Gatelin route ids when wiring ACLs.
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {

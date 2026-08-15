@@ -32,13 +32,17 @@ app.use(
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
 
-// Routes — `/pwd/` uses `sendPwd` because the pwd entity carries `isPrivate` fields
-// (pwdHash, twoFactorSecret) that must be stripped before serialization. Other
-// entity routers use the plain `send`.
-app.use(`${s}`, login, sendPwd);
+// Routes — mount the more specific `/pwd/<resource>` routers BEFORE the
+// catch-all `/pwd/` password router. Express runs `app.use` middleware in
+// registration order; if `/pwd/` comes first, unmatched paths like
+// `/pwd/policies/search` fall through its `sendPwd` terminal and crash
+// (`deleteProps` on undefined rows) instead of reaching the real router.
 app.use(`${s}tokens`, token, send);
 app.use(`${s}policies`, pwdPolicy, send);
 app.use(`${s}trusted-devices`, trustedDevice, send);
+// `/pwd/` uses `sendPwd` because the pwd entity carries `isPrivate` fields
+// (pwdHash, twoFactorSecret) that must be stripped before serialization.
+app.use(`${s}`, login, sendPwd);
 
 // Error handling
 errorHandler(app);

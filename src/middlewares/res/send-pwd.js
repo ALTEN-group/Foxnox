@@ -15,6 +15,11 @@ import pEnt from "../../entities/pwd.js";
  * @param {import('express').Response} res
  */
 export function sendPwd(_req, res) {
-  const rows = deleteProps(res.locals.rows, pEnt.privateProps);
+  const raw = res.locals.rows;
+  // No matched handler left rows (e.g. fall-through) — don't crash deleteProps.
+  if (!Array.isArray(raw)) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  const rows = deleteProps(raw, pEnt.privateProps);
   res.status(200).json({ rows, total: res.locals.total });
 }

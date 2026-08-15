@@ -3,7 +3,17 @@ import { isArray } from "@dwtechs/checkard";
 import { Rows, TableConfig } from "@dwtechs/ngx-crud-builder";
 import { map } from "rxjs";
 
+/**
+ * CRUD apiPrefix is `/api/` (Foxnox entity paths). Table preferences still live
+ * on Gatelin at `/api/gateway/preferences/…`, so rewrite those requests here.
+ */
 export const preferencesInterceptor: HttpInterceptorFn = (req, next) => {
+  if (/\/preferences\//.test(req.url) && !/\/gateway\/preferences\//.test(req.url)) {
+    req = req.clone({
+      url: req.url.replace(/\/preferences\//, "/gateway/preferences/"),
+    });
+  }
+
   const isPreferenceRequest =
     req.method === "GET" && /\/preferences\//.test(req.url);
 

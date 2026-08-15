@@ -19,5 +19,9 @@
     <comment>Foxnox routes</comment>
     <sqlFile path="03-route.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-04" author="lcluber">
+    <comment>Foxnox route permissions for Super admin / Admin</comment>
+    <sqlFile path="04-permission.sql"/>
+  </changeSet>
 
 </databaseChangeLog>
