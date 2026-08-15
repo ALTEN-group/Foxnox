@@ -14,15 +14,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@dwtechs/antity-pgsql": "0.17.4",
+    "@dwtechs/antity-pgsql": "0.23.0",
     "@dwtechs/checkard": "3.6.1",
     "@dwtechs/errandler-express": "0.1.1",
-    "@dwtechs/healix-express": "0.1.1",
+    "@dwtechs/healix-express": "0.2.0",
     "@dwtechs/servpico-express": "0.3.1",
     "@dwtechs/sparray": "0.2.1",
     "@dwtechs/passken-express": "0.7.0",
-    "@dwtechs/winstan": "0.7.1" ,
-    "@dwtechs/winstan-plugin-express-perf": "0.2.1",
+    "@dwtechs/winstan": "0.7.1",
+    "@dwtechs/winstan-plugin-express-perf": "0.3.0",
     "express": "5.1.0"
   },
   "devDependencies": {

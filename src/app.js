@@ -1,8 +1,9 @@
 // @ts-check
-import express from "express";
-import { endTimer, startTimer } from "@dwtechs/winstan-plugin-express-perf";
+import { execute } from "@dwtechs/antity-pgsql";
 import { errorHandler } from "@dwtechs/errandler-express";
-import healixRouter from "@dwtechs/healix-express";
+import { healix } from "@dwtechs/healix-express";
+import { startTimer } from "@dwtechs/winstan-plugin-express-perf";
+import express from "express";
 
 const app = express();
 app.disable("x-powered-by");
@@ -20,7 +21,14 @@ import trustedDevice from "./routes/user-trusted-device.js";
 const s = "/pwd/";
 
 app.use(express.json({ limit: "100kb" }));
-app.use(`${s}health`, healixRouter);
+app.use(
+  `${s}health`,
+  healix({
+    // Liveness stays dependency-free; readiness proves the service can still
+    // reach Postgres, so an instance that lost the database leaves rotation.
+    checks: { db: () => execute("SELECT 1", [], null) },
+  }),
+);
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
 
@@ -31,9 +39,6 @@ app.use(`${s}`, login, sendPwd);
 app.use(`${s}tokens`, token, send);
 app.use(`${s}policies`, pwdPolicy, send);
 app.use(`${s}trusted-devices`, trustedDevice, send);
-
-// Performance measurement ends
-app.use(endTimer);
 
 // Error handling
 errorHandler(app);

@@ -167,7 +167,7 @@
         "properties": {
           "pagination": { "type": "boolean", "default": false, "description": "When true, the response includes `total` = matching row count (before pagination)" },
           "first": { "type": "integer", "format": "int32", "minimum": 0, "default": 0, "description": "Offset (rows to skip)" },
-          "rows": { "type": "integer", "format": "int32", "minimum": 1, "default": 10, "description": "Page size" },
+          "limit": { "type": "integer", "format": "int32", "minimum": 1, "default": 10, "description": "Page size" },
           "sortField": { "type": "string", "default": "id" },
           "sortOrder": { "type": "string", "enum": ["ASC", "DESC"], "default": "ASC" },
           "filters": {
@@ -332,7 +332,7 @@
               "example": {
                 "pagination": true,
                 "first": 0,
-                "rows": 10,
+                "limit": 10,
                 "sortField": "userId",
                 "sortOrder": "ASC",
                 "filters": { "userId": { "value": 1, "matchMode": "=" } }
