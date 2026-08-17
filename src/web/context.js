@@ -1,6 +1,7 @@
 // @ts-check
 import fs from "node:fs";
 import path from "node:path";
+import { getBranding } from "./branding.js";
 import { LOCALES_ROOT, WEB_PUBLIC_BASE } from "./engine.js";
 
 /** @type {Map<string, object>} */
@@ -40,6 +41,7 @@ export function resolveLang(req) {
 /**
  * Build the Handlebars context for a workflow page.
  * Locale JSON shape matches the marketing website pattern (`site`, `pages.*`).
+ * Branding comes from WEB_BRAND_* env (one brand per deployment).
  *
  * @param {import('express').Request} req
  * @param {string} pageKey key under locale.pages
@@ -54,11 +56,18 @@ export function buildViewContext(req, pageKey, extra = {}) {
   }
 
   const base = WEB_PUBLIC_BASE;
+  const brand = getBranding();
 
   return {
     lang: locale.lang,
     dir: locale.dir,
-    site: locale.site,
+    // Prefer env branding over locale site defaults for name/tagline.
+    site: {
+      ...locale.site,
+      name: brand.name,
+      tagline: brand.tagline,
+    },
+    brand,
     common: locale.common,
     page,
     assetBase: base,

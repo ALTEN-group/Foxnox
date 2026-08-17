@@ -84,6 +84,28 @@ Uses an active `pwd_policy` for strength rules once the backend is wired. Not a 
 | Confirm | `GET /unlock/confirm?token=…` | User opens an unlock link (or equivalent) to clear the lock. |
 | Done / Invalid | — | Unlocked, or link expired. |
 
+## Workflow branding
+
+One brand per Foxnox deployment, configured with `WEB_BRAND_*` env vars
+(see `docker/conf/.env.dev.example`):
+
+| Variable | Purpose |
+|---|---|
+| `WEB_BRAND_NAME` | Product / company name in the header |
+| `WEB_BRAND_TAGLINE` | Short line under the name |
+| `WEB_BRAND_MARK` | Letter mark when no logo is set |
+| `WEB_BRAND_LOGO_URL` | `https://…` or root-relative logo URL |
+| `WEB_BRAND_LOGO_ALT` | Logo alt text |
+| `WEB_BRAND_PRIMARY_COLOR` | Main accent (`#RGB` / `#RRGGBB`) |
+| `WEB_BRAND_PRIMARY_HOVER_COLOR` | Button hover accent |
+| `WEB_BRAND_SECONDARY_COLOR` | Muted text / secondary |
+| `WEB_BRAND_BACKGROUND_COLOR` | Page background |
+| `WEB_BRAND_FOOTER_TEXT` | Optional footer copy |
+| `WEB_BRAND_FOOTER_URL` | Optional footer link |
+
+Colors are sanitized to hex and applied as CSS variables on every workflow page.
+This is deployment-scoped white-labeling; multi-tenant per-consumer brands can come later.
+
 ## Out of scope here
 
 - **Email / backup-email verification** → user management service  

@@ -4,22 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#f4f6f8">
+  <meta name="theme-color" content="{{brand.backgroundColor}}">
   <title>{{page.title}}</title>
   <link rel="stylesheet" href="{{assetBase}}/assets/css/workflows.css">
+  <style>:root { {{brand.cssVars}} }</style>
 </head>
 <body>
   <a class="visually-hidden-focusable" href="#main">{{common.skipToContent}}</a>
   <header class="shell__header">
     <div class="shell__brand">
-      <span class="shell__mark" aria-hidden="true">F</span>
-      <span class="shell__name">{{site.name}}</span>
+      {{#if brand.hasLogo}}
+      <img class="shell__logo" src="{{brand.logoUrl}}" alt="{{brand.logoAlt}}">
+      {{else}}
+      <span class="shell__mark" aria-hidden="true">{{brand.mark}}</span>
+      {{/if}}
+      <span class="shell__name">{{brand.name}}</span>
     </div>
-    <p class="shell__tagline">{{site.tagline}}</p>
+    {{#if brand.tagline}}
+    <p class="shell__tagline">{{brand.tagline}}</p>
+    {{/if}}
   </header>
   <main id="main" class="shell__main" tabindex="-1">
     {{{body}}}
   </main>
+  {{#if brand.hasFooter}}
+  <footer class="shell__footer">
+    {{#if brand.footerUrl}}
+    <a href="{{brand.footerUrl}}">{{brand.footerText}}</a>
+    {{else}}
+    <p>{{brand.footerText}}</p>
+    {{/if}}
+  </footer>
+  {{/if}}
   <script src="{{assetBase}}/assets/js/workflows.js" defer></script>
 </body>
 </html>
