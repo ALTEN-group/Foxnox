@@ -1,0 +1,34 @@
+<section class="card">
+  <h1 class="card__title">{{page.heading}}</h1>
+  <p class="card__subtitle">{{page.subtitle}}</p>
+
+  <form class="form" method="POST" action="{{urls.securityQuestionsSetup}}" novalidate>
+    <input type="hidden" name="lang" value="{{lang}}">
+    <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+
+    {{#each form.slots}}
+    <fieldset class="form-fieldset">
+      <legend>{{../page.questionLabel}} {{slot}}</legend>
+      <div class="form-group">
+        <label for="question-{{slot}}">{{../page.questionLabel}}</label>
+        <select id="question-{{slot}}" name="questionIds" required>
+          <option value="">—</option>
+          {{#each ../form.catalog}}
+          <option value="{{id}}">{{label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="answer-{{slot}}">{{../page.answerLabel}}</label>
+        <input type="text" id="answer-{{slot}}" name="answers" autocomplete="off" required>
+      </div>
+    </fieldset>
+    {{/each}}
+
+    {{#if error}}
+    <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
+    {{/if}}
+
+    <button type="submit" class="btn btn--primary btn--block">{{page.submit}}</button>
+  </form>
+</section>

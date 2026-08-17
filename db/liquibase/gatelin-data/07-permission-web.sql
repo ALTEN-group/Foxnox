@@ -1,10 +1,6 @@
 --
--- Grant Foxnox route access to Super admin (1) and Admin (2).
--- Operations come from each route's declared route_operation rows
--- (see 03-route.sql), so this stays in sync when routes are added.
---
--- Admin UI ACL mapping lives in admin/src/app/core/app-config/app.acls.ts
--- and keys off the search/history/create/update/archive route IDs from 03-route.sql.
+-- Grant protected web workflow routes to Super admin (1) and Admin (2).
+-- Unprotected routes (recovery + 2FA verify + assets) need no role grants.
 --
 
 INSERT INTO permissions ("roleId", "routeId", "operationId", fields, "conditionId", "creatorId", "creatorName")
@@ -22,6 +18,8 @@ JOIN service s ON s.id = res."serviceId"
 JOIN route_operation ro ON ro."routeId" = r.id
 CROSS JOIN (VALUES (1), (2)) AS roles(id)
 WHERE s.name = 'foxnox'
+  AND res.name = 'pwd/web'
+  AND r.protected = true
   AND NOT EXISTS (
     SELECT 1
     FROM permission p

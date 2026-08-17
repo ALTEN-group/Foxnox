@@ -242,10 +242,12 @@ services:
       PWD_UPPERCASE_POLICY: ${FOXNOX_PWD_UPPERCASE_LEGACY}
       PWD_LOWERCASE_POLICY: ${FOXNOX_PWD_LOWERCASE_LEGACY}
       PWD_SYMBOLS_POLICY: ${FOXNOX_PWD_SYMBOLS_LEGACY}
+      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
     networks:
       - internal
     volumes:
       - ${PWD}/src:/usr/src/app/src
+      - ${PWD}/web:/usr/src/app/web
       - ${PWD}/tests:/usr/src/app/tests
       - ${PWD}/jest.config.js:/usr/src/app/jest.config.js
       - ${PWD}/babel.config.json:/usr/src/app/babel.config.json

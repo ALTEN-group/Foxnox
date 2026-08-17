@@ -1,0 +1,31 @@
+<section class="card">
+  <h1 class="card__title">{{page.heading}}</h1>
+  <p class="card__subtitle">{{page.subtitle}}</p>
+
+  <form class="form" method="POST" action="{{urls.trustedDevicePrompt}}" novalidate>
+    <input type="hidden" name="lang" value="{{lang}}">
+    <input type="hidden" name="challenge" value="{{form.challenge}}">
+    <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+
+    <div class="form-group">
+      <label for="deviceName">{{page.deviceNameLabel}}</label>
+      <input
+        type="text"
+        id="deviceName"
+        name="deviceName"
+        autocomplete="off"
+        placeholder="{{page.deviceNamePlaceholder}}"
+        maxlength="100"
+      >
+    </div>
+
+    {{#if error}}
+    <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
+    {{/if}}
+
+    <div class="btn-row">
+      <button type="submit" name="trust" value="yes" class="btn btn--primary">{{page.submitYes}}</button>
+      <button type="submit" name="trust" value="no" class="btn btn--secondary">{{page.submitNo}}</button>
+    </div>
+  </form>
+</section>

@@ -23,5 +23,25 @@
     <comment>Foxnox route permissions for Super admin / Admin</comment>
     <sqlFile path="04-permission.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-05" author="lcluber">
+    <comment>Foxnox web workflow resource</comment>
+    <sqlFile path="05-resource-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-06" author="lcluber">
+    <comment>Foxnox web workflow routes (recovery + 2FA pages)</comment>
+    <sqlFile path="06-route-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-07" author="lcluber">
+    <comment>Foxnox protected web workflow permissions</comment>
+    <sqlFile path="07-permission-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-08" author="lcluber">
+    <comment>Foxnox extra web workflows (recovery, questions, devices, unlock)</comment>
+    <sqlFile path="08-route-web-extra.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-09" author="lcluber">
+    <comment>Permissions for newly protected web workflow routes</comment>
+    <sqlFile path="07-permission-web.sql"/>
+  </changeSet>
 
 </databaseChangeLog>

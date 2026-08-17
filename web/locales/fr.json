@@ -1,0 +1,218 @@
+{
+  "lang": "fr",
+  "dir": "ltr",
+  "site": {
+    "name": "Foxnox",
+    "tagline": "Sécurité du compte"
+  },
+  "common": {
+    "skipToContent": "Aller au contenu principal",
+    "continue": "Continuer",
+    "submit": "Envoyer",
+    "back": "Retour",
+    "required": "Obligatoire",
+    "cancel": "Annuler",
+    "revoke": "Révoquer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "pages": {
+    "recoverRequest": {
+      "title": "Réinitialiser votre mot de passe — Foxnox",
+      "heading": "Mot de passe oublié ?",
+      "subtitle": "Saisissez l’adresse e-mail de votre compte. Si elle existe, nous enverrons un lien de réinitialisation.",
+      "emailLabel": "E-mail",
+      "submit": "Envoyer le lien",
+      "honeypotLabel": "Site web",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+      "errorInvalidEmail": "Saisissez une adresse e-mail valide."
+    },
+    "recoverSent": {
+      "title": "Vérifiez votre e-mail — Foxnox",
+      "heading": "Vérifiez votre e-mail",
+      "body": "Si un compte existe pour cette adresse, vous recevrez un message avec un lien pour réinitialiser votre mot de passe. Le lien expire rapidement."
+    },
+    "recoverReset": {
+      "title": "Choisir un nouveau mot de passe — Foxnox",
+      "heading": "Choisir un nouveau mot de passe",
+      "subtitle": "Choisissez un mot de passe fort que vous n’avez pas encore utilisé ici.",
+      "passwordLabel": "Nouveau mot de passe",
+      "confirmLabel": "Confirmer le mot de passe",
+      "submit": "Mettre à jour",
+      "errorMismatch": "Les mots de passe ne correspondent pas.",
+      "errorWeak": "Le mot de passe ne respecte pas la politique de sécurité.",
+      "errorInvalidToken": "Ce lien de réinitialisation est invalide ou a expiré.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "recoverDone": {
+      "title": "Mot de passe mis à jour — Foxnox",
+      "heading": "Mot de passe mis à jour",
+      "body": "Votre mot de passe a été modifié. Vous pouvez vous connecter avec le nouveau."
+    },
+    "recoverInvalid": {
+      "title": "Lien expiré — Foxnox",
+      "heading": "Ce lien n’est plus valide",
+      "body": "Le lien de réinitialisation est manquant, invalide ou a expiré. Demandez-en un nouveau pour continuer.",
+      "cta": "Demander un nouveau lien"
+    },
+    "twofaVerify": {
+      "title": "Authentification à deux facteurs — Foxnox",
+      "heading": "Saisissez votre code",
+      "subtitle": "Ouvrez votre application d’authentification et saisissez le code à 6 chiffres.",
+      "codeLabel": "Code d’authentification",
+      "submit": "Vérifier",
+      "errorInvalid": "Ce code n’est pas valide. Réessayez.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+      "lostAccess": "Plus accès à votre authenticator ?"
+    },
+    "twofaSetup": {
+      "title": "Configurer l’authentification à deux facteurs — Foxnox",
+      "heading": "Configurer l’authentification à deux facteurs",
+      "subtitle": "Scannez le QR code avec votre application, puis saisissez un code pour confirmer.",
+      "secretLabel": "Ou saisissez cette clé manuellement",
+      "codeLabel": "Code de confirmation",
+      "submit": "Activer la 2FA",
+      "errorInvalid": "Ce code n’est pas valide. Réessayez.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+      "qrPlaceholder": "Le QR code apparaîtra ici une fois branché au backend."
+    },
+    "twofaDone": {
+      "title": "Double authentification activée — Foxnox",
+      "heading": "L’authentification à deux facteurs est activée",
+      "body": "Votre compte exige désormais un code de vérification à la connexion."
+    },
+    "twofaDisabled": {
+      "title": "Double authentification désactivée — Foxnox",
+      "heading": "L’authentification à deux facteurs est désactivée",
+      "body": "L’exigence d’authenticator a été retirée. Vous pourrez la réactiver après connexion."
+    },
+    "accountRecoverRequest": {
+      "title": "Récupérer votre compte — Foxnox",
+      "heading": "Plus accès à l’authentification à deux facteurs ?",
+      "subtitle": "Saisissez l’e-mail de votre compte. S’il existe, une procédure de récupération démarrera.",
+      "emailLabel": "E-mail",
+      "submit": "Démarrer la récupération",
+      "honeypotLabel": "Site web",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+      "errorInvalidEmail": "Saisissez une adresse e-mail valide."
+    },
+    "accountRecoverSent": {
+      "title": "Récupération démarrée — Foxnox",
+      "heading": "Vérifiez votre e-mail",
+      "body": "Si un compte existe pour cette adresse, vous recevrez un lien de récupération. Utilisez-le avec vos questions de sécurité pour retrouver l’accès."
+    },
+    "accountRecoverChallenge": {
+      "title": "Prouver votre identité — Foxnox",
+      "heading": "Répondez à vos questions de sécurité",
+      "subtitle": "Des réponses correctes permettent de désactiver la 2FA pour vous reconnecter.",
+      "answerLabel": "Votre réponse",
+      "submit": "Continuer",
+      "errorInvalid": "Une ou plusieurs réponses sont incorrectes. Réessayez.",
+      "errorInvalidToken": "Ce lien de récupération est invalide ou a expiré.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "accountRecoverDone": {
+      "title": "Compte récupéré — Foxnox",
+      "heading": "Accès rétabli",
+      "body": "L’authentification à deux facteurs a été désactivée. Connectez-vous avec votre mot de passe, puis réactivez la 2FA dès que possible."
+    },
+    "securityQuestionsSetup": {
+      "title": "Questions de sécurité — Foxnox",
+      "heading": "Configurer les questions de sécurité",
+      "subtitle": "Choisissez des questions que vous seul pouvez répondre. Elles aident à récupérer le compte en cas de perte de la 2FA.",
+      "questionLabel": "Question",
+      "answerLabel": "Réponse",
+      "submit": "Enregistrer",
+      "errorIncomplete": "Sélectionnez une question et une réponse pour chaque ligne.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "securityQuestionsDone": {
+      "title": "Questions enregistrées — Foxnox",
+      "heading": "Questions de sécurité enregistrées",
+      "body": "Vos réponses sont stockées de façon sécurisée et serviront lors d’une récupération de compte."
+    },
+    "trustedDevicePrompt": {
+      "title": "Se souvenir de cet appareil — Foxnox",
+      "heading": "Faire confiance à cet appareil ?",
+      "subtitle": "Les appareils de confiance peuvent ignorer la 2FA pendant une durée limitée.",
+      "deviceNameLabel": "Nom de l’appareil (optionnel)",
+      "deviceNamePlaceholder": "ex. Ordinateur personnel",
+      "submitYes": "Faire confiance",
+      "submitNo": "Pas maintenant",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "trustedDeviceDone": {
+      "title": "Appareil de confiance — Foxnox",
+      "heading": "Appareil enregistré",
+      "body": "Cet appareil ne demandera pas de second facteur avant la fin de la période de confiance."
+    },
+    "trustedDeviceSkipped": {
+      "title": "Continuer sans confiance — Foxnox",
+      "heading": "Sans enregistrement",
+      "body": "Un code de vérification sera demandé à la prochaine connexion depuis cet appareil."
+    },
+    "trustedDevicesManage": {
+      "title": "Appareils de confiance — Foxnox",
+      "heading": "Appareils de confiance",
+      "subtitle": "Appareils autorisés à ignorer la 2FA. Révoquez ceux que vous n’utilisez plus.",
+      "empty": "Aucun appareil de confiance.",
+      "columns": {
+        "name": "Appareil",
+        "lastUsed": "Dernière utilisation",
+        "expires": "Expiration",
+        "actions": "Actions"
+      },
+      "unnamed": "Appareil sans nom",
+      "revokeConfirm": "Révoquer la confiance pour cet appareil ?",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "trustedDeviceRevoked": {
+      "title": "Confiance révoquée — Foxnox",
+      "heading": "Confiance révoquée",
+      "body": "Cet appareil exigera un code de vérification à la prochaine connexion."
+    },
+    "passwordExpired": {
+      "title": "Mot de passe expiré — Foxnox",
+      "heading": "Votre mot de passe a expiré",
+      "subtitle": "Choisissez un nouveau mot de passe pour continuer. Il doit respecter la politique de sécurité.",
+      "passwordLabel": "Nouveau mot de passe",
+      "confirmLabel": "Confirmer le mot de passe",
+      "submit": "Mettre à jour",
+      "errorMismatch": "Les mots de passe ne correspondent pas.",
+      "errorWeak": "Le mot de passe ne respecte pas la politique de sécurité.",
+      "errorInvalidToken": "Cette session n’est plus valide. Reconnectez-vous.",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "passwordExpiredDone": {
+      "title": "Mot de passe mis à jour — Foxnox",
+      "heading": "Mot de passe mis à jour",
+      "body": "Votre mot de passe est à nouveau valide. Vous pouvez continuer."
+    },
+    "unlockRequest": {
+      "title": "Compte verrouillé — Foxnox",
+      "heading": "Compte temporairement verrouillé",
+      "subtitle": "Trop de tentatives de connexion échouées. Saisissez votre e-mail pour demander un déverrouillage, ou attendez la fin du verrouillage.",
+      "emailLabel": "E-mail",
+      "submit": "Demander le déverrouillage",
+      "honeypotLabel": "Site web",
+      "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+      "errorInvalidEmail": "Saisissez une adresse e-mail valide."
+    },
+    "unlockSent": {
+      "title": "Déverrouillage demandé — Foxnox",
+      "heading": "Demande envoyée",
+      "body": "Si ce compte est verrouillé, un lien de déverrouillage ou une levée automatique suivra. Vous pouvez aussi attendre la fin du délai."
+    },
+    "unlockDone": {
+      "title": "Compte déverrouillé — Foxnox",
+      "heading": "Compte déverrouillé",
+      "body": "Vous pouvez vous reconnecter. De nouveaux échecs reverrouilleront le compte."
+    },
+    "unlockInvalid": {
+      "title": "Lien invalide — Foxnox",
+      "heading": "Ce lien de déverrouillage n’est plus valide",
+      "body": "Demandez un nouveau déverrouillage ou attendez la fin de la période de verrouillage.",
+      "cta": "Demander un déverrouillage"
+    }
+  }
+}

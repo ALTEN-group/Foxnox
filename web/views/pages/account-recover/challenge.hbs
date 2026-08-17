@@ -1,0 +1,30 @@
+<section class="card">
+  <h1 class="card__title">{{page.heading}}</h1>
+  <p class="card__subtitle">{{page.subtitle}}</p>
+
+  <form class="form" method="POST" action="{{urls.accountRecoverChallenge}}" novalidate>
+    <input type="hidden" name="token" value="{{form.token}}">
+    <input type="hidden" name="lang" value="{{lang}}">
+    <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+
+    {{#each form.questions}}
+    <div class="form-group">
+      <label for="answer-{{id}}">{{label}}</label>
+      <input type="hidden" name="questionIds" value="{{id}}">
+      <input
+        type="text"
+        id="answer-{{id}}"
+        name="answers"
+        autocomplete="off"
+        required
+      >
+    </div>
+    {{/each}}
+
+    {{#if error}}
+    <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
+    {{/if}}
+
+    <button type="submit" class="btn btn--primary btn--block">{{page.submit}}</button>
+  </form>
+</section>

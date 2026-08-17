@@ -38,6 +38,24 @@ Re-run any time you want to rotate the mock credentials — the script clears th
 
 ## Development
 
+### Account workflow pages (Handlebars)
+
+See [README.md — Account workflows](./README.md#account-workflows) for use cases and page maps.
+
+Operational paths (local Docker base `http://localhost:8100`):
+
+| Flow | Path |
+|---|---|
+| Password reset | `/api/pwd/web/recover`, `/api/pwd/web/recover/reset?token=…` |
+| 2FA | `/api/pwd/web/2fa/verify`, `/api/pwd/web/2fa/setup` |
+| Lost 2FA recovery | `/api/pwd/web/account-recover`, `…/challenge?token=…` |
+| Security questions | `/api/pwd/web/security-questions` |
+| Trusted devices | `/api/pwd/web/trusted-devices/prompt`, `/api/pwd/web/trusted-devices` |
+| Expired password | `/api/pwd/web/password/expired?challenge=…` |
+| Unlock | `/api/pwd/web/unlock`, `/api/pwd/web/unlock/confirm?token=…` |
+
+Requires Gatelin `gatelin-data` changesets 05–09. Handler backends are still stubbed.
+
 ### Start / Restart
 
 After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so you don't need to re-run `setup-mocks.sh` unless you want to rotate credentials (a DB reset already re-seeds them).

@@ -1,9 +1,16 @@
 // @ts-check
+import path from "node:path";
 import { execute } from "@dwtechs/antity-pgsql";
 import { errorHandler } from "@dwtechs/errandler-express";
 import { healix } from "@dwtechs/healix-express";
 import { startTimer } from "@dwtechs/winstan-plugin-express-perf";
 import express from "express";
+import {
+  configureWebEngine,
+  PUBLIC_ROOT,
+  WEB_MOUNT,
+} from "./web/engine.js";
+import webRoutes from "./web/routes.js";
 
 const app = express();
 app.disable("x-powered-by");
@@ -20,6 +27,8 @@ import trustedDevice from "./routes/user-trusted-device.js";
 
 const s = "/pwd/";
 
+configureWebEngine(app);
+
 app.use(express.json({ limit: "100kb" }));
 app.use(
   `${s}health`,
@@ -31,6 +40,13 @@ app.use(
 );
 // performance measurement starts for any call to the following routes
 app.use(startTimer);
+
+// Account workflow pages (Handlebars SSR) — before JSON CRUD routers.
+app.use(
+  `${WEB_MOUNT}/assets`,
+  express.static(path.join(PUBLIC_ROOT, "assets")),
+);
+app.use(WEB_MOUNT, webRoutes);
 
 // Routes — mount the more specific `/pwd/<resource>` routers BEFORE the
 // catch-all `/pwd/` password router. Express runs `app.use` middleware in

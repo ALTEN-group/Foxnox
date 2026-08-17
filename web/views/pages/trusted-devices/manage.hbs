@@ -1,0 +1,42 @@
+<section class="card card--wide">
+  <h1 class="card__title">{{page.heading}}</h1>
+  <p class="card__subtitle">{{page.subtitle}}</p>
+
+  {{#if form.devices.length}}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{{page.columns.name}}</th>
+          <th>{{page.columns.lastUsed}}</th>
+          <th>{{page.columns.expires}}</th>
+          <th>{{page.columns.actions}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each form.devices}}
+        <tr>
+          <td>{{#if deviceName}}{{deviceName}}{{else}}{{../page.unnamed}}{{/if}}</td>
+          <td>{{lastUsedAt}}</td>
+          <td>{{expiresAt}}</td>
+          <td>
+            <form method="POST" action="{{../urls.trustedDevicesManage}}" onsubmit="return confirm('{{../page.revokeConfirm}}');">
+              <input type="hidden" name="lang" value="{{../lang}}">
+              <input type="hidden" name="deviceId" value="{{id}}">
+              <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+              <button type="submit" class="btn btn--danger btn--small">{{../common.revoke}}</button>
+            </form>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <p class="card__body">{{page.empty}}</p>
+  {{/if}}
+
+  {{#if error}}
+  <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
+  {{/if}}
+</section>

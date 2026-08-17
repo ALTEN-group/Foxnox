@@ -1,0 +1,35 @@
+<section class="card">
+  <h1 class="card__title">{{page.heading}}</h1>
+  <p class="card__subtitle">{{page.subtitle}}</p>
+
+  <form class="form" method="POST" action="{{urls.twofaVerify}}" novalidate>
+    <input type="hidden" name="lang" value="{{lang}}">
+    <input type="hidden" name="challenge" value="{{form.challenge}}">
+    <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+
+    <div class="form-group">
+      <label for="code">{{page.codeLabel}}</label>
+      <input
+        type="text"
+        id="code"
+        name="code"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        pattern="[0-9]{6}"
+        maxlength="6"
+        required
+        class="form-input--code"
+      >
+    </div>
+
+    {{#if error}}
+    <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
+    {{/if}}
+
+    <button type="submit" class="btn btn--primary btn--block">{{page.submit}}</button>
+  </form>
+
+  <p class="card__footer">
+    <a href="{{urls.accountRecoverRequest}}">{{page.lostAccess}}</a>
+  </p>
+</section>
