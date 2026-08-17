@@ -55,8 +55,11 @@ export class LoginComponent implements AfterViewInit {
   private readonly snackbarService = inject(SnackbarService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly routingListener = inject(RoutingListener);
+  private readonly appConfig = inject(APP_CONFIG);
 
-  public readonly userServerUrl = inject(APP_CONFIG).apiGateway;
+  public readonly userServerUrl = this.appConfig.apiGateway;
+  /** Foxnox password-recovery workflow (Handlebars SSR). */
+  public readonly forgotPasswordUrl = `${this.appConfig.webBase}/recover`;
 
   public isPasswordHidden = true;
   public isLoading = false;

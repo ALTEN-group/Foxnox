@@ -2,9 +2,6 @@ export default {
   // Test environment
   testEnvironment: "node",
 
-  // Enable experimental ESM support
-  extensionsToTreatAsEsm: [".js"],
-
   // Stop running tests after failures
   bail: true,
 
@@ -17,13 +14,13 @@ export default {
   // Test match patterns
   testMatch: ["**/tests/**/*.test.js", "**/?(*.)+(spec|test).js"],
 
-  // Native ES module support
+  // Babel-transform our code and ESM @dwtechs deps (hashitaka → checkard)
   transform: {
-    "^.+\\.js$": ["babel-jest", { useESM: true }],
+    "^.+\\.js$": "babel-jest",
   },
 
   // Transform ES modules from node_modules
-  transformIgnorePatterns: ["node_modules/(?!(@dwtechs|@babel)/)"],
+  transformIgnorePatterns: ["/node_modules/(?!(@dwtechs)/)"],
 
   // Module name mapping for internal packages
   moduleNameMapper: {
@@ -34,9 +31,6 @@ export default {
     "^res$": "<rootDir>/../common/libs/src/res/res.js",
     "^@internal/req$": "<rootDir>/../common/libs/src/req/req.js",
   },
-
-  // Setup files
-  setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
 
   // Coverage settings
   collectCoverageFrom: ["src/**/*.js", "!src/app.js", "!**/node_modules/**"],

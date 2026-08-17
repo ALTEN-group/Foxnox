@@ -10,6 +10,8 @@ export interface AppConfig {
   apiRoot: string;
   apiGateway: string;
   apiUsers: string;
+  /** Foxnox SSR workflows base (`/api/pwd/web`). */
+  webBase: string;
   env: Partial<Environment>;
 }
 
@@ -21,6 +23,7 @@ const defaultValue: AppConfig = {
   apiRoot: "/api/",
   apiGateway: "/api/gateway/",
   apiUsers: "/api/users/",
+  webBase: "/api/pwd/web",
   env: {},
 };
 

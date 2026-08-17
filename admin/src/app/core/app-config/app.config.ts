@@ -41,6 +41,9 @@ export const CONFIG: AppConfig = {
   apiRoot: environment.apiRoot,
   apiGateway: environment.apiGateway,
   apiUsers: environment.apiUsers,
+  webBase:
+    environment.webBase ??
+    `${environment.apiRoot.replace(/\/?$/, "/")}pwd/web`,
   env: environment,
 };
 

@@ -101,5 +101,9 @@
     <comment>Mock token rows for admin UI (per mock user × token type)</comment>
     <sqlFile path="versions/06-data/05-token-row-data.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="06-data-06" author="lcluber">
+    <comment>Account unlock token type for web unlock workflow</comment>
+    <sqlFile path="versions/06-data/06-token-type-unlock.sql" splitStatements="false"/>
+  </changeSet>
 
 </databaseChangeLog>

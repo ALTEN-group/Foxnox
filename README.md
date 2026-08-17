@@ -12,7 +12,9 @@ User profile concerns such as **email verification** live in user management, no
 Pages live in `web/views/pages/<workflow>/`, with EN/FR copy in `web/locales/`.  
 In local Docker they are served at `http://localhost:8100/api/pwd/web/…`.
 
-Backend steps (token create/consume, TOTP, hashing, mail) are still stubbed in handlers; the page flows and Gatelin routes are in place.
+Backend steps: token create / deep-link / log-notifier are wired for recover,
+account-recover, and unlock. Password rotation, TOTP, and the real mail service
+are still TODO.
 
 ### Password recovery (`recover/`)
 
@@ -84,6 +86,23 @@ Uses an active `pwd_policy` for strength rules once the backend is wired. Not a 
 | Confirm | `GET /unlock/confirm?token=…` | User opens an unlock link (or equivalent) to clear the lock. |
 | Done / Invalid | — | Unlocked, or link expired. |
 
+### Token → deep link → notify
+
+Email-driven workflows share this pipeline:
+
+1. Resolve `email` → `userId` via `USER_SEARCH_URL` (ms_user)
+2. Create a typed `token` row (`@dwtechs/hashitaka` HMAC of plaintext stored; plaintext only in the link)
+3. Build an absolute URL with `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE`
+4. Call `notifyUser` — currently a **log notifier** (prints the link); swap for the mail service later
+
+| Template | Token type | Deep link |
+|---|---|---|
+| `pwd-reset` | Password reset | `/recover/reset?token=…` |
+| `account-recover` | Account recovery | `/account-recover/challenge?token=…` |
+| `account-unlock` | Account unlock | `/unlock/confirm?token=…` |
+
+In local Docker, submit a recover form for `admin@example.com` and copy the `url` from the Foxnox container logs.
+
 ## Workflow branding
 
 One brand per Foxnox deployment, configured with `WEB_BRAND_*` env vars
@@ -115,3 +134,9 @@ This is deployment-scoped white-labeling; multi-tenant per-consumer brands can c
 
 - Dev setup and stack commands: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Data model: [doc/erd.md](./doc/erd.md)
+
+### Linked from the admin UI
+
+| Admin surface | Workflow |
+|---|---|
+| Login → “Mot de passe oublié ?” | `/pwd/web/recover` |

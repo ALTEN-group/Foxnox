@@ -1,12 +1,15 @@
 // @ts-check
-import { buildViewContext } from "../context.js";
+import { buildViewContext, resolveLang } from "../context.js";
 import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
+import { issueWorkflowNotification } from "../issue-notification.js";
+import {
+  consumeWorkflowToken,
+  findValidWorkflowToken,
+  TOKEN_TYPES,
+} from "../../services/token.js";
 
 /**
  * Password recovery workflow pages.
- *
- * Backend token/email/password-update logic is intentionally stubbed for now:
- * the UI flow and route surface are real; wire passken + token rows next.
  */
 
 /** @type {import('express').RequestHandler} */
@@ -15,11 +18,10 @@ export function getRecoverRequest(req, res) {
 }
 
 /** @type {import('express').RequestHandler} */
-export function postRecoverRequest(req, res) {
+export async function postRecoverRequest(req, res) {
   const ctx = buildViewContext(req, "recoverRequest");
 
   if (isSuspiciousForm(req)) {
-    // Silent drop — same posture as the marketing contact form.
     return res.status(204).end();
   }
 
@@ -32,22 +34,37 @@ export function postRecoverRequest(req, res) {
     });
   }
 
-  // TODO: look up user, create Password-reset token, send email.
-  // Always show the same success page to avoid account enumeration.
+  await issueWorkflowNotification({
+    email,
+    typeName: TOKEN_TYPES.PASSWORD_RESET,
+    path: "/recover/reset",
+    template: "pwd-reset",
+    lang: resolveLang(req),
+  });
+
+  // Always the same page — no account enumeration.
   return res.render("recover/sent", buildViewContext(req, "recoverSent"));
 }
 
 /** @type {import('express').RequestHandler} */
-export function getRecoverReset(req, res) {
+export async function getRecoverReset(req, res) {
   const token = String(req.query?.token ?? "").trim();
   if (!token) {
-    return res.status(400).render(
-      "recover/invalid",
-      buildViewContext(req, "recoverInvalid"),
-    );
+    return res
+      .status(400)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
   }
 
-  // TODO: validate token against token table (type = Password reset, not expired).
+  const valid = await findValidWorkflowToken({
+    plaintext: token,
+    typeName: TOKEN_TYPES.PASSWORD_RESET,
+  });
+  if (!valid) {
+    return res
+      .status(400)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
+  }
+
   return res.render(
     "recover/reset",
     buildViewContext(req, "recoverReset", { form: { token } }),
@@ -55,7 +72,7 @@ export function getRecoverReset(req, res) {
 }
 
 /** @type {import('express').RequestHandler} */
-export function postRecoverReset(req, res) {
+export async function postRecoverReset(req, res) {
   const page = "recoverReset";
   const ctxPage = buildViewContext(req, page).page;
   const token = String(req.body?.token ?? "").trim();
@@ -63,10 +80,19 @@ export function postRecoverReset(req, res) {
   const confirm = String(req.body?.confirm ?? "");
 
   if (isSuspiciousForm(req) || !token) {
-    return res.status(400).render(
-      "recover/invalid",
-      buildViewContext(req, "recoverInvalid"),
-    );
+    return res
+      .status(400)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
+  }
+
+  const valid = await findValidWorkflowToken({
+    plaintext: token,
+    typeName: TOKEN_TYPES.PASSWORD_RESET,
+  });
+  if (!valid) {
+    return res
+      .status(400)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
   }
 
   if (password !== confirm) {
@@ -89,6 +115,8 @@ export function postRecoverReset(req, res) {
     );
   }
 
-  // TODO: consume token, hash+store password via passken-express, archive token.
+  // TODO: rotate pwd hash for valid.userId via passken-express / hashitaka.
+  await consumeWorkflowToken(valid.id);
+
   return res.render("recover/done", buildViewContext(req, "recoverDone"));
 }
