@@ -5,6 +5,7 @@
   <form class="form" method="POST" action="{{urls.securityQuestionsSetup}}" novalidate>
     <input type="hidden" name="lang" value="{{lang}}">
     <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+    {{> csrf}}
 
     {{#each form.slots}}
     <fieldset class="form-fieldset">

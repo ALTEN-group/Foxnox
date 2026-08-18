@@ -6,6 +6,7 @@
     <input type="hidden" name="lang" value="{{lang}}">
     <input type="hidden" name="challenge" value="{{form.challenge}}">
     <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+    {{> csrf}}
 
     <div class="form-group">
       <label for="code">{{page.codeLabel}}</label>

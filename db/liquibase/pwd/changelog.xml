@@ -105,5 +105,9 @@
     <comment>Account unlock token type for web unlock workflow</comment>
     <sqlFile path="versions/06-data/06-token-type-unlock.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="06-data-07" author="lcluber">
+    <comment>Login challenge token types (2FA / expired password / trusted device)</comment>
+    <sqlFile path="versions/06-data/07-token-type-login-challenges.sql" splitStatements="false"/>
+  </changeSet>
 
 </databaseChangeLog>

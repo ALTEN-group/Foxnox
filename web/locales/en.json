@@ -86,6 +86,11 @@
       "heading": "Two-factor authentication is off",
       "body": "Authenticator requirements were removed from your account. You can set 2FA up again after signing in."
     },
+    "twofaInvalid": {
+      "title": "Verification expired — Foxnox",
+      "heading": "This sign-in step is no longer valid",
+      "body": "Your verification session expired or was already used. Sign in again to continue."
+    },
     "accountRecoverRequest": {
       "title": "Recover your account — Foxnox",
       "heading": "Lost access to two-factor authentication?",
@@ -171,6 +176,11 @@
       "heading": "Trust revoked",
       "body": "That device will need a verification code on the next sign-in."
     },
+    "trustedDeviceInvalid": {
+      "title": "Device step expired — Foxnox",
+      "heading": "This sign-in step is no longer valid",
+      "body": "Your remember-device session expired or was already used. Sign in again to continue."
+    },
     "passwordExpired": {
       "title": "Password expired — Foxnox",
       "heading": "Your password has expired",
@@ -213,6 +223,38 @@
       "heading": "This unlock link is no longer valid",
       "body": "Request a new unlock or wait for the lock period to end.",
       "cta": "Request unlock"
+    }
+  },
+  "emails": {
+    "pwd-reset": {
+      "subject": "Reset your password — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Reset your password",
+      "intro": "We received a request to reset the password for your account. Use the button below to choose a new one.",
+      "cta": "Choose a new password",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not ask for a reset, you can ignore this message."
+    },
+    "account-recover": {
+      "subject": "Account recovery — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Continue account recovery",
+      "intro": "We received a request to recover your account. Use the button below to continue the recovery challenge.",
+      "cta": "Continue recovery",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not ask to recover this account, you can ignore this message."
+    },
+    "account-unlock": {
+      "subject": "Unlock your account — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Unlock your account",
+      "intro": "Your account was locked after too many failed sign-in attempts. Use the button below to unlock it.",
+      "cta": "Unlock account",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not request an unlock, you can ignore this message."
     }
   }
 }

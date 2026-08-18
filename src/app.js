@@ -17,6 +17,7 @@ app.disable("x-powered-by");
 
 // middlewares
 import { send } from "./middlewares/res/send.js";
+import { sendPrivate } from "./middlewares/res/send-private.js";
 import { sendPwd } from "./middlewares/res/send-pwd.js";
 
 // Routes
@@ -24,6 +25,12 @@ import login from "./routes/password.js";
 import token from "./routes/token.js";
 import pwdPolicy from "./routes/pwd-policy.js";
 import trustedDevice from "./routes/user-trusted-device.js";
+import trustedDeviceVerify from "./routes/trusted-device-verify.js";
+import challenge from "./routes/challenge.js";
+import loginTicket from "./routes/login-ticket.js";
+
+import tEnt from "./entities/token.js";
+import tdEnt from "./entities/user-trusted-device.js";
 
 const s = "/pwd/";
 
@@ -53,9 +60,12 @@ app.use(WEB_MOUNT, webRoutes);
 // registration order; if `/pwd/` comes first, unmatched paths like
 // `/pwd/policies/search` fall through its `sendPwd` terminal and crash
 // (`deleteProps` on undefined rows) instead of reaching the real router.
-app.use(`${s}tokens`, token, send);
+app.use(`${s}tokens`, token, sendPrivate(tEnt));
 app.use(`${s}policies`, pwdPolicy, send);
-app.use(`${s}trusted-devices`, trustedDevice, send);
+app.use(`${s}trusted-devices/verify`, trustedDeviceVerify);
+app.use(`${s}trusted-devices`, trustedDevice, sendPrivate(tdEnt));
+app.use(`${s}challenges`, challenge);
+app.use(`${s}login-tickets`, loginTicket);
 // `/pwd/` uses `sendPwd` because the pwd entity carries `isPrivate` fields
 // (pwdHash, twoFactorSecret) that must be stripped before serialization.
 app.use(`${s}`, login, sendPwd);

@@ -106,7 +106,7 @@ erDiagram
 
   security_question_category_trans {
     int categoryId PK, FK
-    language lang PK
+    varchar lang PK
     varchar trans
   }
 
@@ -121,7 +121,7 @@ erDiagram
 
   security_question_trans {
     int questionId PK, FK
-    language lang PK
+    varchar lang PK
     varchar trans
   }
 

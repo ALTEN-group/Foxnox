@@ -1,30 +1,77 @@
 // @ts-check
+import { buildLoginResumeUrl } from "../login-resume.js";
 import { buildViewContext } from "../context.js";
+import { getConsumerUserId } from "../consumer.js";
 import { isSuspiciousForm } from "../form-guards.js";
+import {
+  consumeLoginChallenge,
+  findValidLoginChallenge,
+} from "../../services/challenge.js";
+import {
+  archiveTrustedDevice,
+  createTrustedDevice,
+  getTrustedDeviceCookieName,
+  listTrustedDevices,
+  mintTrustedDeviceToken,
+} from "../../services/trusted-devices.js";
 
 /**
- * Trusted-device consent (post-2FA) and management (revoke).
+ * @returns {boolean}
  */
+function cookieSecure() {
+  return (
+    process.env.COOKIE_SECURE === "1" ||
+    process.env.NODE_ENV === "production"
+  );
+}
 
-/** Placeholder list until GET trusted-devices is wired for the current user. */
-const STUB_DEVICES = [
-  {
-    id: 1,
-    deviceName: "Office laptop",
-    lastUsedAt: "2026-08-17",
-    expiresAt: "2026-11-17",
-  },
-  {
-    id: 2,
-    deviceName: "",
-    lastUsedAt: "2026-08-10",
-    expiresAt: "2026-10-10",
-  },
-];
+/**
+ * Path=/ so Gatelin login receives the cookie on /api/gateway/sessions.
+ * @param {import('express').Response} res
+ * @param {string} plaintext
+ * @param {Date} expiresAt
+ */
+function setTrustedDeviceCookie(res, plaintext, expiresAt) {
+  const maxAge = Math.max(
+    0,
+    Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+  );
+  const parts = [
+    `${getTrustedDeviceCookieName()}=${encodeURIComponent(plaintext)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${maxAge}`,
+  ];
+  if (cookieSecure()) parts.push("Secure");
+  res.append("Set-Cookie", parts.join("; "));
+}
 
 /** @type {import('express').RequestHandler} */
-export function getTrustedDevicePrompt(req, res) {
+export async function getTrustedDevicePrompt(req, res) {
   const challenge = String(req.query?.challenge ?? "").trim();
+  if (!challenge) {
+    return res
+      .status(400)
+      .render(
+        "trusted-devices/invalid",
+        buildViewContext(req, "trustedDeviceInvalid"),
+      );
+  }
+
+  const valid = await findValidLoginChallenge({
+    plaintext: challenge,
+    kind: "trusted-device",
+  });
+  if (!valid) {
+    return res
+      .status(400)
+      .render(
+        "trusted-devices/invalid",
+        buildViewContext(req, "trustedDeviceInvalid"),
+      );
+  }
+
   res.render(
     "trusted-devices/prompt",
     buildViewContext(req, "trustedDevicePrompt", {
@@ -34,51 +81,96 @@ export function getTrustedDevicePrompt(req, res) {
 }
 
 /** @type {import('express').RequestHandler} */
-export function postTrustedDevicePrompt(req, res) {
+export async function postTrustedDevicePrompt(req, res) {
   if (isSuspiciousForm(req)) return res.status(204).end();
 
-  const trust = String(req.body?.trust ?? "no");
-  if (trust !== "yes") {
-    return res.render(
-      "trusted-devices/skipped",
-      buildViewContext(req, "trustedDeviceSkipped"),
-    );
+  const challenge = String(req.body?.challenge ?? "").trim();
+  const valid = await findValidLoginChallenge({
+    plaintext: challenge,
+    kind: "trusted-device",
+  });
+  if (!valid) {
+    return res
+      .status(400)
+      .render(
+        "trusted-devices/invalid",
+        buildViewContext(req, "trustedDeviceInvalid"),
+      );
   }
 
-  // TODO: create user_trusted_device row (hash cookie token, UA, IP, expiry).
-  return res.render(
-    "trusted-devices/done",
-    buildViewContext(req, "trustedDeviceDone"),
-  );
+  const trust = String(req.body?.trust ?? "no");
+  try {
+    await consumeLoginChallenge(valid.id);
+
+    if (trust === "yes") {
+      const minted = mintTrustedDeviceToken();
+      await createTrustedDevice({
+        userId: valid.userId,
+        deviceTokenHash: minted.hash,
+        deviceName: String(req.body?.deviceName ?? "").trim() || undefined,
+        ipAddress: String(req.ip || req.socket?.remoteAddress || "").slice(
+          0,
+          45,
+        ),
+        userAgent: String(req.headers["user-agent"] || "").slice(0, 500),
+        expiresAt: minted.expiresAt,
+      });
+      setTrustedDeviceCookie(res, minted.plaintext, minted.expiresAt);
+    }
+
+    const resumeUrl = await buildLoginResumeUrl(valid.userId);
+    return res.redirect(303, resumeUrl);
+  } catch {
+    return res
+      .status(500)
+      .render(
+        "trusted-devices/invalid",
+        buildViewContext(req, "trustedDeviceInvalid"),
+      );
+  }
 }
 
 /** @type {import('express').RequestHandler} */
-export function getTrustedDevicesManage(req, res) {
-  // TODO: load non-archived trusted devices for the authenticated user.
-  res.render(
-    "trusted-devices/manage",
-    buildViewContext(req, "trustedDevicesManage", {
-      form: { devices: STUB_DEVICES },
-    }),
-  );
-}
-
-/** @type {import('express').RequestHandler} */
-export function postTrustedDevicesManage(req, res) {
-  if (isSuspiciousForm(req)) return res.status(204).end();
-
-  const deviceId = String(req.body?.deviceId ?? "").trim();
-  if (!deviceId) {
-    return res.status(400).render(
+export async function getTrustedDevicesManage(req, res) {
+  const userId = getConsumerUserId(req);
+  if (!userId) {
+    return res.status(401).render(
       "trusted-devices/manage",
       buildViewContext(req, "trustedDevicesManage", {
-        form: { devices: STUB_DEVICES },
+        form: { devices: [] },
         error: buildViewContext(req, "trustedDevicesManage").page.errorGeneric,
       }),
     );
   }
 
-  // TODO: archive the trusted device for the authenticated user.
+  const devices = await listTrustedDevices(userId);
+  res.render(
+    "trusted-devices/manage",
+    buildViewContext(req, "trustedDevicesManage", {
+      form: { devices },
+    }),
+  );
+}
+
+/** @type {import('express').RequestHandler} */
+export async function postTrustedDevicesManage(req, res) {
+  if (isSuspiciousForm(req)) return res.status(204).end();
+
+  const userId = getConsumerUserId(req);
+  const deviceId = Number(req.body?.deviceId ?? 0);
+
+  if (!userId || !Number.isInteger(deviceId) || deviceId < 1) {
+    const devices = userId ? await listTrustedDevices(userId) : [];
+    return res.status(400).render(
+      "trusted-devices/manage",
+      buildViewContext(req, "trustedDevicesManage", {
+        form: { devices },
+        error: buildViewContext(req, "trustedDevicesManage").page.errorGeneric,
+      }),
+    );
+  }
+
+  await archiveTrustedDevice(userId, deviceId);
   return res.render(
     "trusted-devices/revoked",
     buildViewContext(req, "trustedDeviceRevoked"),

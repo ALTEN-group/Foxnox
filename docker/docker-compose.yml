@@ -157,6 +157,10 @@ services:
         condition: service_completed_successfully
     networks:
       - internal
+    # Bind sibling Gatelin source when developing login-challenge changes locally
+    # (requires GATELIN_VERSION image that already has matching package.json deps).
+    volumes:
+      - ${PWD}/../Gatelin/src:/usr/src/app/src
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
@@ -204,6 +208,17 @@ services:
       - ${PWD}/db/liquibase/pwd/:/liquibase/changelog
       - ${PWD}/db/liquibase/data/:/liquibase/data
 
+  mailpit:
+    image: axllent/mailpit:${MAILPIT_VERSION:-latest}
+    container_name: ${MAILPIT_HOST}
+    hostname: ${MAILPIT_HOST}
+    ports:
+      - ${MAILPIT_UI_PORT:-8025}:8025
+    networks:
+      - internal
+      - external
+    restart: unless-stopped
+
   foxnox:
     build:
       context: ${PWD}
@@ -222,6 +237,8 @@ services:
         condition: service_healthy
       foxnox_migration:
         condition: service_completed_successfully
+      mailpit:
+        condition: service_started
     environment:
       PORT: ${DEFAULT_PORT}
       TZ: ${TZ}
@@ -236,14 +253,9 @@ services:
       SERVICE_NAME: ${FOXNOX_HOST}
       ACCESS_TOKEN_DURATION: ${FOXNOX_ACCESS_TOKEN_DURATION}
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
-      PWD_MIN_LENGTH_POLICY: ${FOXNOX_PWD_MIN_LENGTH_LEGACY}
-      PWD_MAX_LENGTH_POLICY: ${FOXNOX_PWD_MAX_LENGTH_LEGACY}
-      PWD_NUMBERS_POLICY: ${FOXNOX_PWD_NUMBERS_LEGACY}
-      PWD_UPPERCASE_POLICY: ${FOXNOX_PWD_UPPERCASE_LEGACY}
-      PWD_LOWERCASE_POLICY: ${FOXNOX_PWD_LOWERCASE_LEGACY}
-      PWD_SYMBOLS_POLICY: ${FOXNOX_PWD_SYMBOLS_LEGACY}
       WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
       WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}}
+      WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/admin/login}
       USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
       WEB_BRAND_NAME: ${WEB_BRAND_NAME:-Foxnox}
       WEB_BRAND_TAGLINE: ${WEB_BRAND_TAGLINE:-Account security}
@@ -256,6 +268,12 @@ services:
       WEB_BRAND_BACKGROUND_COLOR: ${WEB_BRAND_BACKGROUND_COLOR:-#f4f6f8}
       WEB_BRAND_FOOTER_TEXT: ${WEB_BRAND_FOOTER_TEXT:-}
       WEB_BRAND_FOOTER_URL: ${WEB_BRAND_FOOTER_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-${MAILPIT_HOST}}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_FROM: ${SMTP_FROM:-Foxnox <noreply@localhost>}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     networks:
       - internal
     volumes:

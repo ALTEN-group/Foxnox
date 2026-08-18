@@ -2,6 +2,7 @@
 import { buildViewContext, resolveLang } from "../context.js";
 import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
 import { issueWorkflowNotification } from "../issue-notification.js";
+import { passwordMeetsPolicy, rotatePassword, getPasswordFormPolicy } from "../../services/pwd.js";
 import {
   consumeWorkflowToken,
   findValidWorkflowToken,
@@ -67,7 +68,10 @@ export async function getRecoverReset(req, res) {
 
   return res.render(
     "recover/reset",
-    buildViewContext(req, "recoverReset", { form: { token } }),
+    buildViewContext(req, "recoverReset", {
+      form: { token },
+      policy: await getPasswordFormPolicy(),
+    }),
   );
 }
 
@@ -78,6 +82,7 @@ export async function postRecoverReset(req, res) {
   const token = String(req.body?.token ?? "").trim();
   const password = String(req.body?.password ?? "");
   const confirm = String(req.body?.confirm ?? "");
+  const policy = await getPasswordFormPolicy();
 
   if (isSuspiciousForm(req) || !token) {
     return res
@@ -100,23 +105,42 @@ export async function postRecoverReset(req, res) {
       "recover/reset",
       buildViewContext(req, page, {
         form: { token },
+        policy,
         error: ctxPage.errorMismatch,
       }),
     );
   }
 
-  if (password.length < 8) {
+  if (!(await passwordMeetsPolicy(password))) {
     return res.status(400).render(
       "recover/reset",
       buildViewContext(req, page, {
         form: { token },
+        policy,
         error: ctxPage.errorWeak,
       }),
     );
   }
 
-  // TODO: rotate pwd hash for valid.userId via passken-express / hashitaka.
-  await consumeWorkflowToken(valid.id);
+  try {
+    await rotatePassword(valid.userId, password);
+    await consumeWorkflowToken(valid.id);
+  } catch (err) {
+    // @ts-ignore
+    if (err?.code === "WEAK_PASSWORD") {
+      return res.status(400).render(
+        "recover/reset",
+        buildViewContext(req, page, {
+          form: { token },
+          policy,
+          error: ctxPage.errorWeak,
+        }),
+      );
+    }
+    return res
+      .status(500)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
+  }
 
   return res.render("recover/done", buildViewContext(req, "recoverDone"));
 }

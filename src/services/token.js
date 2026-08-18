@@ -12,6 +12,11 @@ export const TOKEN_TYPES = Object.freeze({
   PASSWORD_RESET: "Password reset",
   ACCOUNT_RECOVERY: "Account recovery",
   ACCOUNT_UNLOCK: "Account unlock",
+  TWO_FA_CHALLENGE: "2FA challenge",
+  EXPIRED_PASSWORD_CHALLENGE: "Expired password challenge",
+  TRUSTED_DEVICE_CHALLENGE: "Trusted device challenge",
+  /** One-shot ticket so Gatelin can finish the session after mid-login challenges. */
+  LOGIN_RESUME: "Login resume",
 });
 
 export { hashToken } from "./token-crypto.js";

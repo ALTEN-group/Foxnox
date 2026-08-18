@@ -21,9 +21,9 @@ if [[ -z "$VERSION" ]]; then
   exit 1
 fi
 
-echo -e "${YELLOW}Starting production environment (gatelin:${VERSION})...${NC}"
+echo -e "${YELLOW}Starting production environment (foxnox:${VERSION})...${NC}"
 
 VERSION="$VERSION" docker compose -f docker/docker-compose.prod.yml --env-file "$ENV_FILE" up -d
 
-echo -e "${GREEN}Production environment started (gatelin:${VERSION})${NC}"
-echo -e "Run 'docker compose -f docker/docker-compose.prod.yml logs -f' to view logs"
+echo -e "${GREEN}Production environment started (foxnox:${VERSION})${NC}"
+echo -e "Run 'docker compose -f docker/docker-compose.prod.yml --env-file $ENV_FILE logs -f' to view logs"

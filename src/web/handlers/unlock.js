@@ -2,6 +2,7 @@
 import { buildViewContext, resolveLang } from "../context.js";
 import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
 import { issueWorkflowNotification } from "../issue-notification.js";
+import { unlockAccount } from "../../services/pwd.js";
 import {
   consumeWorkflowToken,
   findValidWorkflowToken,
@@ -62,8 +63,14 @@ export async function getUnlockConfirm(req, res) {
       .render("unlock/invalid", buildViewContext(req, "unlockInvalid"));
   }
 
-  // TODO: clear failedAttempts / lockedUntil for valid.userId.
-  await consumeWorkflowToken(valid.id);
+  try {
+    await unlockAccount(valid.userId);
+    await consumeWorkflowToken(valid.id);
+  } catch {
+    return res
+      .status(500)
+      .render("unlock/invalid", buildViewContext(req, "unlockInvalid"));
+  }
 
   return res.render("unlock/done", buildViewContext(req, "unlockDone"));
 }

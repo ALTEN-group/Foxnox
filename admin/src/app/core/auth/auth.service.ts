@@ -3,7 +3,10 @@ import { Injectable, inject, signal } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AclService } from "@core/acl/acl.service";
 import { APP_CONFIG } from "@core/app-config/app-config.token";
-import { SessionResponse } from "@core/auth/auth.dto";
+import {
+  ChallengeRequiredResponse,
+  SessionResponse,
+} from "@core/auth/auth.dto";
 import { TokenService } from "@core/auth/token.service";
 import { User } from "@core/user/user.class";
 import { Observable, of, pipe } from "rxjs";
@@ -34,18 +37,57 @@ export class AuthenticationService {
   public login(email: string, pwd: string): Observable<boolean> {
     if (!email || !pwd) return of(false);
     const payload = { email, pwd };
-    return this.http.post<SessionResponse>(this.sessionApi, payload).pipe(
-      tap((res) => {
-        const { accessToken, permissions } = res;
-        this.saveTokens(accessToken);
-        this.authenticate();
-        this.aclService.storeAccessLevels(permissions);
-      }),
-      this.getUserBasics(),
-      tap(() => this.redirectToApp()),
-      map(() => true),
-      catchError(() => of(false)),
-    );
+    return this.http
+      .post<SessionResponse | ChallengeRequiredResponse>(
+        this.sessionApi,
+        payload,
+      )
+      .pipe(
+        switchMap((res) => {
+          if (
+            res &&
+            "challengeRequired" in res &&
+            res.challengeRequired &&
+            res.url
+          ) {
+            window.location.assign(res.url);
+            return of(true);
+          }
+          return of(res as SessionResponse).pipe(
+            tap((session) => {
+              const { accessToken, permissions } = session;
+              this.saveTokens(accessToken);
+              this.authenticate();
+              this.aclService.storeAccessLevels(permissions);
+            }),
+            this.getUserBasics(),
+            tap(() => this.redirectToApp()),
+            map(() => true),
+          );
+        }),
+        catchError(() => of(false)),
+      );
+  }
+
+  /**
+   * Complete login after Foxnox mid-login challenges (ticket from ?ticket=).
+   */
+  public resumeLogin(ticket: string): Observable<boolean> {
+    if (!ticket) return of(false);
+    return this.http
+      .post<SessionResponse>(`${this.sessionApi}/resume`, { ticket })
+      .pipe(
+        tap((res) => {
+          const { accessToken, permissions } = res;
+          this.saveTokens(accessToken);
+          this.authenticate();
+          this.aclService.storeAccessLevels(permissions);
+        }),
+        this.getUserBasics(),
+        tap(() => this.redirectToApp()),
+        map(() => true),
+        catchError(() => of(false)),
+      );
   }
 
   public logout(): Observable<void> {

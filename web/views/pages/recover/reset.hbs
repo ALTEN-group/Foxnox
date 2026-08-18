@@ -6,6 +6,7 @@
     <input type="hidden" name="token" value="{{form.token}}">
     <input type="hidden" name="lang" value="{{lang}}">
     <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+    {{> csrf}}
 
     <div class="form-group">
       <label for="password">{{page.passwordLabel}}</label>
@@ -15,7 +16,8 @@
         name="password"
         autocomplete="new-password"
         required
-        minlength="8"
+        minlength="{{policy.minLength}}"
+        maxlength="{{policy.maxLength}}"
       >
     </div>
 
@@ -27,7 +29,8 @@
         name="confirm"
         autocomplete="new-password"
         required
-        minlength="8"
+        minlength="{{policy.minLength}}"
+        maxlength="{{policy.maxLength}}"
       >
     </div>
 

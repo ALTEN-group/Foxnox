@@ -2,7 +2,12 @@
 import { buildViewContext, resolveLang } from "../context.js";
 import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
 import { issueWorkflowNotification } from "../issue-notification.js";
-import { SECURITY_QUESTION_CATALOG } from "../security-questions.js";
+import { disableTwoFactor } from "../../services/pwd.js";
+import {
+  getSecurityQuestionsByIds,
+  listEnrolledSecurityQuestions,
+  verifySecurityAnswers,
+} from "../../services/security-questions.js";
 import {
   bumpWorkflowTokenAttempts,
   consumeWorkflowToken,
@@ -55,6 +60,7 @@ export async function postAccountRecoverRequest(req, res) {
 /** @type {import('express').RequestHandler} */
 export async function getAccountRecoverChallenge(req, res) {
   const token = String(req.query?.token ?? "").trim();
+  const lang = resolveLang(req);
   if (!token) {
     return res
       .status(400)
@@ -71,11 +77,12 @@ export async function getAccountRecoverChallenge(req, res) {
       .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
   }
 
-  // TODO: load the user's enrolled questions for valid.userId.
-  const questions = SECURITY_QUESTION_CATALOG.slice(0, 2).map((q) => ({
-    id: q.id,
-    label: q.label,
-  }));
+  const questions = await listEnrolledSecurityQuestions(valid.userId, lang);
+  if (questions.length === 0) {
+    return res
+      .status(400)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
+  }
 
   return res.render(
     "account-recover/challenge",
@@ -90,6 +97,7 @@ export async function postAccountRecoverChallenge(req, res) {
   const page = "accountRecoverChallenge";
   const ctxPage = buildViewContext(req, page).page;
   const token = String(req.body?.token ?? "").trim();
+  const lang = resolveLang(req);
 
   if (isSuspiciousForm(req) || !token) {
     return res
@@ -110,32 +118,49 @@ export async function postAccountRecoverChallenge(req, res) {
   const questionIds = [].concat(req.body?.questionIds ?? []);
   const answers = [].concat(req.body?.answers ?? []).map((a) => String(a).trim());
 
-  if (
-    questionIds.length === 0 ||
-    answers.length !== questionIds.length ||
-    answers.some((a) => !a)
-  ) {
+  const pairs = questionIds.map((id, i) => ({
+    questionId: Number(id),
+    answer: answers[i] ?? "",
+  }));
+
+  const incomplete =
+    pairs.length === 0 ||
+    pairs.some((p) => !Number.isInteger(p.questionId) || p.questionId < 1 || !p.answer);
+
+  let matched = false;
+  if (!incomplete) {
+    matched = await verifySecurityAnswers(valid.userId, pairs);
+  }
+
+  if (incomplete || !matched) {
     await bumpWorkflowTokenAttempts(valid.id);
-    const questions = questionIds.map((id, index) => {
-      const catalog = SECURITY_QUESTION_CATALOG.find(
-        (q) => String(q.id) === String(id),
-      );
-      return {
-        id,
-        label: catalog?.label ?? `Question ${index + 1}`,
-      };
-    });
+    const questions = await getSecurityQuestionsByIds(
+      pairs.map((p) => p.questionId),
+      lang,
+    );
     return res.status(400).render(
       "account-recover/challenge",
       buildViewContext(req, page, {
-        form: { token, questions },
+        form: {
+          token,
+          questions:
+            questions.length > 0
+              ? questions
+              : await listEnrolledSecurityQuestions(valid.userId, lang),
+        },
         error: ctxPage.errorInvalid,
       }),
     );
   }
 
-  // TODO: verify answer hashes for valid.userId, then clear twoFactorSecret.
-  await consumeWorkflowToken(valid.id);
+  try {
+    await disableTwoFactor(valid.userId);
+    await consumeWorkflowToken(valid.id);
+  } catch {
+    return res
+      .status(500)
+      .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
+  }
 
   return res.render(
     "account-recover/done",

@@ -24,6 +24,7 @@
               <input type="hidden" name="lang" value="{{../lang}}">
               <input type="hidden" name="deviceId" value="{{id}}">
               <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+              {{> csrf}}
               <button type="submit" class="btn btn--danger btn--small">{{../common.revoke}}</button>
             </form>
           </td>

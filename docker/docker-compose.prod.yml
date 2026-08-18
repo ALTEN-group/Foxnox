@@ -1,7 +1,14 @@
 name: ${APP_NAME}
 
-x-service-healthcheck: &healthcheck
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/gateway/health"]
+x-foxnox-healthcheck: &foxnoxHealthcheck
+  # /pwd/health/ready also proves Postgres is reachable; /pwd/health is liveness only.
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+
+x-gatelin-healthcheck: &gatelinHealthcheck
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/gateway/health/ready"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -24,6 +31,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_ROOT_PWD}
       LIQUIBASE_USER: ${LIQUIBASE_DB_USER}
       LIQUIBASE_PWD: ${LIQUIBASE_DB_PWD}
+      GATELIN_USER: ${GATELIN_DB_USER}
+      GATELIN_PWD: ${GATELIN_DB_PWD}
       FOXNOX_USER: ${FOXNOX_DB_USER}
       FOXNOX_PWD: ${FOXNOX_DB_PWD}
     networks:
@@ -45,8 +54,8 @@ services:
       - --providers.docker.network=${APP_NAME}-internal-${ENV_NAME}
       - --providers.docker.constraints=Label(`stack.name`,`${APP_NAME}-${ENV_NAME}`)
       - --entryPoints.web.address=${TRAEFIK_ENTRYPOINTS_WEB_ADDRESS}
-      - --entrypoints.web.forwardedHeaders=true
-      - --entryPoints.web.forwardedHeaders.insecure=true
+      # forwardedHeaders.insecure is deliberately NOT set: Traefik is the edge,
+      # so a client-supplied X-Forwarded-For would be trusted verbatim.
       - --providers.docker.exposedByDefault=${TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT}
       - --api.insecure=${TRAEFIK_API_INSECURE}
       - --log.level=${TRAEFIK_LOG_LEVEL}
@@ -65,6 +74,74 @@ services:
       - external
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  gatelin_migration:
+    image: ghcr.io/alten-group/gatelin-migration:${GATELIN_VERSION:-latest}
+    container_name: ${GATELIN_MIGRATION_HOST}
+    hostname: ${GATELIN_MIGRATION_HOST}
+    environment:
+      TZ: ${TZ}
+      LIQUIBASE_COMMAND_USERNAME: ${LIQUIBASE_DB_USER}
+      LIQUIBASE_COMMAND_PASSWORD: ${LIQUIBASE_DB_PWD}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: ${GATELIN_DB_NAME}
+      DB_USER: ${GATELIN_DB_USER}
+      DB_PWD: ${GATELIN_DB_PWD}
+      UPDATE: ${LIQUIBASE_UPDATE}
+      ROLLBACK: ${LIQUIBASE_ROLLBACK}
+      SNAPSHOT: snapshot/snapshot${LIQUIBASE_SNAPSHOT}
+      LIQUIBASE_LOG_LEVEL: ${LIQUIBASE_LOG_LEVEL}
+      LIQUIBASE_COMMAND_CONTEXTS: ${LIQUIBASE_COMMAND_CONTEXTS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+    volumes:
+      # Foxnox route/service seed applied after Gatelin core schema
+      - ${PWD}/db/liquibase/gatelin-data/:/liquibase/data
+
+  gatelin:
+    image: ghcr.io/alten-group/gatelin:${GATELIN_VERSION:-latest}
+    container_name: ${GATELIN_HOST}
+    hostname: ${GATELIN_HOST}
+    environment:
+      PORT: ${DEFAULT_PORT}
+      TZ: ${TZ}
+      PWD_CHECK_URL: ${GATELIN_PWD_CHECK_URL}
+      USER_SEARCH_URL: ${GATELIN_USER_SEARCH_URL}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_NAME: ${GATELIN_DB_NAME}
+      DB_USER: ${GATELIN_DB_USER}
+      DB_PWD: ${GATELIN_DB_PWD}
+      TOKEN_SECRET: ${GATELIN_TOKEN_SECRET}
+      APP_NAME: ${APP_NAME}
+      ENV_NAME: ${ENV_NAME}
+      SERVER_SCHEME: ${SERVER_SCHEME}
+      SERVICE_NAME: ${GATELIN_HOST}
+      ACCESS_TOKEN_DURATION: ${GATELIN_ACCESS_TOKEN_DURATION}
+      REFRESH_TOKEN_DURATION: ${GATELIN_REFRESH_TOKEN_DURATION}
+      REFRESH_TOKEN_COOKIE: ${GATELIN_REFRESH_TOKEN_COOKIE}
+      REFRESH_TOKEN_COOKIE_HTTPS_ONLY: ${GATELIN_REFRESH_TOKEN_COOKIE_HTTPS_ONLY:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gatelin_migration:
+        condition: service_completed_successfully
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "stack.name=${STACK_NAME}"
+      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.gateway.entrypoints=web"
+      - "traefik.http.routers.gateway.service=gateway"
+      - "traefik.http.routers.gateway.middlewares=strip-prefix"
+      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
+      - "traefik.http.services.gateway.loadBalancer.server.port=${DEFAULT_PORT}"
+    healthcheck: *gatelinHealthcheck
 
   foxnox_migration:
     build:
@@ -112,23 +189,6 @@ services:
     networks:
       - internal
 
-  ms_auth_mock:
-    build:
-      context: ${PWD}/mocks/ms_auth
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${MSAUTH_HOST}
-    hostname: ${MSAUTH_HOST}
-    environment:
-      PORT: ${DEFAULT_PORT}
-    networks:
-      - internal
-
   foxnox:
     image: dwtechs/foxnox:${VERSION:-latest}
     container_name: ${FOXNOX_HOST}
@@ -136,44 +196,49 @@ services:
     environment:
       PORT: ${DEFAULT_PORT}
       TZ: ${TZ}
-      MSAUTH_VERIFY_URL: ${MSAUTH_VERIFY_URL}
-      MSUSER_SEARCH_URL: ${MSUSER_SEARCH_URL}
       DB_HOST: ${POSTGRES_HOST}
       DB_NAME: ${FOXNOX_DB_NAME}
       DB_USER: ${FOXNOX_DB_USER}
       DB_PWD: ${FOXNOX_DB_PWD}
-      TOKEN_SECRET: ${MSUSER_TOKEN_SECRET}
-      PWD_SECRET: ${MSAUTH_PWD_SECRET}
+      PWD_SECRET: ${FOXNOX_PWD_SECRET}
       APP_NAME: ${APP_NAME}
       ENV_NAME: ${ENV_NAME}
       SERVER_SCHEME: ${SERVER_SCHEME}
       SERVICE_NAME: ${FOXNOX_HOST}
       ACCESS_TOKEN_DURATION: ${FOXNOX_ACCESS_TOKEN_DURATION}
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
-      PWD_MIN_LENGTH_POLICY: ${FOXNOX_PWD_MIN_LENGTH_LEGACY}
-      PWD_MAX_LENGTH_POLICY: ${FOXNOX_PWD_MAX_LENGTH_LEGACY}
-      PWD_NUMBERS_POLICY: ${FOXNOX_PWD_NUMBERS_LEGACY}
-      PWD_UPPERCASE_POLICY: ${FOXNOX_PWD_UPPERCASE_LEGACY}
-      PWD_LOWERCASE_POLICY: ${FOXNOX_PWD_LOWERCASE_LEGACY}
-      PWD_SYMBOLS_POLICY: ${FOXNOX_PWD_SYMBOLS_LEGACY}
+      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
+      WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN}
+      USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
+      WEB_BRAND_NAME: ${WEB_BRAND_NAME:-Foxnox}
+      WEB_BRAND_TAGLINE: ${WEB_BRAND_TAGLINE:-Account security}
+      WEB_BRAND_MARK: ${WEB_BRAND_MARK:-F}
+      WEB_BRAND_LOGO_URL: ${WEB_BRAND_LOGO_URL:-}
+      WEB_BRAND_LOGO_ALT: ${WEB_BRAND_LOGO_ALT:-}
+      WEB_BRAND_PRIMARY_COLOR: ${WEB_BRAND_PRIMARY_COLOR:-#1f6feb}
+      WEB_BRAND_PRIMARY_HOVER_COLOR: ${WEB_BRAND_PRIMARY_HOVER_COLOR:-#1858c3}
+      WEB_BRAND_SECONDARY_COLOR: ${WEB_BRAND_SECONDARY_COLOR:-#5c6570}
+      WEB_BRAND_BACKGROUND_COLOR: ${WEB_BRAND_BACKGROUND_COLOR:-#f4f6f8}
+      WEB_BRAND_FOOTER_TEXT: ${WEB_BRAND_FOOTER_TEXT:-}
+      WEB_BRAND_FOOTER_URL: ${WEB_BRAND_FOOTER_URL:-}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     depends_on:
       postgres:
         condition: service_healthy
       foxnox_migration:
         condition: service_completed_successfully
+      ms_user_mock:
+        condition: service_started
     networks:
       - internal
-    labels:
-      - "traefik.enable=true"
-      - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.gateway.entrypoints=web"
-      - "traefik.http.routers.gateway.service=gateway"
-      - "traefik.http.routers.gateway.middlewares=strip-prefix"
-      - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
-      - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
-      - "traefik.http.services.gateway.loadBalancer.server.port=${DEFAULT_PORT}"
-    healthcheck: *healthcheck
+    # No public Traefik router: traffic is Traefik → Gatelin → foxnox
+    # (PWD_CHECK_URL / service DNS on the internal network).
+    healthcheck: *foxnoxHealthcheck
 
   website:
     build:

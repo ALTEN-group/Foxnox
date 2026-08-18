@@ -71,6 +71,9 @@ export function buildViewContext(req, pageKey, extra = {}) {
     common: locale.common,
     page,
     assetBase: base,
+    // Set by csrfProtection middleware (signed double-submit cookie).
+    // @ts-ignore
+    csrfToken: req.csrfToken || "",
     urls: {
       recoverRequest: `${base}/recover`,
       recoverReset: `${base}/recover/reset`,

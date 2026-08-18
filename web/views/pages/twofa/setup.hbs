@@ -14,8 +14,10 @@
 
   <form class="form" method="POST" action="{{urls.twofaSetup}}" novalidate>
     <input type="hidden" name="lang" value="{{lang}}">
+    <input type="hidden" name="secret" value="{{form.secret}}">
     <input type="hidden" name="setupToken" value="{{form.setupToken}}">
     <input type="hidden" id="renderedAt" name="rendered_at" value="0">
+    {{> csrf}}
 
     <div class="form-group">
       <label for="code">{{page.codeLabel}}</label>

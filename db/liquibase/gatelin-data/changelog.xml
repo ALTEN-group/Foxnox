@@ -43,5 +43,9 @@
     <comment>Permissions for newly protected web workflow routes</comment>
     <sqlFile path="07-permission-web.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-10" author="lcluber">
+    <comment>Login challenge mint API route + permissions</comment>
+    <sqlFile path="09-route-challenges.sql"/>
+  </changeSet>
 
 </databaseChangeLog>

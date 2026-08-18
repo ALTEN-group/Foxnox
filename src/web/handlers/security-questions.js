@@ -1,59 +1,107 @@
 // @ts-check
-import { buildViewContext } from "../context.js";
+import { buildViewContext, resolveLang } from "../context.js";
+import { getConsumerUserId } from "../consumer.js";
 import { isSuspiciousForm } from "../form-guards.js";
 import {
   emptyQuestionSlots,
-  SECURITY_QUESTION_CATALOG,
-} from "../security-questions.js";
+  listSecurityQuestionCatalog,
+  saveSecurityAnswers,
+} from "../../services/security-questions.js";
 
 /**
  * Enroll security questions for later account-recovery challenges.
- * Authenticated in production; stubbed open for UI scaffolding.
+ * Requires Gatelin session (`x-consumer-user-id`).
  */
 
 /** @type {import('express').RequestHandler} */
-export function getSecurityQuestionsSetup(req, res) {
+export async function getSecurityQuestionsSetup(req, res) {
+  const userId = getConsumerUserId(req);
+  if (!userId) {
+    return res.status(401).render(
+      "security-questions/setup",
+      buildViewContext(req, "securityQuestionsSetup", {
+        form: { slots: emptyQuestionSlots(3), catalog: [] },
+        error: buildViewContext(req, "securityQuestionsSetup").page.errorIncomplete,
+      }),
+    );
+  }
+
+  const lang = resolveLang(req);
+  const catalog = await listSecurityQuestionCatalog(lang);
   res.render(
     "security-questions/setup",
     buildViewContext(req, "securityQuestionsSetup", {
       form: {
         slots: emptyQuestionSlots(3),
-        catalog: SECURITY_QUESTION_CATALOG,
+        catalog,
       },
     }),
   );
 }
 
 /** @type {import('express').RequestHandler} */
-export function postSecurityQuestionsSetup(req, res) {
+export async function postSecurityQuestionsSetup(req, res) {
   const page = "securityQuestionsSetup";
   const ctxPage = buildViewContext(req, page).page;
+  const lang = resolveLang(req);
+  const catalog = await listSecurityQuestionCatalog(lang);
+  const userId = getConsumerUserId(req);
 
   if (isSuspiciousForm(req)) return res.status(204).end();
+
+  if (!userId) {
+    return res.status(401).render(
+      "security-questions/setup",
+      buildViewContext(req, page, {
+        form: { slots: emptyQuestionSlots(3), catalog },
+        error: ctxPage.errorIncomplete,
+      }),
+    );
+  }
 
   const questionIds = [].concat(req.body?.questionIds ?? []);
   const answers = [].concat(req.body?.answers ?? []).map((a) => String(a).trim());
   const uniqueIds = new Set(questionIds.filter(Boolean).map(String));
+  const allowed = new Set(catalog.map((q) => String(q.id)));
+  const allKnown = questionIds.every((id) => allowed.has(String(id)));
 
   if (
     questionIds.length < 3 ||
     answers.length !== questionIds.length ||
     answers.some((a) => !a) ||
-    uniqueIds.size !== questionIds.length
+    uniqueIds.size !== questionIds.length ||
+    !allKnown
   ) {
     return res.status(400).render(
       "security-questions/setup",
       buildViewContext(req, page, {
         form: {
           slots: emptyQuestionSlots(3),
-          catalog: SECURITY_QUESTION_CATALOG,
+          catalog,
         },
         error: ctxPage.errorIncomplete,
       }),
     );
   }
 
-  // TODO: hash answers into user_security_answer rows for the authenticated user.
+  try {
+    await saveSecurityAnswers(
+      userId,
+      questionIds.map((id, i) => ({
+        questionId: Number(id),
+        answer: answers[i],
+      })),
+    );
+  } catch {
+    return res.status(500).render(
+      "security-questions/setup",
+      buildViewContext(req, page, {
+        form: { slots: emptyQuestionSlots(3), catalog },
+        error: ctxPage.errorIncomplete,
+      }),
+    );
+  }
+
   return res.render(
     "security-questions/done",
     buildViewContext(req, "securityQuestionsDone"),

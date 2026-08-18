@@ -86,6 +86,11 @@
       "heading": "L’authentification à deux facteurs est désactivée",
       "body": "L’exigence d’authenticator a été retirée. Vous pourrez la réactiver après connexion."
     },
+    "twofaInvalid": {
+      "title": "Vérification expirée — Foxnox",
+      "heading": "Cette étape de connexion n’est plus valide",
+      "body": "Votre session de vérification a expiré ou a déjà été utilisée. Connectez-vous à nouveau pour continuer."
+    },
     "accountRecoverRequest": {
       "title": "Récupérer votre compte — Foxnox",
       "heading": "Plus accès à l’authentification à deux facteurs ?",
@@ -171,6 +176,11 @@
       "heading": "Confiance révoquée",
       "body": "Cet appareil exigera un code de vérification à la prochaine connexion."
     },
+    "trustedDeviceInvalid": {
+      "title": "Étape appareil expirée — Foxnox",
+      "heading": "Cette étape de connexion n’est plus valide",
+      "body": "Votre session « se souvenir de cet appareil » a expiré ou a déjà été utilisée. Connectez-vous à nouveau pour continuer."
+    },
     "passwordExpired": {
       "title": "Mot de passe expiré — Foxnox",
       "heading": "Votre mot de passe a expiré",
@@ -213,6 +223,38 @@
       "heading": "Ce lien de déverrouillage n’est plus valide",
       "body": "Demandez un nouveau déverrouillage ou attendez la fin de la période de verrouillage.",
       "cta": "Demander un déverrouillage"
+    }
+  },
+  "emails": {
+    "pwd-reset": {
+      "subject": "Réinitialiser votre mot de passe — {{brand}}",
+      "greeting": "Bonjour,",
+      "greetingNamed": "Bonjour {{nickname}},",
+      "heading": "Réinitialiser votre mot de passe",
+      "intro": "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte. Utilisez le bouton ci-dessous pour en choisir un nouveau.",
+      "cta": "Choisir un nouveau mot de passe",
+      "expiry": "Ce lien expire rapidement et ne peut être utilisé qu’une seule fois.",
+      "ignore": "Si vous n’avez pas demandé de réinitialisation, vous pouvez ignorer ce message."
+    },
+    "account-recover": {
+      "subject": "Récupération de compte — {{brand}}",
+      "greeting": "Bonjour,",
+      "greetingNamed": "Bonjour {{nickname}},",
+      "heading": "Poursuivre la récupération",
+      "intro": "Nous avons reçu une demande de récupération de votre compte. Utilisez le bouton ci-dessous pour continuer le défi de récupération.",
+      "cta": "Continuer la récupération",
+      "expiry": "Ce lien expire rapidement et ne peut être utilisé qu’une seule fois.",
+      "ignore": "Si vous n’avez pas demandé de récupérer ce compte, vous pouvez ignorer ce message."
+    },
+    "account-unlock": {
+      "subject": "Déverrouiller votre compte — {{brand}}",
+      "greeting": "Bonjour,",
+      "greetingNamed": "Bonjour {{nickname}},",
+      "heading": "Déverrouiller votre compte",
+      "intro": "Votre compte a été verrouillé après trop de tentatives de connexion échouées. Utilisez le bouton ci-dessous pour le déverrouiller.",
+      "cta": "Déverrouiller le compte",
+      "expiry": "Ce lien expire rapidement et ne peut être utilisé qu’une seule fois.",
+      "ignore": "Si vous n’avez pas demandé de déverrouillage, vous pouvez ignorer ce message."
     }
   }
 }

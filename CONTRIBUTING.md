@@ -47,14 +47,15 @@ Operational paths (local Docker base `http://localhost:8100`):
 | Flow | Path |
 |---|---|
 | Password reset | `/api/pwd/web/recover`, `/api/pwd/web/recover/reset?token=…` |
-| 2FA | `/api/pwd/web/2fa/verify`, `/api/pwd/web/2fa/setup` |
+| 2FA | `/api/pwd/web/2fa/verify?challenge=…`, `/api/pwd/web/2fa/setup` |
 | Lost 2FA recovery | `/api/pwd/web/account-recover`, `…/challenge?token=…` |
 | Security questions | `/api/pwd/web/security-questions` |
-| Trusted devices | `/api/pwd/web/trusted-devices/prompt`, `/api/pwd/web/trusted-devices` |
+| Trusted devices | `/api/pwd/web/trusted-devices/prompt?challenge=…`, `/api/pwd/web/trusted-devices` |
 | Expired password | `/api/pwd/web/password/expired?challenge=…` |
 | Unlock | `/api/pwd/web/unlock`, `/api/pwd/web/unlock/confirm?token=…` |
+| Mint login challenge (API) | `POST /api/pwd/challenges` `{ userId, kind }` |
 
-Requires Gatelin `gatelin-data` changesets 05–09. Handler backends are still stubbed.
+Requires Gatelin `gatelin-data` changesets 05–10. Run Liquibase so login challenge token types exist.
 
 ### Start / Restart
 

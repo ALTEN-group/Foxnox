@@ -37,11 +37,14 @@ import {
   postUnlockRequest,
   getUnlockConfirm,
 } from "./handlers/unlock.js";
+import { csrfProtection } from "./csrf.js";
 
 const router = express.Router();
 
 // HTML forms — keep this parser local so JSON API routes stay JSON-only.
 router.use(express.urlencoded({ extended: false, limit: "16kb" }));
+// Signed double-submit CSRF for all workflow POSTs (after body parse).
+router.use(csrfProtection);
 
 // Password recovery
 router.get("/recover", getRecoverRequest);

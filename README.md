@@ -12,9 +12,11 @@ User profile concerns such as **email verification** live in user management, no
 Pages live in `web/views/pages/<workflow>/`, with EN/FR copy in `web/locales/`.  
 In local Docker they are served at `http://localhost:8100/api/pwd/web/…`.
 
-Backend steps: token create / deep-link / log-notifier are wired for recover,
-account-recover, and unlock. Password rotation, TOTP, and the real mail service
-are still TODO.
+Backend steps: recover and unlock mutate the `pwd` row (hash rotation /
+lockout clear). Token create / deep-link / mail notify are wired for those
+flows. Login challenges bind 2FA / expired-password / trusted-device pages.
+TOTP crypto, security-question answer persistence, and trusted-device
+persistence are still TODO.
 
 ### Password recovery (`recover/`)
 
@@ -31,11 +33,13 @@ Driven by the **Password reset** token type.
 
 | Page | Path | Use case |
 |---|---|---|
-| Verify | `GET/POST /2fa/verify` | After password OK, user must enter a TOTP code to finish sign-in. |
+| Verify | `GET/POST /2fa/verify?challenge=…` | After password OK, user must enter a TOTP code to finish sign-in. |
 | Setup | `GET/POST /2fa/setup` | Authenticated user enrolls an authenticator app (QR / manual key). |
-| Done / Disabled | — | 2FA enabled, or disabled after a successful account recovery. |
+| Done / Disabled / Invalid | — | 2FA enabled, disabled after recovery, or challenge missing/expired. |
 
-Uses `pwd.twoFactorEnabled` / `pwd.twoFactorSecret`. Verify links to account recovery when the user lost their authenticator.
+Uses `pwd.twoFactorEnabled` / `pwd.twoFactorSecret`. Bound to a **2FA challenge**
+token (minted via `POST /pwd/challenges`). Successful verify consumes it and
+redirects to the trusted-device prompt with a fresh challenge.
 
 ### Account recovery — lost 2FA (`account-recover/`)
 
@@ -55,18 +59,21 @@ Driven by the **Account recovery** token type plus `user_security_answer`.
 | Setup | `GET/POST /security-questions` | User picks questions and answers used later for lost-2FA recovery. |
 | Done | — | Answers stored (hashed) for future challenges. |
 
-Backed by `security_question*` tables and `user_security_answer`. Protected route in Gatelin (expects an authenticated session once wired).
+Backed by `security_question*` tables and `user_security_answer`. The enrollment
+catalog is loaded from the DB (localized via `security_question_trans`). Protected
+route in Gatelin (expects an authenticated session once wired).
 
 ### Trusted devices (`trusted-devices/`)
 
 | Page | Path | Use case |
 |---|---|---|
-| Prompt | `GET/POST /trusted-devices/prompt` | After a successful 2FA check: “Remember this device?” |
-| Done / Skipped | — | Device trusted for a limited time, or user declines. |
+| Prompt | `GET/POST /trusted-devices/prompt?challenge=…` | After a successful 2FA check: “Remember this device?” |
+| Done / Skipped / Invalid | — | Device trusted for a limited time, user declines, or challenge expired. |
 | Manage | `GET /trusted-devices` | List remembered devices. |
 | Revoke | `POST /trusted-devices` | User revokes a device they no longer control. |
 
-Maps to `user_trusted_device` (token hash, name, UA/IP, expiry). Manage/revoke are protected routes.
+Maps to `user_trusted_device` (token hash, name, UA/IP, expiry). Prompt is bound
+to a **Trusted device challenge**. Manage/revoke are protected routes.
 
 ### Expired password (`password/`)
 
@@ -75,7 +82,9 @@ Maps to `user_trusted_device` (token hash, name, UA/IP, expiry). Manage/revoke a
 | Expired | `GET/POST /password/expired?challenge=…` | Sign-in succeeded but `pwd.pwdExpiry` has passed; user must set a new password before continuing. |
 | Done | — | Password rotated; login can proceed. |
 
-Uses an active `pwd_policy` for strength rules once the backend is wired. Not a public email flow — driven by a short-lived login challenge.
+Uses an active `pwd_policy` for strength rules. Bound to an **Expired password
+challenge** (not a public email token). Successful change rotates the hash and
+consumes the challenge.
 
 ### Account unlock (`unlock/`)
 
@@ -93,7 +102,7 @@ Email-driven workflows share this pipeline:
 1. Resolve `email` → `userId` via `USER_SEARCH_URL` (ms_user)
 2. Create a typed `token` row (`@dwtechs/hashitaka` HMAC of plaintext stored; plaintext only in the link)
 3. Build an absolute URL with `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE`
-4. Call `notifyUser` — currently a **log notifier** (prints the link); swap for the mail service later
+4. Call `notifyUser` — Handlebars templates under `web/emails/` + Nodemailer SMTP (`SMTP_*` env)
 
 | Template | Token type | Deep link |
 |---|---|---|
@@ -101,7 +110,36 @@ Email-driven workflows share this pipeline:
 | `account-recover` | Account recovery | `/account-recover/challenge?token=…` |
 | `account-unlock` | Account unlock | `/unlock/confirm?token=…` |
 
-In local Docker, submit a recover form for `admin@example.com` and copy the `url` from the Foxnox container logs.
+In local Docker, Mailpit catches mail (`SMTP_HOST` → mailpit). Open the UI on
+`http://localhost:${MAILPIT_UI_PORT:-8025}`, submit a recover form for
+`admin@example.com`, and use the link from the message. Without `SMTP_HOST`,
+`notifyUser` still logs the payload (useful for unit tests).
+
+### Login challenges
+
+Mid-login steps (2FA, expired password, trusted device) are not email tokens.
+**Gatelin** runs them after password OK (`gateLoginChallenges`):
+
+1. `POST /pwd/compare` → read `twoFactorEnabled` / `pwdExpiry` / `lockedUntil`
+2. If locked → `403`
+3. If password expired → mint `expired-password` challenge → **HTTP 202** `{ challengeRequired, url }`
+4. Else if 2FA enabled and no valid `trusted_device` cookie → mint `2fa` → **202**
+5. Else issue the session as usual
+
+Admin login redirects the browser to `url`. After the last challenge, Foxnox
+redirects to `WEB_LOGIN_RESUME_URL?ticket=…`; admin calls
+`POST /gateway/sessions/resume` with that ticket to finish the session.
+
+| Kind | Token type | Page |
+|---|---|---|
+| `2fa` | 2FA challenge | `/2fa/verify?challenge=…` |
+| `expired-password` | Expired password challenge | `/password/expired?challenge=…` |
+| `trusted-device` | Trusted device challenge | `/trusted-devices/prompt?challenge=…` |
+| (resume) | Login resume | Admin `/login?ticket=…` |
+
+Manual mint (tests / tooling):
+
+`POST /pwd/challenges` `{ "userId": 1, "kind": "2fa" | "expired-password" | "trusted-device" }`
 
 ## Workflow branding
 
