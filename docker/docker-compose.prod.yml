@@ -209,6 +209,8 @@ services:
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
       WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
       WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN}
+      # Admin login that redeems mid-login resume tickets (?ticket=…)
+      WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/admin/login}
       USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
       WEB_BRAND_NAME: ${WEB_BRAND_NAME:-Foxnox}
       WEB_BRAND_TAGLINE: ${WEB_BRAND_TAGLINE:-Account security}

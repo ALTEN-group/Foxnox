@@ -22,7 +22,7 @@ x-default-args: &defaultArgs
   UID: ${UID}
   GID: ${GID}
   TZ: ${TZ}
-  LOCALE: ${LOCALE}
+  LOCALE: ${LOCALE:-C.UTF-8}
   HOME_PATH: ${HOME_PATH}
 
 x-default-envs: &defaultEnvs
@@ -210,8 +210,8 @@ services:
 
   mailpit:
     image: axllent/mailpit:${MAILPIT_VERSION:-latest}
-    container_name: ${MAILPIT_HOST}
-    hostname: ${MAILPIT_HOST}
+    container_name: ${MAILPIT_HOST:-${APP_NAME}-mailpit-${ENV_NAME}}
+    hostname: ${MAILPIT_HOST:-${APP_NAME}-mailpit-${ENV_NAME}}
     ports:
       - ${MAILPIT_UI_PORT:-8025}:8025
     networks:
