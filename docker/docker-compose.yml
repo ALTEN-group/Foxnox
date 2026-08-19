@@ -383,30 +383,30 @@ services:
       - "traefik.http.routers.swagger.service=swagger"
       - "traefik.http.services.swagger.loadbalancer.server.port=${DEFAULT_PORT}"
 
-  # website:
-  #   build:
-  #     context: ${PWD}/website
-  #     dockerfile: dockerfile
-  #     args:
-  #       UID: ${UID}
-  #       GID: ${GID}
-  #       TZ: ${TZ}
-  #       NODE_VERSION: ${NODE_VERSION}
-  #       NODE_ENV: ${NODE_ENV}
-  #   container_name: ${WEBSITE_HOST}
-  #   hostname: ${WEBSITE_HOST}
-  #   volumes:
-  #     - ${PWD}/website/docs:/usr/src/app/docs
-  #     - website_node_modules:/usr/src/app/node_modules
-  #   networks:
-  #     - internal
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "stack.name=${STACK_NAME}"
-  #     - "traefik.http.routers.website.rule=PathPrefix(`/docs`)"
-  #     - "traefik.http.routers.website.entrypoints=web"
-  #     - "traefik.http.routers.website.service=website"
-  #     - "traefik.http.services.website.loadbalancer.server.port=5173"
+  website:
+    build:
+      context: ${PWD}/website
+      dockerfile: dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+        TZ: ${TZ}
+        NODE_VERSION: ${NODE_VERSION}
+        NODE_ENV: ${NODE_ENV}
+    container_name: ${WEBSITE_HOST}
+    hostname: ${WEBSITE_HOST}
+    volumes:
+      - ${PWD}/website/docs:/usr/src/app/docs
+      - website_node_modules:/usr/src/app/node_modules
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "stack.name=${STACK_NAME}"
+      - "traefik.http.routers.website.rule=PathPrefix(`/docs`)"
+      - "traefik.http.routers.website.entrypoints=web"
+      - "traefik.http.routers.website.service=website"
+      - "traefik.http.services.website.loadbalancer.server.port=5173"
   
   ms_user_mock:
     build:

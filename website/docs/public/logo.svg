@@ -1,0 +1,20 @@
+<!-- Foxnox wordmark: brand gradient tile + stylised F, followed by "oxnox". -->
+<!-- Extra right padding so the wordmark is not clipped when Nunito falls back to Arial. -->
+<svg width="156" height="40" viewBox="0 0 156 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800&amp;display=swap');</style>
+    <linearGradient id="foxnoxTile" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFB347" />
+      <stop offset="100%" stop-color="#FF5500" />
+    </linearGradient>
+  </defs>
+  <rect width="40" height="40" rx="8.75" fill="url(#foxnoxTile)" />
+  <!-- The F is the logo path (73x100 viewBox) scaled to 26px tall and centred in the tile. -->
+  <g transform="translate(10.55 6.875) scale(0.2625)">
+    <path d="M 0 100 L 20 100 L 20 64 L 46 64 L 60 44 L 20 44
+             L 20 20 L 58 20 L 72 0 L 0 0 Z"
+          fill="#fff" />
+  </g>
+  <!-- Baseline raised vs. a full-ascender wordmark: "oxnox" is all x-height. -->
+  <text x="48" y="29" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="34" fill="#FF5500">oxnox</text>
+</svg>
