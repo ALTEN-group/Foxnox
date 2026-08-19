@@ -11,7 +11,8 @@ const router = express.Router();
  *
  * Body: { userId: number, deviceToken: string }
  */
-router.post("/verify", async (req, res, next) => {
+// Mounted at `/pwd/trusted-devices/verify` in app.js → POST that path.
+router.post("/", async (req, res, next) => {
   try {
     const userId = Number(req.body?.userId);
     const deviceToken = String(req.body?.deviceToken ?? "");

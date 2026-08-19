@@ -1,7 +1,8 @@
 name: ${APP_NAME}
 
 x-service-healthcheck: &healthcheck
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health"]
+  # /pwd/health/ready also proves Postgres is reachable; /pwd/health is liveness only.
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
   interval: 10s
   timeout: 5s
   retries: 5
