@@ -2,11 +2,11 @@
 
 The `pwd` resource is the core of Foxnox: one row per user, holding the hash and every piece of state that can block a sign-in.
 
-All paths below are shown as the gateway exposes them (`/api/pwd/…`). Internally Foxnox serves them at `/pwd/…`.
+All paths below are shown as Gatelin exposes them (`/api/pwd/…`). Internally Foxnox serves them at `/pwd/…`.
 
 ## Compare a Password
 
-The one endpoint the gateway calls on every login. It verifies a plaintext password against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
+The one endpoint Gatelin calls on every login. It verifies a plaintext password against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
 
 ```
 POST /pwd/compare
@@ -42,7 +42,7 @@ Content-Type: application/json
 
 The returned row never contains `pwdHash` or `twoFactorSecret` — both are marked private and stripped before serialization, even though the service reads them internally.
 
-This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what the gateway needs to decide between issuing a session and raising a [login challenge](./api-challenges).
+This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what Gatelin needs to decide between issuing a session and raising a [login challenge](./api-challenges).
 
 ## Search Passwords
 

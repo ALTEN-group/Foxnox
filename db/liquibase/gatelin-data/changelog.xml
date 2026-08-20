@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-  <!-- Registers Foxnox's own routes into Gatelin's gateway DB (mounted as gatelin_migration's optional /liquibase/data volume) -->
+  <!-- Registers Foxnox's own routes into Gatelin's database (mounted as gatelin_migration's optional /liquibase/data volume) -->
 
   <changeSet id="foxnox-data-01" author="lcluber">
     <comment>Foxnox service</comment>
@@ -50,6 +50,18 @@
   <changeSet id="foxnox-data-11" author="lcluber">
     <comment>Allowed browser Origin for the admin UI (CORS whitelist)</comment>
     <sqlFile path="10-cors.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-12" author="lcluber">
+    <comment>Foxnox admin preference resources</comment>
+    <sqlFile path="11-preference-resource.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-13" author="lcluber">
+    <comment>Foxnox admin table preference templates</comment>
+    <sqlFile path="12-preference.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-14" author="lcluber">
+    <comment>Foxnox admin preference scopes</comment>
+    <sqlFile path="13-preference-scope.sql"/>
   </changeSet>
 
 </databaseChangeLog>

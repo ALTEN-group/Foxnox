@@ -17,10 +17,10 @@ Client Request
     │     express.urlencoded → csrfProtection → page handler
     ↓
 [JSON routers] - Most specific mount first
-    ├── /pwd/tokens            → token CRUD          → sendPrivate
-    ├── /pwd/policies          → policy CRUD         → send
+    ├── /pwd/tokens            → token CRUD          → send(tEnt)
+    ├── /pwd/policies          → policy CRUD         → send(ppEnt)
     ├── /pwd/trusted-devices/verify → device check
-    ├── /pwd/trusted-devices   → device CRUD         → sendPrivate
+    ├── /pwd/trusted-devices   → device CRUD         → send(tdEnt)
     ├── /pwd/challenges        → mint login challenge
     ├── /pwd/login-tickets     → redeem resume ticket
     └── /pwd/                  → password CRUD + compare → sendPwd
@@ -40,17 +40,26 @@ Every JSON router ends in a terminal response middleware, and which one it uses 
 
 | Middleware | Used by | Strips |
 |---|---|---|
-| `send` | policies | nothing — no private fields |
-| `sendPrivate` | tokens, trusted devices | `hash`, `deviceTokenHash` |
-| `sendPwd` | passwords | `pwdHash`, `twoFactorSecret` |
+| `send(ppEnt)` | policies | nothing — no private fields |
+| `send(tEnt)` | tokens | `hash` |
+| `send(tdEnt)` | trusted devices | `deviceTokenHash` |
+| `sendPwd` (`send(pEnt)`) | passwords | `pwdHash`, `twoFactorSecret` |
 
 The entity definitions mark these fields `isPrivate`, which lets the service `SELECT` them for internal work — comparing a password, verifying a TOTP code, matching a device cookie — while the response layer removes them before serialization. Privacy is enforced once, at the boundary, rather than in each handler.
+
+When Gatelin forwards a permission with data restrictions, Foxnox enforces both headers around each JSON CRUD entity:
+
+- `x-acl-fields` filters incoming write rows before entity validation and projects outgoing rows, schema descriptors, and history `record` snapshots. `id` is always retained. An omitted header is unrestricted; an empty header allows only `id`.
+- `x-acl-conditions` is a JSON array of `{ field, op, value }`. Search predicates are forced into the query with `AND`. Inserts must satisfy the partition (an absent equality field is injected), and update/archive/history target IDs are checked before the operation. Updates cannot move a row outside its partition.
+- `x-consumer-user-id` and `x-consumer-name` are mapped to `res.locals.consumer`, which lets `antity-pgsql` stamp creator/updater audit columns on inserts, updates, and archives.
+
+Malformed ACL or consumer headers, unknown/non-filterable fields, and unsupported operators fail closed with **403**. Private entity properties are stripped before field projection and can never be re-enabled by an ACL header.
 
 ## Two Middleware Chains
 
 The JSON and HTML surfaces are protected in completely different ways, because their clients are different.
 
-**JSON routes** carry no session logic of their own. Authentication and authorization happen in the gateway, which validates the JWT and checks the caller's role against the route before forwarding. By the time a request reaches Foxnox it is already authorized.
+**JSON routes** carry no session logic of their own. Authentication and route permission checks happen in Gatelin. Foxnox then enforces the field and row restrictions Gatelin resolved in `x-acl-fields` and `x-acl-conditions` at its own data boundary.
 
 **Workflow pages** parse form bodies and enforce a signed double-submit CSRF check on every non-`GET`: a `foxnox_csrf` cookie plus a matching hidden field, both required, valid for an hour. Failures get **403** with no body. On top of that, forms carry a honeypot field and a render timestamp, and suspicious submissions get **204** with no explanation. See [How Workflows Work](./workflows#form-protections).
 
@@ -64,9 +73,9 @@ The JSON and HTML surfaces are protected in completely different ways, because t
 └────────────┬─────────────────────┬───────────────┘
              │                     │
    ┌─────────▼─────────┐  ┌────────▼──────────┐
-   │   Admin Panel     │  │   API Gateway     │
+   │   Admin Panel     │  │   Gatelin (BFF)   │
    │   /admin/*        │  │   /api/*          │
-   │   (Angular)       │  │   (Gatelin)       │
+   │   (Angular)       │  │   (Node.js)       │
    └───────────────────┘  └────────┬──────────┘
                                    │  internal network only
                           ┌────────▼──────────┐
@@ -83,7 +92,7 @@ The JSON and HTML surfaces are protected in completely different ways, because t
    └───────────────────┘  └────────────────┘  └─────────────┘
 ```
 
-Foxnox has **no public route**. Every request reaches it through the gateway, which is what keeps `/pwd/compare` off the open internet. The consequence is that Foxnox cannot infer its own public address, which is why the [public URL variables](./configuration#public-urls) have to be set explicitly for email links to work.
+Foxnox has **no public route**. Every request reaches it through Gatelin, which is what keeps `/pwd/compare` off the open internet. The consequence is that Foxnox cannot infer its own public address, which is why the [public URL variables](./configuration#public-urls) have to be set explicitly for email links to work.
 
 ## Login, End to End
 
@@ -92,11 +101,11 @@ The interesting flow is a sign-in, because it involves both surfaces and three s
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gateway
+    participant G as Gatelin
     participant F as Foxnox
     participant U as User service
 
-    B->>G: POST /api/gateway/sessions { email, pwd }
+    B->>G: POST /api/gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /pwd/compare { userId, pwd }
     F->>F: verify hash
@@ -112,7 +121,7 @@ sequenceDiagram
         G-->>B: 202 { challengeRequired, kind, url }
         B->>F: workflow pages, one or more steps
         F-->>B: 303 to resume URL with ?ticket=
-        B->>G: POST /api/gateway/sessions/resume { ticket }
+        B->>G: POST /api/gatelin/sessions/resume { ticket }
         G->>F: POST /pwd/login-tickets/redeem
         F-->>G: 200 { userId }
         G-->>B: 200 session
@@ -121,11 +130,11 @@ sequenceDiagram
     end
 ```
 
-Note the division of labour. Foxnox answers questions about credentials and hosts the pages that fix problems; the gateway decides what those answers mean and issues the session. Foxnox never mints a JWT, which is why finishing a challenge produces a ticket rather than a login.
+Note the division of labour. Foxnox answers questions about credentials and hosts the pages that fix problems; Gatelin decides what those answers mean and issues the session. Foxnox never mints a JWT, which is why finishing a challenge produces a ticket rather than a login.
 
 ## Internal Integration Endpoints
 
-Four endpoints are called by the gateway rather than by clients, all derived from the base of `PWD_CHECK_URL`:
+Four endpoints are called by Gatelin rather than by clients, all derived from the base of `PWD_CHECK_URL`:
 
 | Endpoint | Called when |
 |---|---|

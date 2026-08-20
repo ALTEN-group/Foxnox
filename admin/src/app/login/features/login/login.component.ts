@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private readonly appConfig = inject(APP_CONFIG);
   private readonly route = inject(ActivatedRoute);
 
-  public readonly userServerUrl = this.appConfig.apiGateway;
+  public readonly userServerUrl = this.appConfig.gatelinApi;
   /** Foxnox password-recovery workflow (Handlebars SSR). */
   public readonly forgotPasswordUrl = `${this.appConfig.webBase}/recover`;
 

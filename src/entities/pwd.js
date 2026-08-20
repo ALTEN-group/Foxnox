@@ -37,7 +37,7 @@ export default new SQLEntity("pwd", [
     // The hash itself is produced by @dwtechs/passken-express `create` middleware
     // before this entity runs, so callers never send a password directly.
     // `isPrivate: true` lets the service SELECT the hash internally (for compare
-    // and rotation) while `sendPrivate` / `sendPwd` strips it from responses.
+    // and rotation) while `send` / `sendPwd` strips it from responses.
     key: "pwdHash",
     type: "string",
     min: 32,

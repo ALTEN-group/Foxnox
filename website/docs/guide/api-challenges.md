@@ -1,12 +1,12 @@
 # Login Challenges
 
-A login challenge is what happens when the password was right but the sign-in still cannot finish. Foxnox mints a short-lived token bound to one specific next step, and the gateway answers the login request with **202** instead of a session.
+A login challenge is what happens when the password was right but the sign-in still cannot finish. Foxnox mints a short-lived token bound to one specific next step, and Gatelin answers the login request with **202** instead of a session.
 
 ## Why 202
 
 A login has more than two outcomes. "Wrong password" is a 401 and "here is your session" is a 200, but "correct password, now prove you hold the second factor" is neither — the credentials were accepted, yet no session exists yet.
 
-Returning **202 Accepted** with a URL lets the gateway say exactly that, and keeps the decision of *which* extra step is needed inside Foxnox where the `pwd` row lives.
+Returning **202 Accepted** with a URL lets Gatelin say exactly that, and keeps the decision of *which* extra step is needed inside Foxnox where the `pwd` row lives.
 
 ## The Three Kinds
 
@@ -23,11 +23,11 @@ Order matters. An expired password is checked before 2FA, because there is no po
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gateway
+    participant G as Gatelin
     participant F as Foxnox
     participant U as User service
 
-    B->>G: POST /gateway/sessions { email, pwd }
+    B->>G: POST /gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /pwd/compare { userId, pwd }
     F-->>G: 200 { rows: [pwd row] }
@@ -50,17 +50,17 @@ sequenceDiagram
 
     B->>F: GET the challenge url, completes the step
     F-->>B: 302 to WEB_LOGIN_RESUME_URL?ticket=…
-    B->>G: POST /gateway/sessions/resume { ticket }
+    B->>G: POST /gatelin/sessions/resume { ticket }
     G->>F: POST /pwd/login-tickets/redeem { ticket }
     F-->>G: 200 { userId }
     G-->>B: 200 { accessToken, refreshToken }
 ```
 
-The important detail is the last three steps. Completing a challenge does not create a session — Foxnox cannot, it does not issue tokens. Instead it hands the browser a **login resume ticket**, and the gateway trades that ticket for a session.
+The important detail is the last three steps. Completing a challenge does not create a session — Foxnox cannot, it does not issue tokens. Instead it hands the browser a **login resume ticket**, and Gatelin trades that ticket for a session.
 
 ## Mint a Challenge
 
-Called by the gateway after a successful password check. Also useful directly for testing.
+Called by Gatelin after a successful password check. Also useful directly for testing.
 
 ```
 POST /pwd/challenges
@@ -115,7 +115,7 @@ Checking this before minting a 2FA challenge is what stops the service asking fo
 
 ## Redeem a Login Ticket
 
-Called by the gateway when the frontend posts a ticket to `POST /gateway/sessions/resume`.
+Called by Gatelin when the frontend posts a ticket to `POST /gatelin/sessions/resume`.
 
 ```
 POST /pwd/login-tickets/redeem
@@ -138,6 +138,6 @@ Tickets last 10 minutes and have a maximum of **one** attempt, so redeeming is g
 
 ## Challenge Chaining
 
-One login can require more than one step, and each completed page mints the next challenge rather than returning to the gateway. Verifying a 2FA code, for example, consumes the 2FA challenge and redirects to the trusted-device prompt with a **fresh** challenge attached.
+One login can require more than one step, and each completed page mints the next challenge rather than returning to Gatelin. Verifying a 2FA code, for example, consumes the 2FA challenge and redirects to the trusted-device prompt with a **fresh** challenge attached.
 
 Only the final page in the chain issues the login resume ticket. From the frontend's point of view none of this is visible: it redirects once on 202 and waits for the browser to come back with `?ticket=…`.

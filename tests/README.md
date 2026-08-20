@@ -27,6 +27,8 @@ npm run test:coverage     # coverage under tests/coverage/
 |------|----------------|
 | `routes/compare.test.js` | `POST /pwd/compare` contract: validation, passken compare, private field strip |
 | `routes/gatelin-contract.test.js` | Challenges, trusted-device verify, login-ticket redeem, validators |
+| `middlewares/history.test.js` | Unit: `GET /:id/history` query, transaction grouping, 404-on-INSERT-only |
+| `middlewares/res/send.test.js` | Unit: `isPrivate` stripping, nested history `record`, `x-acl-fields` projection |
 | `routes/crud-resources.test.js` | Parameterized wiring for pwd / tokens / policies / trusted-devices (search, history, add, update, archive, schema + mount order) |
 | `routes/health.test.js` | Real `app.js`: `/pwd/health` liveness + `/pwd/health/ready` db probe (mocked pg-pool); proves healix is mounted before `startTimer` |
 

@@ -11,7 +11,7 @@ export const LOCALES_ROOT = path.join(WEB_ROOT, "locales");
 
 /**
  * Public browser prefix (Traefik keeps `/api`, Foxnox serves `/pwd/web`).
- * Override with WEB_PUBLIC_BASE when the gateway path changes.
+ * Override with WEB_PUBLIC_BASE when Gatelin path changes.
  */
 export const WEB_PUBLIC_BASE =
   process.env.WEB_PUBLIC_BASE?.replace(/\/$/, "") || "/api/pwd/web";

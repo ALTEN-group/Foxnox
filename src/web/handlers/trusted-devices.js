@@ -26,7 +26,7 @@ function cookieSecure() {
 }
 
 /**
- * Path=/ so Gatelin login receives the cookie on /api/gateway/sessions.
+ * Path=/ so Gatelin login receives the cookie on /api/gatelin/sessions.
  * @param {import('express').Response} res
  * @param {string} plaintext
  * @param {Date} expiresAt

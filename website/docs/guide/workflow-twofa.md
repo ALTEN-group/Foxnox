@@ -16,15 +16,15 @@ There are two distinct pages here, and they are almost opposites. **Verify** is 
 
 ## Verify
 
-Reached only by redirect. When the gateway sees `twoFactorEnabled` on a `pwd` row and no valid trusted-device cookie, it mints a `2fa` challenge and answers the login with **202** and this page's URL.
+Reached only by redirect. When Gatelin sees `twoFactorEnabled` on a `pwd` row and no valid trusted-device cookie, it mints a `2fa` challenge and answers the login with **202** and this page's URL.
 
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gateway
+    participant G as Gatelin
     participant F as Foxnox
 
-    B->>G: POST /gateway/sessions { email, pwd }
+    B->>G: POST /gatelin/sessions { email, pwd }
     G->>F: POST /pwd/compare
     F-->>G: 200 { twoFactorEnabled: true }
     G->>F: POST /pwd/challenges { kind: "2fa" }

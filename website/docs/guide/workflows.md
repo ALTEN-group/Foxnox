@@ -2,7 +2,7 @@
 
 Account workflows are the server-rendered pages Foxnox serves to end users. They exist so that you do not have to build password reset, 2FA enrollment, and device management screens in every frontend you own — and so that the pages handling credentials live in the service that owns them.
 
-They are mounted at `/pwd/web/…` internally, and reached publicly at `/api/pwd/web/…` through the gateway.
+They are mounted at `/pwd/web/…` internally, and reached publicly at `/api/pwd/web/…` through Gatelin.
 
 ## Two Families
 
@@ -16,7 +16,7 @@ Every workflow is driven by a token in the URL, but where that token comes from 
 | [Account unlock](./workflow-unlock) | `/unlock` |
 | [Lost 2FA recovery](./workflow-account-recover) | `/account-recover` |
 
-**Login-step workflows** start mid-sign-in. The password was already accepted, the gateway minted a challenge, and the browser was redirected. The token arrives as `?challenge=…`.
+**Login-step workflows** start mid-sign-in. The password was already accepted, Gatelin minted a challenge, and the browser was redirected. The token arrives as `?challenge=…`.
 
 | Workflow | Entry point |
 |---|---|

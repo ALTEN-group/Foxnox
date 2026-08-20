@@ -1,5 +1,5 @@
 --
--- Browser Origins allowed to call the gateway.
+-- Browser Origins allowed to call Gatelin.
 --
 -- Gatelin's CORS whitelist is DB-backed and empty by default, so without a row
 -- here every browser request carrying an `Origin` header is rejected with

@@ -134,7 +134,18 @@ for (const resource of RESOURCES) {
 const historyGet = jest.fn((tableName) => {
   const mw = jest.fn((_req, res, next) => {
     res.locals.rows = [
-      { id: 1, operation: "UPDATE", record: { id: 1, table: tableName } },
+      {
+        id: 1,
+        operation: "UPDATE",
+        record: {
+          id: 1,
+          table: tableName,
+          pwdHash: "secret",
+          twoFactorSecret: "otp",
+          hash: "tok-hash",
+          deviceTokenHash: "dev-hash",
+        },
+      },
     ];
     res.locals.total = 1;
     next();
@@ -203,17 +214,20 @@ describe.each(RESOURCES)(
 
 describe.each(RESOURCES)(
   "GET $mount/:id/history ($name)",
-  ({ name, mount, historyTable }) => {
+  ({ name, mount, historyTable, privateProps }) => {
     beforeEach(() => {
       historyMiddlewares[historyTable].mockClear();
     });
 
-    it("routes to history for its table", async () => {
+    it("routes to history for its table and strips private fields from the record snapshot", async () => {
       const res = await request(app).get(`${mount}/1/history`);
       expect(res.status).toBe(200);
       expect(res.body.rows[0].record.table).toBe(historyTable);
       expect(historyMiddlewares[historyTable]).toHaveBeenCalledTimes(1);
       expect(entityGets[name]).not.toHaveBeenCalled();
+      for (const key of privateProps) {
+        expect(res.body.rows[0].record).not.toHaveProperty(key);
+      }
     });
   },
 );
@@ -247,22 +261,19 @@ describe.each(RESOURCES)("PUT $mount (update) ($name)", ({ name, mount }) => {
   });
 });
 
-describe.each(RESOURCES)(
-  "POST $mount/archive ($name)",
-  ({ name, mount }) => {
-    beforeEach(() => {
-      entityArchives[name].mockClear();
-    });
+describe.each(RESOURCES)("POST $mount/archive ($name)", ({ name, mount }) => {
+  beforeEach(() => {
+    entityArchives[name].mockClear();
+  });
 
-    it("routes to archive", async () => {
-      const res = await request(app)
-        .post(`${mount}/archive`)
-        .send({ rows: [{ id: 1 }] });
-      expect(res.status).toBe(200);
-      expect(entityArchives[name]).toHaveBeenCalledTimes(1);
-    });
-  },
-);
+  it("routes to archive", async () => {
+    const res = await request(app)
+      .post(`${mount}/archive`)
+      .send({ rows: [{ id: 1 }] });
+    expect(res.status).toBe(200);
+    expect(entityArchives[name]).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe.each(RESOURCES)("GET $mount/schema ($name)", ({ name, mount }) => {
   it("returns non-private property projections", async () => {
@@ -271,6 +282,40 @@ describe.each(RESOURCES)("GET $mount/schema ($name)", ({ name, mount }) => {
     expect(res.body.rows.every((r) => r.key !== "secretField")).toBe(true);
     expect(res.body.rows.some((r) => r.key === "id")).toBe(true);
     expect(entityGets[name]).not.toHaveBeenCalled();
+  });
+});
+
+describe("Gatelin ACL header wiring", () => {
+  it("forces x-acl-conditions into entity search filters", async () => {
+    entityGets.policies.mockClear();
+
+    const res = await request(app)
+      .post("/pwd/policies/search")
+      .set(
+        "x-acl-conditions",
+        JSON.stringify([{ field: "id", op: ">", value: 2 }]),
+      )
+      .send({ operator: "OR" });
+
+    expect(res.status).toBe(200);
+    const [req] = entityGets.policies.mock.calls[0];
+    expect(req.body.operator).toBe("AND");
+    expect(req.body.filters.id).toEqual([
+      { value: 2, matchMode: ">", operator: "AND" },
+    ]);
+  });
+
+  it("filters update rows using x-acl-fields before the entity runs", async () => {
+    entityUpdates.policies.mockClear();
+
+    const res = await request(app)
+      .put("/pwd/policies")
+      .set("x-acl-fields", "")
+      .send({ rows: [{ id: 1, entity: "policies" }] });
+
+    expect(res.status).toBe(200);
+    const [req] = entityUpdates.policies.mock.calls[0];
+    expect(req.body.rows).toEqual([{ id: 1 }]);
   });
 });
 

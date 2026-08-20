@@ -12,12 +12,13 @@ Foxnox is the password and account-security service for a microservices architec
 - 🖥️ **Account workflow pages** — Server-rendered recovery, unlock, 2FA, and device pages in English and French
 - 📧 **Email delivery** — Reset and unlock links sent over SMTP from Handlebars templates
 - 🎛️ **Front-end admin** — Manage passwords, policies, tokens, and devices through a web interface
+- 🛡️ **Gatelin ACL enforcement** — Enforce Gatelin field allow-lists and row conditions on JSON reads and writes
 
 ## What Foxnox Is Not
 
 Foxnox deliberately stops at credentials and authentication factors. **User profiles** — names, email addresses, email verification, contact details — belong to your user management service. Foxnox only ever refers to a user by a numeric `userId`, and resolves an email address to that ID by calling out to user management (see [`USER_SEARCH_URL`](./configuration)).
 
-Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?"; the API gateway ([Gatelin](https://gatelin.fr)) is what turns that answer into a JWT session.
+Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?"; the BFF ([Gatelin](https://gatelin.fr)) is what turns that answer into a JWT session.
 
 ## Two Surfaces
 
@@ -28,7 +29,7 @@ Foxnox exposes two very different kinds of endpoint, and it helps to keep them a
 | **JSON API** | `/pwd/…` | Gatelin and the admin UI | JSON request/response |
 | **Account workflows** | `/pwd/web/…` | End users, in a browser | Server-rendered HTML |
 
-Both are normally reached through the gateway, which adds an `/api` prefix — so the public URLs are `/api/pwd/…` and `/api/pwd/web/…`. See [Request Flow](./architecture).
+Both are normally reached through Gatelin, which adds an `/api` prefix — so the public URLs are `/api/pwd/…` and `/api/pwd/web/…`. See [Request Flow](./architecture).
 
 ## Key Concepts
 
@@ -42,7 +43,7 @@ Every user with a password has exactly one **`pwd` row**. It is the heart of the
 - `twoFactorEnabled` / `twoFactorSecret` — 2FA state; the secret is never returned by the API
 - `lastLoginAt` — last successful sign-in
 
-Because a single row answers "can this user log in right now?", the gateway only needs one call to Foxnox to find out. See [Passwords](./api-passwords).
+Because a single row answers "can this user log in right now?", Gatelin only needs one call to Foxnox to find out. See [Passwords](./api-passwords).
 
 ### Tokens
 
@@ -52,7 +53,7 @@ Each token type carries its own time-to-live and maximum attempt count, which is
 
 ### Login challenges
 
-A **login challenge** is a token that represents an unfinished sign-in. When the password is correct but something else stands in the way — 2FA is enabled, or the password has expired — the gateway does not issue a session. Instead it asks Foxnox to mint a challenge, and answers the login request with **HTTP 202** and a URL pointing at the matching workflow page.
+A **login challenge** is a token that represents an unfinished sign-in. When the password is correct but something else stands in the way — 2FA is enabled, or the password has expired — Gatelin does not issue a session. Instead it asks Foxnox to mint a challenge, and answers the login request with **HTTP 202** and a URL pointing at the matching workflow page.
 
 The user completes the step in the browser; Foxnox then hands back a one-shot **login resume ticket** which the frontend redeems to finally get its session. See [Login Challenges](./api-challenges).
 
@@ -64,7 +65,7 @@ They ship with the service, so you do not have to build reset and 2FA screens in
 
 ### Trusted devices
 
-A **trusted device** is a browser the user chose to remember. Foxnox stores a hash of a random cookie value along with the device name, IP address, user agent, and an expiry date — 90 days by default. While that cookie is valid, the gateway skips the 2FA challenge for that user on that browser. Users can list and revoke their devices themselves. See [Trusted Devices](./api-trusted-devices).
+A **trusted device** is a browser the user chose to remember. Foxnox stores a hash of a random cookie value along with the device name, IP address, user agent, and an expiry date — 90 days by default. While that cookie is valid, Gatelin skips the 2FA challenge for that user on that browser. Users can list and revoke their devices themselves. See [Trusted Devices](./api-trusted-devices).
 
 ### Password policies
 

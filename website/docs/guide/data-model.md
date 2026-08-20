@@ -84,7 +84,7 @@ erDiagram
 
 ### pwd
 
-One row per user, and the single source of truth for whether a sign-in can proceed. Everything the gateway needs — hash, expiry, lockout state, 2FA flag — is in this row, which is why a login needs exactly one call to Foxnox.
+One row per user, and the single source of truth for whether a sign-in can proceed. Everything Gatelin needs — hash, expiry, lockout state, 2FA flag — is in this row, which is why a login needs exactly one call to Foxnox.
 
 `pwdHash` and `twoFactorSecret` are marked private: readable internally, never serialized into a response.
 

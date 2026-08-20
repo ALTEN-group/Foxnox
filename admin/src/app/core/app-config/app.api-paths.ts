@@ -1,7 +1,7 @@
 import { AdminEntity } from "@core/app-config/app.entities";
 
 /**
- * Gateway `resources.name` values for Foxnox (see db/liquibase/gatelin-data).
+ * Gatelin `resources.name` values for Foxnox (see db/liquibase/gatelin-data).
  * Public URLs are `/api/<path>/…` and match the upstream Foxnox mount paths
  * (Gatelin forwards the path unchanged).
  *

@@ -9,3 +9,6 @@ docker/conf/.env.dev
 website/docs/.vitepress/cache
 website/docs/.vitepress/dist
 swagger/src/foxnox.openapi.json
+
+# APM dependencies
+apm_modules/

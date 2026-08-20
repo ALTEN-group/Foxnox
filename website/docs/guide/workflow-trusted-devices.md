@@ -23,7 +23,7 @@ Reached by redirect from a successful [2FA verification](./workflow-twofa), carr
 sequenceDiagram
     participant B as Browser
     participant F as Foxnox
-    participant G as Gateway
+    participant G as Gatelin
 
     B->>F: POST /2fa/verify (code accepted)
     F-->>B: 303 to /trusted-devices/prompt?challenge=…
@@ -39,7 +39,7 @@ sequenceDiagram
         F-->>B: 303 to resume URL
     end
 
-    B->>G: POST /gateway/sessions/resume { ticket }
+    B->>G: POST /gatelin/sessions/resume { ticket }
     G-->>B: 200 session
 ```
 
@@ -51,13 +51,13 @@ The optional device name is there because "Chrome on macOS" tells a user very li
 
 Accepting creates a `user_trusted_device` row with a hash of the cookie value, the device name, the IP address, the user agent, and an expiry **90 days** out. The cookie itself is `HttpOnly`, `SameSite=Lax`, and scoped to `Path=/`.
 
-That path scope matters: the cookie has to reach the gateway's login endpoint, not just the Foxnox workflow pages, or it could never be checked during a sign-in. Set `COOKIE_SECURE=1` to add the `Secure` flag when serving over HTTPS.
+That path scope matters: the cookie has to reach Gatelin's login endpoint, not just the Foxnox workflow pages, or it could never be checked during a sign-in. Set `COOKIE_SECURE=1` to add the `Secure` flag when serving over HTTPS.
 
 Only the hash is stored, so the table cannot be read back into working cookies.
 
 ## How the Skip Works
 
-On the next login, the gateway forwards the `trusted_device` cookie to Foxnox's [verify endpoint](./api-trusted-devices#verify-a-device-token). A live matching row means the 2FA challenge is never minted, and `lastUsedAt` is refreshed.
+On the next login, Gatelin forwards the `trusted_device` cookie to Foxnox's [verify endpoint](./api-trusted-devices#verify-a-device-token). A live matching row means the 2FA challenge is never minted, and `lastUsedAt` is refreshed.
 
 The check is against the database rather than the cookie alone, which is what makes revocation immediate — there is no need to reach the browser and delete anything.
 

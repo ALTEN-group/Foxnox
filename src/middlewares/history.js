@@ -12,7 +12,7 @@ import { execute } from "@dwtechs/antity-pgsql";
  * of them are updated in a single bulk transaction. Merged group keeps the
  * first row's id/operation/tstamp/consumerName and combines all `record`
  * fields into one object.
- * @param {Array<object>} rows - rows returned by query()/queryByField(), ordered by tstamp ASC, id ASC
+ * @param {Array<object>} rows - rows returned by query(), ordered by tstamp ASC, id ASC
  * @returns {Array<object>} grouped history entries
  */
 function groupByAction(rows) {
@@ -37,7 +37,11 @@ function groupByAction(rows) {
 }
 
 /**
- * Creates a history getter middleware for a specific table
+ * Creates a history getter middleware for a specific table.
+ *
+ * Rows carry the trigger's `row_to_json(NEW)` snapshot under `record`, which
+ * includes `isPrivate` columns; the router's `send` terminal scrubs them.
+ *
  * @param {string|string[]} tableName - The name(s) of the table(s) to retrieve history for
  * @param {string} [schema='public'] - The schema name (defaults to 'public')
  * @returns {Function} Express middleware function

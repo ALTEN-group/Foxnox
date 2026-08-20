@@ -8,14 +8,14 @@ Trusting a device is a cookie plus a row, tied together by a hash:
 
 1. After a successful 2FA check, the user is offered a "remember this device" prompt.
 2. If they accept, Foxnox generates a random value, sets it as the `trusted_device` cookie, and stores an HMAC hash of it in `user_trusted_device` — alongside the device name, IP address, user agent, and an expiry date 90 days out.
-3. On the next login, the gateway forwards the cookie to Foxnox, which hashes it and looks for a live matching row.
+3. On the next login, Gatelin forwards the cookie to Foxnox, which hashes it and looks for a live matching row.
 4. A match means the 2FA challenge is skipped, and `lastUsedAt` is refreshed.
 
 As with tokens, only the hash is stored, so the table cannot be turned into a set of working cookies. A row stops counting as trusted the moment it is archived or its `expiresAt` passes — no cookie invalidation is needed, which is what makes revocation instant.
 
 ## Verify a Device Token
 
-Called by the gateway during login, not by clients.
+Called by Gatelin during login, not by clients.
 
 ```
 POST /pwd/trusted-devices/verify

@@ -128,7 +128,7 @@ Mid-login steps (2FA, expired password, trusted device) are not email tokens.
 
 Admin login redirects the browser to `url`. After the last challenge, Foxnox
 redirects to `WEB_LOGIN_RESUME_URL?ticket=…`; admin calls
-`POST /gateway/sessions/resume` with that ticket to finish the session.
+`POST /gatelin/sessions/resume` with that ticket to finish the session.
 
 | Kind | Token type | Page |
 |---|---|---|

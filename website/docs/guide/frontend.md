@@ -7,7 +7,7 @@ Most of Foxnox needs nothing from your frontend — the workflow pages are serve
 A login can return **202 Accepted**. The password was correct, but a mid-login step is required before a session exists. Code that treats any non-200 as a failure will leave every 2FA user unable to sign in.
 
 ```typescript
-const response = await fetch('/api/gateway/sessions', {
+const response = await fetch('/api/gatelin/sessions', {
   method: 'POST',
   credentials: 'include',
   headers: { 'Content-Type': 'application/json' },
@@ -39,7 +39,7 @@ Once the user has completed the workflow pages, Foxnox redirects the browser to 
 const ticket = new URLSearchParams(window.location.search).get('ticket');
 
 if (ticket) {
-  const response = await fetch('/api/gateway/sessions/resume', {
+  const response = await fetch('/api/gatelin/sessions/resume', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -92,14 +92,14 @@ Foxnox sets two cookies, and both are `HttpOnly` — your JavaScript cannot and 
 
 | Cookie | Path | Purpose |
 |---|---|---|
-| `trusted_device` | `/` | Lets the gateway skip 2FA on a remembered browser. Scoped to the root so it reaches the login endpoint, not just the workflow pages. |
+| `trusted_device` | `/` | Lets Gatelin skip 2FA on a remembered browser. Scoped to the root so it reaches the login endpoint, not just the workflow pages. |
 | `foxnox_csrf` | `/pwd/web` | Double-submit CSRF protection for workflow forms. Handled entirely by the pages. |
 
 Both gain the `Secure` flag when `COOKIE_SECURE=1` or `NODE_ENV=production`.
 
 ## Calling the Admin API
 
-The CRUD endpoints are ordinary authenticated JSON calls through the gateway:
+The CRUD endpoints are ordinary authenticated JSON calls through Gatelin:
 
 ```typescript
 const response = await fetch('/api/pwd/search', {

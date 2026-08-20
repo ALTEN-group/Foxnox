@@ -28,12 +28,12 @@ Variables for the `foxnox` container.
 
 ## Public URLs
 
-These decide what the user actually sees in their browser and in their inbox. Because Foxnox sits behind a gateway, it cannot infer them from the incoming request — get them wrong and reset links will point somewhere unreachable.
+These decide what the user actually sees in their browser and in their inbox. Because Foxnox sits behind Gatelin, it cannot infer them from the incoming request — get them wrong and reset links will point somewhere unreachable.
 
 | Variable | Default | Description |
 |---|---|---|
 | `WEB_PUBLIC_ORIGIN` | `{SERVER_SCHEME}{SERVER_URL}:{TRAEFIK_PORT\|8100}` | Absolute origin used to build email deep links, with no path — e.g. `https://app.example.com` |
-| `WEB_PUBLIC_BASE` | `/api/pwd/web` | Browser path prefix for the workflow pages. This is the gateway's `/api` prefix plus Foxnox's own `/pwd/web` mount. |
+| `WEB_PUBLIC_BASE` | `/api/pwd/web` | Browser path prefix for the workflow pages. This is the edge proxy's `/api` prefix plus Foxnox's own `/pwd/web` mount. |
 | `WEB_LOGIN_RESUME_URL` | `{origin}/admin/login` | Page that redeems a mid-login resume ticket. After the last login challenge, Foxnox redirects the browser here with `?ticket=…`. |
 
 A deep link is simply `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE` + the page path + the token query parameter. For example, with the defaults above, a password reset email links to `http://localhost:8100/api/pwd/web/recover/reset?token=…`.
@@ -91,14 +91,14 @@ These apply to the `foxnox-migration` container (`dwtechs/foxnox-migration`):
 | `LIQUIBASE_COMMAND_CONTEXTS` | ⬜ | Liquibase contexts to apply during migration |
 | `TZ` | ⬜ | Timezone |
 
-## Gateway-Side Variables
+## Gatelin Variables
 
-These are set on the **gateway**, not on Foxnox, but they are what connects the two. See [Integration](./integration).
+These are set on **Gatelin**, not on Foxnox, but they are what connects the two. See [Integration](./integration).
 
 | Variable | Description |
 |---|---|
-| `PWD_CHECK_URL` | Must point at `http://<foxnox-host>:<port>/pwd/compare`. The gateway derives the other integration endpoints from the same base: `/pwd/challenges`, `/pwd/trusted-devices/verify`, and `/pwd/login-tickets/redeem`. |
-| `USER_SEARCH_URL` | The gateway's own user lookup for login; normally the same URL Foxnox uses. |
+| `PWD_CHECK_URL` | Must point at `http://<foxnox-host>:<port>/pwd/compare`. Gatelin derives the other integration endpoints from the same base: `/pwd/challenges`, `/pwd/trusted-devices/verify`, and `/pwd/login-tickets/redeem`. |
+| `USER_SEARCH_URL` | Gatelin's own user lookup for login; normally the same URL Foxnox uses. |
 | `ADMIN_PASSWORD_RECOVERY_URL` | Set to `/api/pwd/web/recover` so the admin login page shows a "Forgotten password?" link pointing at the Foxnox workflow. |
 
 ## Maintenance Jobs

@@ -13,15 +13,15 @@ Driven by the **Expired password challenge** token type: 15 minute lifetime, 3 a
 
 ## Checked Before 2FA
 
-The gateway evaluates expiry **before** two-factor authentication. There is no point verifying a second factor for a credential the user is about to replace, and doing it in this order means a user with both an expired password and 2FA enabled sets their new password first, then verifies.
+Gatelin evaluates expiry **before** two-factor authentication. There is no point verifying a second factor for a credential the user is about to replace, and doing it in this order means a user with both an expired password and 2FA enabled sets their new password first, then verifies.
 
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gateway
+    participant G as Gatelin
     participant F as Foxnox
 
-    B->>G: POST /gateway/sessions { email, pwd }
+    B->>G: POST /gatelin/sessions { email, pwd }
     G->>F: POST /pwd/compare
     F-->>G: 200 { pwdExpiry in the past }
     G->>F: POST /pwd/challenges { kind: "expired-password" }

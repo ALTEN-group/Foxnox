@@ -8,7 +8,7 @@ export interface AppConfig {
   storageKeys: { [key: string]: string };
   sidenavItems: MenuItem[];
   apiRoot: string;
-  apiGateway: string;
+  gatelinApi: string;
   apiUsers: string;
   /** Foxnox SSR workflows base (`/api/pwd/web`). */
   webBase: string;
@@ -21,7 +21,7 @@ const defaultValue: AppConfig = {
   storageKeys: {},
   sidenavItems: [],
   apiRoot: "/api/",
-  apiGateway: "/api/gateway/",
+  gatelinApi: "/api/gatelin/",
   apiUsers: "/api/users/",
   webBase: "/api/pwd/web",
   env: {},

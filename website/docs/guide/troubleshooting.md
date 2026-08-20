@@ -45,8 +45,8 @@ There is no migration path for this — restore the old secret if you still have
 
 1. The frontend actually redirects the browser to the `url` from the 202 body, instead of treating 202 as a failure. This is by far the most common cause — see [Frontend Integration](./frontend).
 2. That URL is reachable. It is built from `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE`, so a wrong value here produces a link that 404s.
-3. The `pwd/web` routes are registered in the gateway database (`db/liquibase/gatelin-data/`, changesets 05–08).
-4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code calls `POST /gateway/sessions/resume`.
+3. The `pwd/web` routes are registered in Gatelin database (`db/liquibase/gatelin-data/`, changesets 05–08).
+4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code calls `POST /gatelin/sessions/resume`.
 5. Tickets are one-shot and last 10 minutes. Reloading the resume URL a second time correctly fails with **400**.
 
 ## Login Never Asks for 2FA
@@ -106,7 +106,7 @@ Also check that the link was not already used, and that the user opened the most
 
 ## Workflow Pages Look Unstyled
 
-The pages load their CSS from `/pwd/web/assets/…`. If that route is missing from the gateway database (`getWebAssets` in changeset 06), the HTML renders but every asset request 404s. Confirm with:
+The pages load their CSS from `/pwd/web/assets/…`. If that route is missing from Gatelin database (`getWebAssets` in changeset 06), the HTML renders but every asset request 404s. Confirm with:
 
 ```bash
 curl -i http://localhost:8100/api/pwd/web/assets/css/main.css

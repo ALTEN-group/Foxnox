@@ -7,19 +7,19 @@ Foxnox is distributed as Docker images on Docker Hub:
 
 Two more images exist for the project itself but are not required to run it: `dwtechs/foxnox-admin` (Angular admin UI) and `dwtechs/foxnox-website` (this documentation site).
 
-See the [Integration](./integration) page for gateway registration and seed data, and [Environment Variables](./configuration) for the full variable reference.
+See the [Integration](./integration) page for Gatelin registration and seed data, and [Environment Variables](./configuration) for the full variable reference.
 
 ## Architecture
 
-Foxnox is an **internal service**. It has no public Traefik router: browsers and API clients always reach it through the gateway, which strips the `/api` prefix and forwards to Foxnox on the internal network.
+Foxnox is an **internal service**. It has no public Traefik router: browsers and API clients always reach it through Gatelin, which strips the `/api` prefix and forwards to Foxnox on the internal network.
 
 ```
 Browser / Client
       |
       v
-  Traefik  (:80)
+  Traefik  (:80)   ← edge gateway
       |
-      +-- /api/*   --> Gatelin  (auth, routing, ACL)
+      +-- /api/*   --> Gatelin BFF  (sessions, routing, ACL)
       |                   |
       |                   +-- /pwd/*      --> Foxnox JSON API
       |                   +-- /pwd/web/*  --> Foxnox workflow pages
@@ -27,7 +27,7 @@ Browser / Client
       +-- /docs/*  --> Documentation site
 ```
 
-This matters for two reasons. First, nothing except the gateway can call `/pwd/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the gateway's prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
+This matters for two reasons. First, nothing except Gatelin can call `/pwd/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the public prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
 
 ## docker-compose.yml template
 
@@ -148,7 +148,7 @@ services:
       WEB_BRAND_BACKGROUND_COLOR: "#f4f6f8"
     networks:
       - internal
-    # No public Traefik router on purpose: traffic is Traefik → gateway → foxnox.
+    # No public Traefik router on purpose: traffic is Traefik → Gatelin → Foxnox.
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
       interval: 10s
@@ -164,7 +164,7 @@ services:
         condition: service_healthy
     environment:
       TZ: Europe/Paris
-      # Points the gateway at the Foxnox password check
+      # Points Gatelin at the Foxnox password check
       PWD_CHECK_URL: http://my-project-foxnox-local:3000/pwd/compare
       USER_SEARCH_URL: http://my-project-msuser-local:3000/users/search
       DB_HOST: my-project-postgres-local
@@ -180,13 +180,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "stack.name=my-project-local"
-      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.gateway.entrypoints=web"
-      - "traefik.http.routers.gateway.service=gateway"
-      - "traefik.http.routers.gateway.middlewares=strip-prefix"
+      - "traefik.http.routers.gatelin.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.gatelin.entrypoints=web"
+      - "traefik.http.routers.gatelin.service=gatelin"
+      - "traefik.http.routers.gatelin.middlewares=strip-prefix"
       - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
       - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
-      - "traefik.http.services.gateway.loadBalancer.server.port=3000"
+      - "traefik.http.services.gatelin.loadBalancer.server.port=3000"
 
 networks:
   internal:
@@ -207,7 +207,7 @@ The dependencies above are not decorative — Foxnox will fail to start without 
 
 1. **postgres** must be healthy, because Foxnox connects at boot and probes the database on every readiness check.
 2. **foxnox_migration** must have completed successfully, because the schema and the seeded token types have to exist before the first request.
-3. **foxnox** should be healthy before the gateway starts serving logins, otherwise the first sign-in attempts fail on `PWD_CHECK_URL`.
+3. **foxnox** should be healthy before Gatelin starts serving logins, otherwise the first sign-in attempts fail on `PWD_CHECK_URL`.
 
 ## Health Check
 
@@ -226,7 +226,7 @@ From inside the network:
 curl http://my-project-foxnox-local:3000/pwd/health/ready
 ```
 
-Through the gateway, if you registered the health route:
+Through Gatelin, if you registered the health route:
 
 ```bash
 curl http://localhost:8100/api/pwd/health
