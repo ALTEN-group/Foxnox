@@ -158,10 +158,6 @@ services:
         condition: service_completed_successfully
     networks:
       - internal
-    # Bind sibling Gatelin source when developing login-challenge changes locally
-    # (requires GATELIN_VERSION image that already has matching package.json deps).
-    volumes:
-      - ${PWD}/../Gatelin/src:/usr/src/app/src
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
