@@ -7,10 +7,12 @@ import app from "./app.js";
 // Cron jobs
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
+import { initPwdGeneration } from "./services/pwd.js";
 
 // Init cached reference data
 Promise.all([
   // routeSvc.init(),
+  initPwdGeneration(),
 ])
   .then(() => {
     // Start cron jobs

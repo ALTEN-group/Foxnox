@@ -74,7 +74,7 @@ The JSON and HTML surfaces are protected in completely different ways, because t
              │                     │
    ┌─────────▼─────────┐  ┌────────▼──────────┐
    │   Admin Panel     │  │   Gatelin (BFF)   │
-   │   /admin/*        │  │   /api/*          │
+   │   /foxnox/*       │  │   /api/*          │
    │   (Angular)       │  │   (Node.js)       │
    └───────────────────┘  └────────┬──────────┘
                                    │  internal network only

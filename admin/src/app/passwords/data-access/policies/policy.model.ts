@@ -30,7 +30,7 @@ export const policyFactory = (): Policy => ({
   name: "",
   description: "",
   length: 8,
-  number: false,
+  number: true,
   symbol: false,
   lowerCase: false,
   upperCase: false,

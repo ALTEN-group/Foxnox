@@ -256,7 +256,7 @@ services:
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
       WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
       WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}}
-      WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/admin/login}
+      WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/foxnox/login}
       USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
       WEB_BRAND_NAME: ${WEB_BRAND_NAME:-Foxnox}
       WEB_BRAND_TAGLINE: ${WEB_BRAND_TAGLINE:-Account security}
@@ -311,10 +311,47 @@ services:
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.admin.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin.rule=PathPrefix(`/foxnox`)"
       - "traefik.http.routers.admin.entrypoints=web"
       - "traefik.http.routers.admin.service=admin"
       - "traefik.http.services.admin.loadbalancer.server.port=${ADMIN_PORT}"
+
+  # Playwright suite, on demand only (`scripts/e2e.sh`, or `docker compose --profile
+  # e2e run --rm admin-e2e`). Drives the admin UI through Traefik, exercising
+  # the same routing path a real browser hits.
+  admin-e2e:
+    profiles: ["e2e"]
+    build:
+      context: ${PWD}/admin
+      dockerfile: e2e-dockerfile
+      args:
+        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION}
+        TZ: ${TZ}
+    container_name: ${ADMIN_E2E_HOST}
+    hostname: ${ADMIN_E2E_HOST}
+    environment:
+      # Overrides playwright.config.ts's `http://localhost:8100/foxnox/` default
+      # since localhost inside this container is the container itself.
+      E2E_BASE_URL: ${ADMIN_E2E_BASE_URL}
+      CI: "1"
+      TZ: ${TZ}
+    networks:
+      - internal
+    depends_on:
+      - admin
+      - foxnox
+      - gatelin
+      - traefik
+    volumes:
+      # Mount source at /repo/admin so credentials.ts's `../../../swagger/src/…`
+      # path resolves the same way it does on the host.
+      - ${PWD}/admin/e2e:/repo/admin/e2e:ro
+      - ${PWD}/admin/playwright.config.ts:/repo/admin/playwright.config.ts:ro
+      - ${PWD}/swagger/src:/repo/swagger/src:ro
+      # Test artifacts land back on the host next to admin/e2e/ where the .gitignore
+      # already covers them.
+      - ${PWD}/admin/test-results:/repo/admin/test-results
+      - ${PWD}/admin/playwright-report:/repo/admin/playwright-report
 
   adminer:
     image: ${ADMINER_VERSION}

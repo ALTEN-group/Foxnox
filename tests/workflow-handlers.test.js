@@ -139,9 +139,9 @@ jest.unstable_mockModule("../src/services/trusted-devices.js", () => ({
 }));
 
 jest.unstable_mockModule("../src/web/login-resume.js", () => ({
-  getLoginResumeBaseUrl: () => "http://localhost:8100/admin/login",
+  getLoginResumeBaseUrl: () => "http://localhost:8100/foxnox/login",
   buildLoginResumeUrl: jest.fn(
-    async () => "http://localhost:8100/admin/login?ticket=resume-ticket",
+    async () => "http://localhost:8100/foxnox/login?ticket=resume-ticket",
   ),
   redeemLoginResumeTicket: jest.fn(async () => ({ userId: 55 })),
 }));
@@ -424,7 +424,7 @@ describe("expired password", () => {
     expect(res.status).toBe(303);
     expect(rotatePassword).toHaveBeenCalledWith(55, "GoodPass1!");
     expect(consumeLoginChallenge).toHaveBeenCalledWith(10);
-    expect(res.headers.location).toContain("/admin/login?ticket=");
+    expect(res.headers.location).toContain("/foxnox/login?ticket=");
   });
 });
 
@@ -444,7 +444,7 @@ describe("trusted devices", () => {
     });
     expect(res.status).toBe(303);
     expect(consumeLoginChallenge).toHaveBeenCalledWith(10);
-    expect(res.headers.location).toContain("/admin/login?ticket=");
+    expect(res.headers.location).toContain("/foxnox/login?ticket=");
   });
 
   it("POST /trusted-devices/prompt skips device save when trust=no", async () => {
@@ -454,7 +454,7 @@ describe("trusted devices", () => {
     });
     expect(res.status).toBe(303);
     expect(consumeLoginChallenge).toHaveBeenCalledWith(10);
-    expect(res.headers.location).toContain("/admin/login?ticket=");
+    expect(res.headers.location).toContain("/foxnox/login?ticket=");
   });
 
   it("GET /trusted-devices shows manage page when authenticated", async () => {

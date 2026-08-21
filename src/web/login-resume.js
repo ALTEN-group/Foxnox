@@ -15,7 +15,7 @@ import {
 export function getLoginResumeBaseUrl() {
   const fromEnv = process.env.WEB_LOGIN_RESUME_URL?.replace(/\/$/, "");
   if (fromEnv) return fromEnv;
-  return `${getPublicOrigin()}/admin/login`;
+  return `${getPublicOrigin()}/foxnox/login`;
 }
 
 /**

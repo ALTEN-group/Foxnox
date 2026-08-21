@@ -47,8 +47,8 @@
     <comment>Login challenge mint API route + permissions</comment>
     <sqlFile path="09-route-challenges.sql"/>
   </changeSet>
-  <changeSet id="foxnox-data-11" author="lcluber">
-    <comment>Allowed browser Origin for the admin UI (CORS whitelist)</comment>
+  <changeSet id="foxnox-data-11" author="lcluber" runOnChange="true">
+    <comment>Allowed browser Origins for the admin UI (CORS whitelist)</comment>
     <sqlFile path="10-cors.sql"/>
   </changeSet>
   <changeSet id="foxnox-data-12" author="lcluber">

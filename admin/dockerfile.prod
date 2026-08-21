@@ -32,18 +32,21 @@ RUN npm run build:prod
 ############
 ### prod ###
 ############
-# Caddy on Alpine, run as non-root on port 8080 behind Traefik.
+# Caddy on Alpine, run as non-root behind Traefik. Non-root cannot bind <1024,
+# so ADMIN_PORT must stay above that; Traefik targets the same value.
 FROM caddy:${CADDY_VERSION}-alpine
 
 ARG UID
 ARG GID
+ARG ADMIN_PORT=8080
+ENV ADMIN_PORT=${ADMIN_PORT}
 RUN mkdir -p /data/caddy /config/caddy \
     && chown -R ${UID}:${GID} /data /config /usr/share/caddy
 
 COPY --chown=${UID}:${GID} Caddyfile /etc/caddy/Caddyfile
-COPY --from=build --chown=${UID}:${GID} /usr/src/app/dist/ /usr/share/caddy/admin/
+COPY --from=build --chown=${UID}:${GID} /usr/src/app/dist/ /usr/share/caddy/foxnox/
 
 USER ${UID}:${GID}
-EXPOSE 8080
+EXPOSE ${ADMIN_PORT}
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null 2>&1 || exit 1
+    CMD wget -qO- http://127.0.0.1:${ADMIN_PORT}/healthz >/dev/null 2>&1 || exit 1

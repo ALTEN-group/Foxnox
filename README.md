@@ -1,5 +1,8 @@
 # Foxnox
 
+[![Coverage](https://raw.githubusercontent.com/DWTechs/Foxnox/badges/badges/coverage.svg)](https://github.com/DWTechs/Foxnox/actions/workflows/test.yml)
+[![admin coverage](https://raw.githubusercontent.com/DWTechs/Foxnox/badges/badges/admin-coverage.svg)](https://github.com/DWTechs/Foxnox/actions/workflows/test.yml)
+
 Password and account-security service for the DW Techs stack. Foxnox stores credentials and auth factors (password hashes, 2FA, recovery tokens, security questions, trusted devices) and exposes:
 
 - JSON APIs under `/pwd/…` (CRUD + compare), typically reached through Gatelin

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Reset Database Script
-# Removes postgres + migration containers and the postgres volume, then
-# rebuilds the stack and re-seeds mock user passwords (setup-mocks.sh).
+# Removes postgres + migration containers and the postgres volume, then rebuilds the
+# stack via start-dev.sh, which re-seeds mock user passwords on the now-empty database.
 
 set -euo pipefail
 
@@ -32,13 +32,35 @@ rm -f "$ENV_TMP"
 : "${POSTGRES_HOST:?POSTGRES_HOST missing from $ENV_FILE}"
 : "${FOXNOX_MIGRATION_HOST:?FOXNOX_MIGRATION_HOST missing from $ENV_FILE}"
 : "${GATELIN_MIGRATION_HOST:?GATELIN_MIGRATION_HOST missing from $ENV_FILE}"
+: "${FOXNOX_HOST:?FOXNOX_HOST missing from $ENV_FILE}"
+: "${GATELIN_HOST:?GATELIN_HOST missing from $ENV_FILE}"
 : "${APP_NAME:?APP_NAME missing from $ENV_FILE}"
 
 VOLUME_NAME="${APP_NAME}_postgres_data"
 
-# Stop and remove containers
+# Stop the app containers before the database disappears.
+#
+# Their connection pools live in @dwtechs/antity-pgsql, which registers no 'error'
+# handler on the pg Pool. Deleting Postgres under an idle connection therefore raises
+# "Connection terminated unexpectedly" as an unhandled event and kills the process —
+# and under `node --watch` it then sits at "Waiting for file changes" rather than
+# restarting. Shutting them down first avoids the crash entirely; start-dev.sh starts
+# them again afterwards, which also rebuilds Gatelin's route/CORS caches from the
+# re-seeded database. They hold no state, so stopping is enough — no need to recreate.
+echo -e "🛑 Stopping app containers..."
+for c in "$FOXNOX_HOST" "$GATELIN_HOST"; do
+  if docker stop "$c" >/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Stopped $c"
+  else
+    echo -e "${YELLOW}⚠${NC}  Container $c not running"
+  fi
+done
+
+# Remove the database and migration containers. These do have to go: Postgres must
+# detach from the volume, and the one-shot migration containers only re-run when
+# recreated (compose's service_completed_successfully is satisfied by a stale exit 0).
 echo -e "📦 Removing containers..."
-for c in "$POSTGRES_HOST" "$FOXNOX_MIGRATION_HOST" "$GATELIN_MIGRATION_HOST"; do
+for c in "$FOXNOX_MIGRATION_HOST" "$GATELIN_MIGRATION_HOST" "$POSTGRES_HOST"; do
   if docker rm -f "$c" 2>/dev/null; then
     echo -e "${GREEN}✓${NC} Removed $c"
   else
@@ -59,14 +81,10 @@ fi
 
 echo -e "${GREEN}✅ Database reset complete!${NC}"
 
-# Restart all services (migrations re-run against the empty volume)
+# Restart all services (migrations re-run against the empty volume). start-dev.sh then
+# seeds mock passwords itself, since the volume we just deleted took the pwd rows with it.
 echo -e ""
 ./scripts/start-dev.sh
-
-# Re-seed mock password hashes + refresh swagger credentials.
-# setup-mocks.sh waits for foxnox health itself — no fixed sleep needed here.
-echo -e ""
-./scripts/setup-mocks.sh
 
 echo -e ""
 echo -e "${GREEN}🎉 All done! Fresh database with mock passwords ready.${NC}"

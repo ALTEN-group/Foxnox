@@ -14,8 +14,14 @@ import { deleteProps } from "@dwtechs/sparray";
  */
 export function send(ent) {
   return function sendRows(req, res) {
-    const raw = res.locals.rows;
-    // No matched handler left rows (e.g. fall-through) — don't crash deleteProps.
+    const raw = Array.isArray(res.locals.rows)
+      ? res.locals.rows
+      : res.locals.history;
+    // Mutations such as archive intentionally produce no result rows.
+    if (!Array.isArray(raw) && req.route) {
+      return res.status(200).json({ rows: [], total: 0 });
+    }
+    // No matched handler left data (e.g. fall-through) — don't crash deleteProps.
     if (!Array.isArray(raw)) {
       return res.status(404).json({ message: "Not found" });
     }

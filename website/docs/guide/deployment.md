@@ -130,7 +130,7 @@ services:
       # Public URLs for workflow pages and email deep links
       WEB_PUBLIC_ORIGIN: http://localhost:8100
       WEB_PUBLIC_BASE: /api/pwd/web
-      WEB_LOGIN_RESUME_URL: http://localhost:8100/admin/login
+      WEB_LOGIN_RESUME_URL: http://localhost:8100/foxnox/login
       # Outbound mail
       SMTP_HOST: smtp.example.com
       SMTP_PORT: 587

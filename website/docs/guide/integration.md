@@ -37,7 +37,7 @@ Because requests arrive through Gatelin, Foxnox cannot work out its own public a
 ```
 WEB_PUBLIC_ORIGIN=https://app.example.com
 WEB_PUBLIC_BASE=/api/pwd/web
-WEB_LOGIN_RESUME_URL=https://app.example.com/admin/login
+WEB_LOGIN_RESUME_URL=https://app.example.com/foxnox/login
 ```
 
 `WEB_PUBLIC_BASE` is the public routing prefix (`/api`) plus Foxnox's own mount (`/pwd/web`). If you change Traefik's strip-prefix rule, change this too — otherwise every reset link in every email will 404.

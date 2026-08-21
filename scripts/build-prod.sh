@@ -30,6 +30,8 @@ TZ=$(get_env TZ)
 APP_UID=$(get_env UID)
 APP_GID=$(get_env GID)
 CADDY_VERSION=$(get_env CADDY_VERSION)
+NGINX_VERSION=$(get_env NGINX_VERSION)
+ADMIN_PORT=$(get_env ADMIN_PORT)
 LIQUIBASE_VERSION=$(get_env LIQUIBASE_VERSION)
 HOME_PATH=$(get_env HOME_PATH)
 
@@ -100,6 +102,7 @@ if [[ "$BUILD_ADMIN" == true ]]; then
     --secret id=apk_repository,env=APK_REPOSITORY \
     --build-arg NODE_VERSION="${NODE_VERSION}" \
     --build-arg CADDY_VERSION="${CADDY_VERSION}" \
+    --build-arg ADMIN_PORT="${ADMIN_PORT}" \
     --build-arg TZ="${TZ}" \
     --build-arg UID="${APP_UID}" \
     --build-arg GID="${APP_GID}" \

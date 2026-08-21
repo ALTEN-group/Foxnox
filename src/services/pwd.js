@@ -2,12 +2,18 @@
 import { execute } from "@dwtechs/antity-pgsql";
 import { encrypt } from "@dwtechs/hashitaka";
 import { isValidPassword } from "@dwtechs/passken";
+import { init as initPasskenGenerator } from "@dwtechs/passken-express";
 import { log } from "@dwtechs/winstan";
 import pEnt from "../entities/pwd.js";
 import ppEnt from "../entities/pwd-policy.js";
 import { tokenSecret } from "./token-crypto.js";
 
 const SYSTEM_CONSUMER = Object.freeze({ userId: -1, nickname: "system" });
+
+// passken's randomPwd() validates len with isValidInteger(len, 12, 64) and silently
+// falls back to 12 when it fails, so a policy outside this range cannot be honoured.
+const GENERATED_LENGTH_MIN = 12;
+const GENERATED_LENGTH_MAX = 64;
 
 /**
  * @typedef {{
@@ -17,6 +23,7 @@ const SYSTEM_CONSUMER = Object.freeze({ userId: -1, nickname: "system" });
  *   symbol: boolean,
  *   lowerCase: boolean,
  *   upperCase: boolean,
+ *   strict: boolean,
  *   expiryDays: number,
  * }} PwdPolicy
  */
@@ -39,8 +46,69 @@ export async function getActivePwdPolicy() {
     symbol: Boolean(row.symbol),
     lowerCase: Boolean(row.lowerCase),
     upperCase: Boolean(row.upperCase),
+    strict: Boolean(row.strict),
     expiryDays: Number(row.expiryDays) || 0,
   };
+}
+
+/**
+ * Point passken's password generator at the active `pwd_policy` row.
+ *
+ * `POST /pwd/` mints passwords through passken-express's `create`, which reads a
+ * module-level option set that only `init()` populates. Without this call the
+ * generator silently uses the library defaults — where `sym` is the one character
+ * class defaulting to false — so generated passwords would carry no special
+ * characters even though every seeded policy sets `symbol = TRUE`, and would fail
+ * the same `passwordMeetsPolicy()` check applied to user-chosen passwords.
+ *
+ * Note `pwd_policy.symbols` (the custom pool) still cannot be honoured: randomPwd
+ * always draws from its own built-in symbol list and takes no pool argument.
+ *
+ * Never throws — a policy that cannot be read leaves the library defaults in place
+ * rather than preventing the service from starting.
+ *
+ * @returns {Promise<void>}
+ */
+export async function initPwdGeneration() {
+  /** @type {PwdPolicy|null} */
+  let policy = null;
+  try {
+    policy = await getActivePwdPolicy();
+  } catch (err) {
+    log.error(
+      `initPwdGeneration: cannot read pwd_policy, keeping passken defaults (no symbols) - caused by: ${err.message || err}`,
+    );
+    return;
+  }
+
+  if (!policy) {
+    log.warn(
+      "initPwdGeneration: no active pwd_policy row, keeping passken defaults (no symbols)",
+    );
+    return;
+  }
+
+  const len = Math.min(
+    Math.max(policy.length, GENERATED_LENGTH_MIN),
+    GENERATED_LENGTH_MAX,
+  );
+  if (len !== policy.length)
+    log.warn(
+      `initPwdGeneration: pwd_policy #${policy.id} length ${policy.length} is outside passken's [${GENERATED_LENGTH_MIN}, ${GENERATED_LENGTH_MAX}] range, generating ${len} characters instead`,
+    );
+
+  initPasskenGenerator({
+    len,
+    num: policy.number,
+    ucase: policy.upperCase,
+    lcase: policy.lowerCase,
+    sym: policy.symbol,
+    strict: policy.strict,
+  });
+
+  log.info(
+    `Password generation follows pwd_policy #${policy.id}: ${len} chars, symbols ${policy.symbol ? "on" : "off"}`,
+  );
 }
 
 /**

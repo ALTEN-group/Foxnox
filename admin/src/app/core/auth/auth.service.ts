@@ -12,6 +12,14 @@ import { User } from "@core/user/user.class";
 import { Observable, of, pipe } from "rxjs";
 import { catchError, map, switchMap, tap } from "rxjs/operators";
 
+/**
+ * Mid-login challenge ticket handed back by the password service (`?ticket=…`).
+ * Read from the raw URL so it is available before the router has run.
+ */
+export function readLoginTicket(): string | null {
+  return new URLSearchParams(window.location.search).get("ticket");
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -142,8 +150,9 @@ export class AuthenticationService {
   }
 
   public redirectToLogin(): void {
+    const ticket = readLoginTicket();
     this.router.navigate(["/login"], {
-      queryParams: { returnUrl: this.router.url },
+      queryParams: ticket ? { ticket } : { returnUrl: this.router.url },
     });
   }
 
