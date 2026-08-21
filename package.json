@@ -1,7 +1,7 @@
 {
   "name": "foxnox",
   "version": "0.1.0",
-  "description": "",
+  "description": "Password management service",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
