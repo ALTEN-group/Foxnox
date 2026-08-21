@@ -44,7 +44,7 @@ Run it without a flag any time you want to rotate the mock credentials — it cl
 
 ### Account workflow pages (Handlebars)
 
-See [README.md — Account workflows](./README.md#account-workflows) for use cases and page maps.
+See [website/docs/guide/workflows.md](./website/docs/guide/workflows.md) for use cases and page maps.
 
 Operational paths (local Docker base `http://localhost:8100`):
 
