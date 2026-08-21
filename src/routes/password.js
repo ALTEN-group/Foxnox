@@ -8,11 +8,24 @@ const router = express.Router();
 import pEnt from "../entities/pwd.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
+import { checkLockout } from "../middlewares/mappers/check-lockout.js";
+import {
+  clearLoginAttempts,
+  trackFailedAttempt,
+} from "../middlewares/mappers/track-login-attempt.js";
 import schema from "../middlewares/schema.js";
 import { checkCompareBody } from "../middlewares/validators/check-compare.js";
 
 //Routes
-router.post("/compare", checkCompareBody, pEnt.get, compare);
+router.post(
+  "/compare",
+  checkCompareBody,
+  pEnt.get,
+  checkLockout,
+  compare,
+  clearLoginAttempts,
+  trackFailedAttempt,
+);
 // Search fields
 router.post("/search", enforceAcl(pEnt, "search"), pEnt.get);
 // Get version history of a specific row

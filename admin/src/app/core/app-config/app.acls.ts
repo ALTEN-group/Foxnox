@@ -21,7 +21,7 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
     get: 82, // searchPwds
     getHistory: 83, // getPwdHistory
-    create: 84, // addPwds
+    // create intentionally omitted: passwords can never be added from the admin UI
     update: 85, // updatePwds
     archive: 86, // archivePwds
   },

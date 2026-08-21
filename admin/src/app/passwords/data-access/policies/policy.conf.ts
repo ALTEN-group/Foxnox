@@ -88,6 +88,11 @@ export const POLICY_COLUMNS: (
         controlOptions: {
           validators: [maxlength(50)],
         },
+        conditions: {
+          controlOptions: {
+            disabled: ({ model }) => !model.symbol,
+          },
+        },
       },
       {
         key: "expiryDays",
@@ -102,10 +107,28 @@ export const POLICY_COLUMNS: (
         },
       },
       {
-        key: "active",
-        label: "Active",
-        controlType: CONTROL_TYPES.CHECKBOX,
-        controlOptions: {},
+        key: "maxFailedAttempts",
+        label: "Max failed attempts",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.NUMBER,
+        columnOptions: {
+          defaultWidth: "80px",
+        },
+        controlOptions: {
+          validators: [required, min(1)],
+        },
+      },
+      {
+        key: "lockoutMinutes",
+        label: "Lockout duration (minutes)",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.NUMBER,
+        columnOptions: {
+          defaultWidth: "80px",
+        },
+        controlOptions: {
+          validators: [required, min(0)],
+        },
       },
       ...buildArchivedConfig(),
       ...buildAuditConfig(),

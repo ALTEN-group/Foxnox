@@ -164,6 +164,7 @@ jest.unstable_mockModule(
 jest.unstable_mockModule("@dwtechs/passken-express", () => ({
   compare: jest.fn((_req, _res, next) => next()),
   create: jest.fn((_req, _res, next) => next()),
+  init: jest.fn(),
 }));
 
 jest.unstable_mockModule("../../src/services/challenge.js", () => ({

@@ -28,10 +28,12 @@ const get = jest.fn((_req, res, next) => {
 
 const compare = jest.fn((_req, _res, next) => next());
 const create = jest.fn((_req, _res, next) => next());
+const init = jest.fn();
 
 jest.unstable_mockModule("@dwtechs/passken-express", () => ({
   compare,
   create,
+  init,
 }));
 
 jest.unstable_mockModule("../../src/entities/pwd.js", () => ({
@@ -169,5 +171,53 @@ describe("POST /pwd/compare", () => {
       .send({ userId: 42, pwd: "wrong" });
 
     expect(res.status).toBe(401);
+  });
+
+  it("rejects with 403 and skips compare when the account is still locked", async () => {
+    get.mockImplementationOnce((_req, res, next) => {
+      res.locals.rows = [
+        {
+          id: 1,
+          userId: 42,
+          pwdHash: "secret-hash-must-not-leak",
+          lockedUntil: new Date(Date.now() + 60_000).toISOString(),
+          failedAttempts: 5,
+          archived: false,
+        },
+      ];
+      res.locals.total = 1;
+      next();
+    });
+
+    const res = await request(app)
+      .post("/pwd/compare")
+      .send({ userId: 42, pwd: "correct-horse" });
+
+    expect(res.status).toBe(403);
+    expect(compare).not.toHaveBeenCalled();
+  });
+
+  it("lets a lapsed lock through to compare", async () => {
+    get.mockImplementationOnce((_req, res, next) => {
+      res.locals.rows = [
+        {
+          id: 1,
+          userId: 42,
+          pwdHash: "secret-hash-must-not-leak",
+          lockedUntil: new Date(Date.now() - 60_000).toISOString(),
+          failedAttempts: 5,
+          archived: false,
+        },
+      ];
+      res.locals.total = 1;
+      next();
+    });
+
+    const res = await request(app)
+      .post("/pwd/compare")
+      .send({ userId: 42, pwd: "correct-horse" });
+
+    expect(res.status).toBe(200);
+    expect(compare).toHaveBeenCalledTimes(1);
   });
 });

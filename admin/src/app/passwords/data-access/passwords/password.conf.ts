@@ -39,6 +39,7 @@ export const PASSWORD_COLUMNS: (
           isHardHidden: true,
         },
         controlOptions: {
+          hidden: true,
           validators: [required],
         },
       },
@@ -62,6 +63,7 @@ export const PASSWORD_COLUMNS: (
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.NUMBER,
         controlOptions: {
+          disabled: true,
           validators: [min(0)],
         },
       },
@@ -91,7 +93,9 @@ export const PASSWORD_COLUMNS: (
         columnOptions: {
           isHardHidden: true,
         },
-        controlOptions: {},
+        controlOptions: {
+          hidden: true,
+        },
       },
       ...buildArchivedConfig(),
       ...buildAuditConfig(),

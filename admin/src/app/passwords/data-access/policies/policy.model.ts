@@ -16,7 +16,8 @@ export interface Policy extends ArchiveInfo {
   strict: boolean;
   symbols: string;
   expiryDays: number;
-  active: boolean;
+  maxFailedAttempts: number;
+  lockoutMinutes: number;
 }
 
 /**
@@ -37,6 +38,7 @@ export const policyFactory = (): Policy => ({
   strict: false,
   symbols: "",
   expiryDays: 0,
-  active: true,
+  maxFailedAttempts: 5,
+  lockoutMinutes: 15,
   ...new ArchiveInfo(),
 });

@@ -15,6 +15,11 @@ const SYSTEM_CONSUMER = Object.freeze({ userId: -1, nickname: "system" });
 const GENERATED_LENGTH_MIN = 12;
 const GENERATED_LENGTH_MAX = 64;
 
+// Consecutive wrong passwords allowed before the account locks, and how long the lock
+// lasts, when the policy row does not specify its own (e.g. no active policy).
+const DEFAULT_MAX_FAILED_ATTEMPTS = 5;
+const DEFAULT_LOCKOUT_MINUTES = 15;
+
 /**
  * @typedef {{
  *   id: number,
@@ -25,18 +30,19 @@ const GENERATED_LENGTH_MAX = 64;
  *   upperCase: boolean,
  *   strict: boolean,
  *   expiryDays: number,
+ *   maxFailedAttempts: number,
+ *   lockoutMinutes: number,
  * }} PwdPolicy
  */
 
 /**
- * Active password policy used to validate user-chosen passwords.
+ * The password policy used to validate user-chosen passwords.
+ * There is only ever one non-archived `pwd_policy` row.
  * @returns {Promise<PwdPolicy|null>}
  */
 export async function getActivePwdPolicy() {
   // getCache always ANDs `archived IS FALSE` and orders by id ASC.
-  const rows = await ppEnt.getCache({
-    active: { value: true, matchMode: "equals" },
-  });
+  const rows = await ppEnt.getCache();
   const row = rows[0];
   if (!row) return null;
   return {
@@ -48,6 +54,9 @@ export async function getActivePwdPolicy() {
     upperCase: Boolean(row.upperCase),
     strict: Boolean(row.strict),
     expiryDays: Number(row.expiryDays) || 0,
+    maxFailedAttempts:
+      Number(row.maxFailedAttempts) || DEFAULT_MAX_FAILED_ATTEMPTS,
+    lockoutMinutes: Number(row.lockoutMinutes) || DEFAULT_LOCKOUT_MINUTES,
   };
 }
 
@@ -217,6 +226,56 @@ export async function rotatePassword(userId, plaintext) {
 
   log.info(`password rotated userId=${userId}`);
   return { updated: true };
+}
+
+/**
+ * Bump the failed-attempt counter after a wrong password, locking the account
+ * once the active policy's maxFailedAttempts is reached.
+ * @param {number} userId
+ * @returns {Promise<void>}
+ */
+export async function recordFailedAttempt(userId) {
+  const pwdId = await findActivePwdId(userId);
+  if (pwdId == null) return;
+  const policy = await getActivePwdPolicy();
+  const maxFailedAttempts =
+    policy?.maxFailedAttempts ?? DEFAULT_MAX_FAILED_ATTEMPTS;
+  const lockoutMinutes = policy?.lockoutMinutes ?? DEFAULT_LOCKOUT_MINUTES;
+  await execute(
+    `UPDATE pwd
+     SET "failedAttempts" = "failedAttempts" + 1,
+         "lockedUntil" = CASE
+           WHEN "failedAttempts" + 1 >= $2 THEN NOW() + ($3 || ' minutes')::interval
+           ELSE "lockedUntil"
+         END,
+         "updatedAt" = NOW(),
+         "updaterId" = -1,
+         "updaterName" = 'system'
+     WHERE id = $1`,
+    [pwdId, maxFailedAttempts, lockoutMinutes],
+    null,
+  );
+}
+
+/**
+ * Clear the failed-attempt counter after a correct password.
+ * @param {number} userId
+ * @returns {Promise<void>}
+ */
+export async function resetFailedAttempts(userId) {
+  const pwdId = await findActivePwdId(userId);
+  if (pwdId == null) return;
+  await execute(
+    `UPDATE pwd
+     SET "failedAttempts" = 0,
+         "lockedUntil" = NULL,
+         "updatedAt" = NOW(),
+         "updaterId" = -1,
+         "updaterName" = 'system'
+     WHERE id = $1 AND ("failedAttempts" > 0 OR "lockedUntil" IS NOT NULL)`,
+    [pwdId],
+    null,
+  );
 }
 
 /**

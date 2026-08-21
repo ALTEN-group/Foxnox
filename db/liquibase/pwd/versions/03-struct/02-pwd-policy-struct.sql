@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS pwd_policy (
   "strict" BOOLEAN DEFAULT TRUE NOT NULL,
   symbols varchar(50) DEFAULT '!@#%*_-+=:?><./()' NOT NULL,
   "expiryDays" INT DEFAULT 90,
-  active BOOLEAN DEFAULT TRUE NOT NULL,
+  "maxFailedAttempts" INT DEFAULT 5 NOT NULL,
+  "lockoutMinutes" INT DEFAULT 15 NOT NULL,
   archived BOOLEAN DEFAULT FALSE,  
   "archivedAt" TIMESTAMP DEFAULT NULL,  
   "createdAt" TIMESTAMP DEFAULT NOW(),
@@ -21,5 +22,6 @@ CREATE TABLE IF NOT EXISTS pwd_policy (
   "updaterId" INT,
   "updaterName" TEXT,
   CHECK (length > 5),
+  CHECK ("maxFailedAttempts" > 0),
   CHECK (number = TRUE OR symbol = TRUE OR "lowerCase" = TRUE OR "upperCase" = TRUE)
 );

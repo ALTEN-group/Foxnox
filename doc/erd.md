@@ -39,7 +39,8 @@ erDiagram
     boolean strict
     varchar symbols
     int expiryDays
-    boolean active
+    int maxFailedAttempts
+    int lockoutMinutes
     boolean archived
     timestamp archivedAt
   }

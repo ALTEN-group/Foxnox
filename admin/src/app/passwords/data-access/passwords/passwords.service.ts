@@ -33,9 +33,9 @@ export class PasswordsService {
     endpoint: ENTITY_API_PATHS[passwordsEntity],
   });
 
+  // create intentionally omitted: passwords can never be added from the admin UI
   public readonly httpCalls: Calls<Password> = {
     get: this.crud.get,
-    create: this.crud.create,
     update: this.crud.update,
     archive: this.crud.archive,
     getHistory: this.crud.getHistory,
