@@ -1,0 +1,20 @@
+<!-- Foxnox favicon: stylised F knocked out of the brand gradient tile. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="foxnoxTile" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFB347" />
+      <stop offset="100%" stop-color="#FF5500" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#foxnoxTile)" />
+  <!--
+    The F is the logo path (73x100 viewBox) scaled to 42px tall and centred.
+    Solid white rather than the gradient: at 16px the tile carries the brand
+    colour and the glyph needs maximum contrast to stay legible.
+  -->
+  <g transform="translate(16.88 11) scale(0.42)">
+    <path d="M 0 100 L 20 100 L 20 64 L 46 64 L 60 44 L 20 44
+             L 20 20 L 58 20 L 72 0 L 0 0 Z"
+          fill="#fff" />
+  </g>
+</svg>

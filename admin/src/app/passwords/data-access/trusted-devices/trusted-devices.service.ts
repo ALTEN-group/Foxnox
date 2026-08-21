@@ -6,6 +6,7 @@ import {
   runInInjectionContext,
 } from "@angular/core";
 import { AclService } from "@core/acl/acl.service";
+import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
 import { TRUSTED_DEVICE_COLUMNS } from "app/passwords/data-access/trusted-devices/trusted-device.conf";
@@ -14,7 +15,7 @@ import {
   trustedDeviceFactory,
 } from "app/passwords/data-access/trusted-devices/trusted-device.model";
 
-const trustedDevicesEndpoint: AdminEntity = "trustedDevices";
+const trustedDevicesEntity: AdminEntity = "trustedDevices";
 
 /**
  * Service to manage trusted devices
@@ -26,10 +27,10 @@ export class TrustedDevicesService {
   private readonly aclsService = inject(AclService);
   private readonly injector = inject(Injector);
   private readonly acls = computed(() =>
-    this.aclsService.getEntityAcls(trustedDevicesEndpoint),
+    this.aclsService.getEntityAcls(trustedDevicesEntity),
   );
   private readonly crud = new CrudRepository<TrustedDevice>().with({
-    endpoint: trustedDevicesEndpoint,
+    endpoint: ENTITY_API_PATHS[trustedDevicesEntity],
   });
 
   public readonly httpCalls: Calls<TrustedDevice> = {

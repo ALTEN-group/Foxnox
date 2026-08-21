@@ -6,6 +6,7 @@ import {
   runInInjectionContext,
 } from "@angular/core";
 import { AclService } from "@core/acl/acl.service";
+import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
 import { PASSWORD_COLUMNS } from "app/passwords/data-access/passwords/password.conf";
@@ -14,7 +15,7 @@ import {
   passwordFactory,
 } from "app/passwords/data-access/passwords/password.model";
 
-const passwordsEndpoint: AdminEntity = "passwords";
+const passwordsEntity: AdminEntity = "passwords";
 
 /**
  * Service to manage user passwords
@@ -26,10 +27,10 @@ export class PasswordsService {
   private readonly aclsService = inject(AclService);
   private readonly injector = inject(Injector);
   private readonly acls = computed(() =>
-    this.aclsService.getEntityAcls(passwordsEndpoint),
+    this.aclsService.getEntityAcls(passwordsEntity),
   );
   private readonly crud = new CrudRepository<Password>().with({
-    endpoint: passwordsEndpoint,
+    endpoint: ENTITY_API_PATHS[passwordsEntity],
   });
 
   public readonly httpCalls: Calls<Password> = {
@@ -45,4 +46,3 @@ export class PasswordsService {
   );
   public readonly entityFactory = passwordFactory;
 }
-

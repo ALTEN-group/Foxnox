@@ -1,6 +1,3 @@
--- Supported translation languages
-CREATE TYPE language AS ENUM ('en', 'fr', 'es', 'de', 'it', 'pt');
-
 -- Security question categories
 CREATE TABLE IF NOT EXISTS security_question_category (
   id SERIAL PRIMARY KEY,
@@ -18,9 +15,11 @@ CREATE TABLE IF NOT EXISTS security_question_category (
 -- Security question category translations
 CREATE TABLE IF NOT EXISTS security_question_category_trans (
   "categoryId" INT NOT NULL,
-  lang language NOT NULL,
+  lang VARCHAR(5) NOT NULL, -- BCP 47-ish: 'en', 'fr', 'pt-BR', …
   trans VARCHAR(255) NOT NULL,
   PRIMARY KEY ("categoryId", lang),
+  CONSTRAINT chk_security_question_category_trans_lang
+    CHECK (lang ~ '^[a-z]{2}(-[A-Za-z]{2})?$'),
   CONSTRAINT fk_security_question_category_trans
     FOREIGN KEY ("categoryId") REFERENCES security_question_category (id)
     ON DELETE CASCADE
@@ -50,9 +49,11 @@ CREATE TABLE IF NOT EXISTS security_question (
 -- Security question translations
 CREATE TABLE IF NOT EXISTS security_question_trans (
   "questionId" INT NOT NULL,
-  lang language NOT NULL,
+  lang VARCHAR(5) NOT NULL, -- BCP 47-ish: 'en', 'fr', 'pt-BR', …
   trans VARCHAR(255) NOT NULL,
   PRIMARY KEY ("questionId", lang),
+  CONSTRAINT chk_security_question_trans_lang
+    CHECK (lang ~ '^[a-z]{2}(-[A-Za-z]{2})?$'),
   CONSTRAINT fk_security_question_trans
     FOREIGN KEY ("questionId") REFERENCES security_question (id)
     ON DELETE CASCADE

@@ -6,7 +6,12 @@
     "start": "ng serve --host 0.0.0.0 --port 4200 --poll=2000",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --no-watch --coverage",
+    "test:coverage": "ng test --no-watch --coverage",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:install": "playwright install chromium"
   },
   "private": true,
   "author": "Ludovic Cluber",
@@ -22,9 +27,9 @@
     "@angular/router": "21.2.18",
     "@angular/service-worker": "21.2.18",
     "@dwtechs/checkard": "3.6.1",
-    "@dwtechs/ngx-crud-builder": "0.1.8",
     "@dwtechs/csvx": "0.3.1",
     "@dwtechs/ctrltab": "3.0.1",
+    "@dwtechs/ngx-crud-builder": "0.1.8",
     "@lcluber/frameratjs": "1.1.0",
     "@lcluber/mouettejs": "2.5.0",
     "@lcluber/roostrjs": "0.6.0",
@@ -41,14 +46,19 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "21.2.18",
+    "@angular/build": "^21.2.18",
     "@angular/cli": "21.2.19",
     "@angular/compiler": "21.2.18",
     "@angular/compiler-cli": "21.2.18",
     "@angular/language-service": "21.2.18",
+    "@playwright/test": "^1.62.1",
     "@types/chart.js": "2.9.37",
     "@types/file-saver": "2.0.7",
     "@types/node": "20.19.17",
+    "@vitest/coverage-v8": "^4.1.11",
+    "jsdom": "^30.0.1",
     "ts-node": "10.9.1",
+    "vitest": "^4.1.11",
     "zone.js": "0.15.1"
   }
 }

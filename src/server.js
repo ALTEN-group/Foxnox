@@ -1,15 +1,18 @@
 // @ts-check
-import { log } from "@dwtechs/winstan";
+
 import { listen } from "@dwtechs/servpico-express";
+import { log } from "@dwtechs/winstan";
 import app from "./app.js";
 
 // Cron jobs
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
+import { initPwdGeneration } from "./services/pwd.js";
 
 // Init cached reference data
 Promise.all([
   // routeSvc.init(),
+  initPwdGeneration(),
 ])
   .then(() => {
     // Start cron jobs

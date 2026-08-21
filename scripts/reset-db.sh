@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Reset Database Script
-# This script removes postgres and migration containers and cleans up the postgres volume
+# Removes postgres + migration containers and the postgres volume, then rebuilds the
+# stack via start-dev.sh, which re-seeds mock user passwords on the now-empty database.
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -13,28 +14,59 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}🗑️  Resetting database...${NC}"
 
-# Load environment variables
-if [[ -f docker/conf/.env.dev ]]; then
-  set -a
-  source <(grep -v '^#' docker/conf/.env.dev | grep -v '^UID=')
-  set +a
+ENV_FILE="docker/conf/.env.dev"
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo -e "${RED}Error:${NC} $ENV_FILE not found. Run scripts/setup-env.sh first." >&2
+  exit 1
 fi
 
-# Set defaults if not loaded
-APP_NAME=${APP_NAME:-foxnox}
-ENV_NAME=${ENV_NAME:-local}
+# Load container names from .env.dev (same approach as setup-mocks.sh).
+ENV_TMP=$(mktemp)
+grep -v '^#' "$ENV_FILE" | grep -v '^UID=' > "$ENV_TMP"
+set -a
+# shellcheck disable=SC1090
+source "$ENV_TMP"
+set +a
+rm -f "$ENV_TMP"
 
-POSTGRES_CONTAINER="${APP_NAME}-postgres-${ENV_NAME}"
-MIGRATION_CONTAINER="${APP_NAME}-${APP_NAME}-migration-${ENV_NAME}"
-GATELIN_MIGRATION_CONTAINER="${APP_NAME}-gatelin-migration-${ENV_NAME}"
-GATELIN_CONTAINER="${APP_NAME}"
+: "${POSTGRES_HOST:?POSTGRES_HOST missing from $ENV_FILE}"
+: "${FOXNOX_MIGRATION_HOST:?FOXNOX_MIGRATION_HOST missing from $ENV_FILE}"
+: "${GATELIN_MIGRATION_HOST:?GATELIN_MIGRATION_HOST missing from $ENV_FILE}"
+: "${FOXNOX_HOST:?FOXNOX_HOST missing from $ENV_FILE}"
+: "${GATELIN_HOST:?GATELIN_HOST missing from $ENV_FILE}"
+: "${APP_NAME:?APP_NAME missing from $ENV_FILE}"
+
 VOLUME_NAME="${APP_NAME}_postgres_data"
 
-# Stop and remove containers
+# Stop the app containers before the database disappears.
+#
+# Their connection pools live in @dwtechs/antity-pgsql, which registers no 'error'
+# handler on the pg Pool. Deleting Postgres under an idle connection therefore raises
+# "Connection terminated unexpectedly" as an unhandled event and kills the process —
+# and under `node --watch` it then sits at "Waiting for file changes" rather than
+# restarting. Shutting them down first avoids the crash entirely; start-dev.sh starts
+# them again afterwards, which also rebuilds Gatelin's route/CORS caches from the
+# re-seeded database. They hold no state, so stopping is enough — no need to recreate.
+echo -e "🛑 Stopping app containers..."
+for c in "$FOXNOX_HOST" "$GATELIN_HOST"; do
+  if docker stop "$c" >/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Stopped $c"
+  else
+    echo -e "${YELLOW}⚠${NC}  Container $c not running"
+  fi
+done
+
+# Remove the database and migration containers. These do have to go: Postgres must
+# detach from the volume, and the one-shot migration containers only re-run when
+# recreated (compose's service_completed_successfully is satisfied by a stale exit 0).
 echo -e "📦 Removing containers..."
-docker rm -f $POSTGRES_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $POSTGRES_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $POSTGRES_CONTAINER not found"
-docker rm -f $MIGRATION_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $MIGRATION_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $MIGRATION_CONTAINER not found"
-docker rm -f $GATELIN_MIGRATION_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Removed $GATELIN_MIGRATION_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $GATELIN_MIGRATION_CONTAINER not found"
+for c in "$FOXNOX_MIGRATION_HOST" "$GATELIN_MIGRATION_HOST" "$POSTGRES_HOST"; do
+  if docker rm -f "$c" 2>/dev/null; then
+    echo -e "${GREEN}✓${NC} Removed $c"
+  else
+    echo -e "${YELLOW}⚠${NC}  Container $c not found"
+  fi
+done
 
 # Remove volume
 echo -e "💾 Removing volume..."
@@ -49,17 +81,10 @@ fi
 
 echo -e "${GREEN}✅ Database reset complete!${NC}"
 
-# Restart all services
+# Restart all services (migrations re-run against the empty volume). start-dev.sh then
+# seeds mock passwords itself, since the volume we just deleted took the pwd rows with it.
 echo -e ""
 ./scripts/start-dev.sh
 
-# Wait for services to be ready
 echo -e ""
-echo -e "${YELLOW}⏳ Waiting for services to start...${NC}"
-sleep 5
-
-# Restart Gatelin container specifically
-echo -e "🔄 Restarting Gatelin container..."
-docker restart $GATELIN_CONTAINER 2>/dev/null && echo -e "${GREEN}✓${NC} Restarted $GATELIN_CONTAINER" || echo -e "${YELLOW}⚠${NC}  Container $GATELIN_CONTAINER not found"
-
-echo -e "${GREEN}🎉 All done! Application ready with fresh database.${NC}"
+echo -e "${GREEN}🎉 All done! Fresh database with mock passwords ready.${NC}"

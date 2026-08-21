@@ -1,42 +1,49 @@
 import { EntityRouteMapping } from "@core/acl/acls.model";
 
 /**
- * Base entity-routes mapping, defining mapping between routes and their id in the database.
+ * Maps each admin CRUD operation to its Gatelin route id.
  *
- * NOTE: Gatelin's gateway does not have any route/permission registered for Foxnox's
- * endpoints yet (separate DB task on the Gatelin side), so there are no real ids to put
- * here. ACL route-id gating is disabled for this app (see acl.guard.ts, which no longer
- * calls AclService.hasAccess) — every authenticated user has access to every page. These
- * ids are unused placeholders kept only to satisfy AclService's type contract; update them
- * once Gatelin registers real routes for Foxnox's resources.
+ * IDs assume Gatelin 0.1.0-alpha.5 core seed (80 routes, last = getBasicUserInfo).
+ * Foxnox routes are inserted next by db/liquibase/gatelin-data/03-route.sql —
+ * keep these comments in sync when adding/reordering that seed.
+ *
+ * Route IDs (Foxnox block):
+ *   81=comparePwd       82=searchPwds       83=getPwdHistory
+ *   84=addPwds          85=updatePwds       86=archivePwds      87=getPwdSchema
+ *   88=searchTokens     89=getTokenHistory  90=addTokens
+ *   91=updateTokens     92=archiveTokens    93=getTokenSchema
+ *   94=searchPolicies   95=getPolicyHistory 96=addPolicies
+ *   97=updatePolicies   98=archivePolicies  99=getPolicySchema
+ *   100=searchDevices   101=getDeviceHistory 102=addDevices
+ *   103=updateDevices   104=archiveDevices  105=getDeviceSchema
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
-    get: 1,
-    getHistory: 2,
-    create: 3,
-    update: 4,
-    archive: 5,
-  },
-  policies: {
-    get: 6,
-    getHistory: 7,
-    create: 8,
-    update: 9,
-    archive: 10,
+    get: 82, // searchPwds
+    getHistory: 83, // getPwdHistory
+    create: 84, // addPwds
+    update: 85, // updatePwds
+    archive: 86, // archivePwds
   },
   tokens: {
-    get: 11,
-    getHistory: 12,
-    create: 13,
-    update: 14,
-    archive: 15,
+    get: 88, // searchTokens
+    getHistory: 89, // getTokenHistory
+    create: 90, // addTokens
+    update: 91, // updateTokens
+    archive: 92, // archiveTokens
+  },
+  policies: {
+    get: 94, // searchPolicies
+    getHistory: 95, // getPolicyHistory
+    create: 96, // addPolicies
+    update: 97, // updatePolicies
+    archive: 98, // archivePolicies
   },
   trustedDevices: {
-    get: 16,
-    getHistory: 17,
-    create: 18,
-    update: 19,
-    archive: 20,
+    get: 100, // searchDevices
+    getHistory: 101, // getDeviceHistory
+    create: 102, // addDevices
+    update: 103, // updateDevices
+    archive: 104, // archiveDevices
   },
 };

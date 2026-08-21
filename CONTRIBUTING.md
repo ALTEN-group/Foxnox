@@ -21,9 +21,11 @@ This generates `docker/conf/.env.dev` from the example file and fills in random 
 ./scripts/start-dev.sh
 ```
 
-Builds and starts all services via Docker Compose using `docker/conf/.env.dev`. The DB comes up empty of user passwords — those are seeded in the next step.
+Builds and starts all services via Docker Compose using `docker/conf/.env.dev`.
 
-### 3. Seed mock user passwords
+Mock user passwords are **not** Liquibase seed data — they are created at runtime. So whenever the database comes up empty, `start-dev.sh` finishes by running `setup-mocks.sh --if-missing`, which seeds them and prints the plaintexts. **Save them — you need them to log in.** When passwords already exist the step is skipped and your existing credentials are left alone.
+
+### 3. Rotate the mock passwords (optional)
 
 ```sh
 ./scripts/setup-mocks.sh
@@ -34,13 +36,34 @@ Waits for foxnox to be healthy, then calls `POST /pwd/` (which uses `@dwtechs/pa
 - printed once to your terminal so you can save them for manual login;
 - substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
 
-Re-run any time you want to rotate the mock credentials — the script clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes.
+Run it without a flag any time you want to rotate the mock credentials — it clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes.
+
+> If login ever fails with a **404 on `POST /api/gatelin/sessions`**, this is almost always the cause: Gatelin relays the 404 that Foxnox returns when a user has no `pwd` row. Run `./scripts/setup-mocks.sh`.
 
 ## Development
 
+### Account workflow pages (Handlebars)
+
+See [README.md — Account workflows](./README.md#account-workflows) for use cases and page maps.
+
+Operational paths (local Docker base `http://localhost:8100`):
+
+| Flow | Path |
+|---|---|
+| Password reset | `/api/pwd/web/recover`, `/api/pwd/web/recover/reset?token=…` |
+| 2FA | `/api/pwd/web/2fa/verify?challenge=…`, `/api/pwd/web/2fa/setup` |
+| Lost 2FA recovery | `/api/pwd/web/account-recover`, `…/challenge?token=…` |
+| Security questions | `/api/pwd/web/security-questions` |
+| Trusted devices | `/api/pwd/web/trusted-devices/prompt?challenge=…`, `/api/pwd/web/trusted-devices` |
+| Expired password | `/api/pwd/web/password/expired?challenge=…` |
+| Unlock | `/api/pwd/web/unlock`, `/api/pwd/web/unlock/confirm?token=…` |
+| Mint login challenge (API) | `POST /api/pwd/challenges` `{ userId, kind }` |
+
+Requires Gatelin `gatelin-data` changesets 05–10. Run Liquibase so login challenge token types exist.
+
 ### Start / Restart
 
-After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so you don't need to re-run `setup-mocks.sh` unless you also ran `reset-db.sh` or want to rotate credentials.
+After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so the seeding step is skipped and your credentials stay put. You only need `setup-mocks.sh` directly when you want to rotate them.
 
 ### Stop
 
@@ -48,7 +71,7 @@ After the first-time setup above, `./scripts/start-dev.sh` is also the everyday 
 ./scripts/stop-dev.sh
 ```
 
-Stops and removes all containers and the postgres volume.
+Stops and removes all containers and the postgres volume. Because the volume goes away, the next `start-dev.sh` comes up on an empty database and re-seeds fresh mock passwords.
 
 ```sh
 ./scripts/stop-dev.sh --rmi   # also remove Docker images
@@ -58,11 +81,13 @@ Stops and removes all containers and the postgres volume.
 
 ### Reset the database only
 
-Removes the postgres and migration containers and the postgres data volume. The next `start-dev.sh` will re-run all migrations from scratch.
+Removes the postgres and migration containers and the postgres data volume, then restarts the stack (migrations re-run from scratch, and `start-dev.sh` seeds fresh mock user passwords on the empty database).
 
 ```sh
 ./scripts/reset-db.sh
 ```
+
+Save the plaintext passwords it prints — you’ll need them to log in.
 
 ### Reset the gateway service only
 
@@ -92,6 +117,49 @@ npm run test:coverage     # with coverage report
 
 See [tests/README.md](tests/README.md) for more details.
 
+### Admin unit tests
+
+```sh
+cd admin
+npm test                  # Vitest watch mode
+npm run test:coverage     # CI / coverage
+```
+
+### Admin end-to-end tests (Playwright)
+
+The e2e suite (`admin/e2e/`) drives the admin UI end-to-end through Traefik, logs in with a mock persona from `swagger/src/foxnox.openapi.json`, and exercises the same routing path a real browser hits (Traefik → admin → Gatelin → Foxnox).
+
+Both flows below require:
+
+- `./scripts/start-dev.sh` running.
+- `./scripts/setup-mocks.sh` executed at least once (so `swagger/src/foxnox.openapi.json` has mock passwords the tests read via `admin/e2e/helpers/credentials.ts`).
+
+#### In Docker (recommended, no local install)
+
+```sh
+./scripts/e2e.sh                            # full suite
+./scripts/e2e.sh --grep "login"             # forward flags to `playwright test`
+./scripts/e2e.sh --reporter=html            # writes admin/playwright-report/
+./scripts/e2e.sh -- playwright show-report  # arbitrary command after `--`
+```
+
+Runs the tests in a dedicated `admin-e2e` container (`mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble`, built from `admin/e2e-dockerfile`). The container lives behind the `e2e` Compose profile, so `docker compose up` and `start-dev.sh` deliberately skip it — it spins up on demand, runs to completion, and is removed (`--rm`). It hits Traefik over the internal Docker network at `http://traefik/foxnox/` (configurable via `ADMIN_E2E_BASE_URL` in `docker/conf/.env.dev`). Test artifacts land back on the host at `admin/test-results/` and `admin/playwright-report/`.
+
+Pin `PLAYWRIGHT_VERSION` in `.env.dev` to whatever `admin/package.json`'s `@playwright/test` resolves to.
+
+#### On the host (fast iteration, UI mode)
+
+```sh
+cd admin
+npm run e2e:install       # once per machine — downloads Chromium
+npm run e2e               # runs against Traefik on localhost:8100
+npm run e2e:ui            # Playwright's interactive UI mode
+```
+
+Prefer this when iterating on a specific test — the UI mode and Playwright inspector need a display, which the containerized flow doesn't provide.
+
+The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, mocks, scripts, swagger, or the workflow itself.
+
 ## Production
 
 ### Images
@@ -100,8 +168,8 @@ Foxnox ships two releasable images:
 
 | Image | Description |
 |---|---|
-| `dwtechs/foxnox` | The Node.js gateway service. Runs continuously as an API server. |
-| `dwtechs/foxnox-migration` | A one-shot Liquibase container. Applies the Foxnox DB schema and core seed data, then exits. The gateway will not start until this container completes successfully. |
+| `ghcr.io/dwtechs/foxnox` | The Node.js password service. Runs continuously as an API server. |
+| `ghcr.io/dwtechs/foxnox-migration` | A one-shot Liquibase container. Applies the Foxnox DB schema and core seed data, then exits. The gateway will not start until this container completes successfully. |
 
 The `migration` image has the full Foxnox schema and core data baked in. Consumers can mount their own Foxnox registration data (services, routes, roles) at `/liquibase/data` without rebuilding the image — see [DB Migration](#db-migration) below.
 
@@ -126,6 +194,21 @@ Builds production images from their respective `dockerfile.prod` files. Each ima
 ./scripts/build-prod.sh website           # website only
 ./scripts/build-prod.sh gateway migration # multiple targets
 ```
+
+### Publish to GHCR
+
+Images are published automatically via the `.github/workflows/publish.yml` workflow when a GitHub Release is created. Publishing is scoped to the `DWTechs` org — `GITHUB_TOKEN` is sufficient, no PAT is needed.
+
+Each release produces two images with the following tag variants (e.g. for `v1.2.3`):
+
+| Tag | Example |
+|---|---|
+| Full semver | `1.2.3` |
+| Major.minor | `1.2` |
+| Major | `1` |
+| Floating | `latest` |
+
+Images include SBOM and provenance attestations (SLSA) by default.
 
 ### Start production environment
 

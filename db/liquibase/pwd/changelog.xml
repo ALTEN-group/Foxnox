@@ -97,5 +97,17 @@
     <comment>Trusted device seed data</comment>
     <sqlFile path="versions/06-data/04-trusted-device-data.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="06-data-05" author="lcluber">
+    <comment>Mock token rows for admin UI (per mock user × token type)</comment>
+    <sqlFile path="versions/06-data/05-token-row-data.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-06" author="lcluber">
+    <comment>Account unlock token type for web unlock workflow</comment>
+    <sqlFile path="versions/06-data/06-token-type-unlock.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-07" author="lcluber">
+    <comment>Login challenge token types (2FA / expired password / trusted device)</comment>
+    <sqlFile path="versions/06-data/07-token-type-login-challenges.sql" splitStatements="false"/>
+  </changeSet>
 
 </databaseChangeLog>

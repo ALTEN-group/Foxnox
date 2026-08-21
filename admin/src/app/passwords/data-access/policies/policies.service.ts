@@ -6,6 +6,7 @@ import {
   runInInjectionContext,
 } from "@angular/core";
 import { AclService } from "@core/acl/acl.service";
+import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
 import { POLICY_COLUMNS } from "app/passwords/data-access/policies/policy.conf";
@@ -14,7 +15,7 @@ import {
   policyFactory,
 } from "app/passwords/data-access/policies/policy.model";
 
-const policiesEndpoint: AdminEntity = "policies";
+const policiesEntity: AdminEntity = "policies";
 
 /**
  * Service to manage password policies
@@ -26,10 +27,10 @@ export class PoliciesService {
   private readonly aclsService = inject(AclService);
   private readonly injector = inject(Injector);
   private readonly acls = computed(() =>
-    this.aclsService.getEntityAcls(policiesEndpoint),
+    this.aclsService.getEntityAcls(policiesEntity),
   );
   private readonly crud = new CrudRepository<Policy>().with({
-    endpoint: policiesEndpoint,
+    endpoint: ENTITY_API_PATHS[policiesEntity],
   });
 
   public readonly httpCalls: Calls<Policy> = {

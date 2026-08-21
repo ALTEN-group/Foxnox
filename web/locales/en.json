@@ -1,0 +1,260 @@
+{
+  "lang": "en",
+  "dir": "ltr",
+  "site": {
+    "name": "Foxnox",
+    "tagline": "Account security"
+  },
+  "common": {
+    "skipToContent": "Skip to main content",
+    "continue": "Continue",
+    "submit": "Submit",
+    "back": "Back",
+    "required": "Required",
+    "cancel": "Cancel",
+    "revoke": "Revoke",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "pages": {
+    "recoverRequest": {
+      "title": "Reset your password — Foxnox",
+      "heading": "Forgot your password?",
+      "subtitle": "Enter the email address for your account. If it exists, we will send a reset link.",
+      "emailLabel": "Email",
+      "submit": "Send reset link",
+      "honeypotLabel": "Website",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "errorInvalidEmail": "Enter a valid email address."
+    },
+    "recoverSent": {
+      "title": "Check your email — Foxnox",
+      "heading": "Check your email",
+      "body": "If an account exists for that address, you will receive a message with a link to reset your password. The link expires after a short time."
+    },
+    "recoverReset": {
+      "title": "Choose a new password — Foxnox",
+      "heading": "Choose a new password",
+      "subtitle": "Pick a strong password you have not used here before.",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "submit": "Update password",
+      "errorMismatch": "Passwords do not match.",
+      "errorWeak": "Password does not meet the security policy.",
+      "errorInvalidToken": "This reset link is invalid or has expired.",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "recoverDone": {
+      "title": "Password updated — Foxnox",
+      "heading": "Password updated",
+      "body": "Your password has been changed. You can sign in with your new password."
+    },
+    "recoverInvalid": {
+      "title": "Link expired — Foxnox",
+      "heading": "This link is no longer valid",
+      "body": "The reset link is missing, invalid, or has expired. Request a new one to continue.",
+      "cta": "Request a new link"
+    },
+    "twofaVerify": {
+      "title": "Two-factor authentication — Foxnox",
+      "heading": "Enter your verification code",
+      "subtitle": "Open your authenticator app and enter the 6-digit code.",
+      "codeLabel": "Authentication code",
+      "submit": "Verify",
+      "errorInvalid": "That code is not valid. Try again.",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "lostAccess": "Lost access to your authenticator?"
+    },
+    "twofaSetup": {
+      "title": "Set up two-factor authentication — Foxnox",
+      "heading": "Set up two-factor authentication",
+      "subtitle": "Scan the QR code with your authenticator app, then enter a code to confirm.",
+      "secretLabel": "Or enter this key manually",
+      "codeLabel": "Confirmation code",
+      "submit": "Enable 2FA",
+      "errorInvalid": "That code is not valid. Try again.",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "qrPlaceholder": "QR code will appear here once setup is wired to the backend."
+    },
+    "twofaDone": {
+      "title": "Two-factor enabled — Foxnox",
+      "heading": "Two-factor authentication is on",
+      "body": "Your account now requires a verification code when you sign in."
+    },
+    "twofaDisabled": {
+      "title": "Two-factor disabled — Foxnox",
+      "heading": "Two-factor authentication is off",
+      "body": "Authenticator requirements were removed from your account. You can set 2FA up again after signing in."
+    },
+    "twofaInvalid": {
+      "title": "Verification expired — Foxnox",
+      "heading": "This sign-in step is no longer valid",
+      "body": "Your verification session expired or was already used. Sign in again to continue."
+    },
+    "accountRecoverRequest": {
+      "title": "Recover your account — Foxnox",
+      "heading": "Lost access to two-factor authentication?",
+      "subtitle": "Enter the email for your account. If it exists, we will start an account recovery challenge.",
+      "emailLabel": "Email",
+      "submit": "Start recovery",
+      "honeypotLabel": "Website",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "errorInvalidEmail": "Enter a valid email address."
+    },
+    "accountRecoverSent": {
+      "title": "Recovery started — Foxnox",
+      "heading": "Check your email",
+      "body": "If an account exists for that address, you will receive a recovery link. Use it together with your security questions to regain access."
+    },
+    "accountRecoverChallenge": {
+      "title": "Prove your identity — Foxnox",
+      "heading": "Answer your security questions",
+      "subtitle": "Correct answers let us disable two-factor authentication so you can sign in again.",
+      "answerLabel": "Your answer",
+      "submit": "Continue",
+      "errorInvalid": "One or more answers are incorrect. Try again.",
+      "errorInvalidToken": "This recovery link is invalid or has expired.",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "accountRecoverDone": {
+      "title": "Account recovered — Foxnox",
+      "heading": "Access restored",
+      "body": "Two-factor authentication was disabled. Sign in with your password, then set up 2FA again when you can."
+    },
+    "securityQuestionsSetup": {
+      "title": "Security questions — Foxnox",
+      "heading": "Set up security questions",
+      "subtitle": "Choose questions only you can answer. They help recover your account if you lose access to 2FA.",
+      "questionLabel": "Question",
+      "answerLabel": "Answer",
+      "submit": "Save questions",
+      "errorIncomplete": "Select a question and provide an answer for each row.",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "securityQuestionsDone": {
+      "title": "Security questions saved — Foxnox",
+      "heading": "Security questions saved",
+      "body": "Your answers are stored securely and can be used during account recovery."
+    },
+    "trustedDevicePrompt": {
+      "title": "Remember this device — Foxnox",
+      "heading": "Trust this device?",
+      "subtitle": "Trusted devices can skip two-factor prompts for a limited time.",
+      "deviceNameLabel": "Device name (optional)",
+      "deviceNamePlaceholder": "e.g. Personal laptop",
+      "submitYes": "Trust this device",
+      "submitNo": "Not now",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "trustedDeviceDone": {
+      "title": "Device trusted — Foxnox",
+      "heading": "Device trusted",
+      "body": "This device will not ask for a second factor until the trust period expires."
+    },
+    "trustedDeviceSkipped": {
+      "title": "Continue without trusting — Foxnox",
+      "heading": "Continuing without trust",
+      "body": "You will be asked for a verification code the next time you sign in from this device."
+    },
+    "trustedDevicesManage": {
+      "title": "Trusted devices — Foxnox",
+      "heading": "Trusted devices",
+      "subtitle": "Devices that can skip two-factor prompts. Revoke any you no longer use.",
+      "empty": "You have no trusted devices.",
+      "columns": {
+        "name": "Device",
+        "lastUsed": "Last used",
+        "expires": "Expires",
+        "actions": "Actions"
+      },
+      "unnamed": "Unnamed device",
+      "revokeConfirm": "Revoke trust for this device?",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "trustedDeviceRevoked": {
+      "title": "Device revoked — Foxnox",
+      "heading": "Trust revoked",
+      "body": "That device will need a verification code on the next sign-in."
+    },
+    "trustedDeviceInvalid": {
+      "title": "Device step expired — Foxnox",
+      "heading": "This sign-in step is no longer valid",
+      "body": "Your remember-device session expired or was already used. Sign in again to continue."
+    },
+    "passwordExpired": {
+      "title": "Password expired — Foxnox",
+      "heading": "Your password has expired",
+      "subtitle": "Choose a new password to continue. It must meet the security policy.",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "submit": "Update password",
+      "errorMismatch": "Passwords do not match.",
+      "errorWeak": "Password does not meet the security policy.",
+      "errorInvalidToken": "This session is no longer valid. Sign in again.",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "passwordExpiredDone": {
+      "title": "Password updated — Foxnox",
+      "heading": "Password updated",
+      "body": "Your password is valid again. Continue to sign in."
+    },
+    "unlockRequest": {
+      "title": "Account locked — Foxnox",
+      "heading": "Account temporarily locked",
+      "subtitle": "Too many failed sign-in attempts. Enter your email to request an unlock, or wait until the lock expires.",
+      "emailLabel": "Email",
+      "submit": "Request unlock",
+      "honeypotLabel": "Website",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "errorInvalidEmail": "Enter a valid email address."
+    },
+    "unlockSent": {
+      "title": "Unlock requested — Foxnox",
+      "heading": "Unlock requested",
+      "body": "If that account is locked, an unlock link or automatic release will follow shortly. You can also wait for the lock timer to expire."
+    },
+    "unlockDone": {
+      "title": "Account unlocked — Foxnox",
+      "heading": "Account unlocked",
+      "body": "You can sign in again. Repeated failures will lock the account once more."
+    },
+    "unlockInvalid": {
+      "title": "Unlock link invalid — Foxnox",
+      "heading": "This unlock link is no longer valid",
+      "body": "Request a new unlock or wait for the lock period to end.",
+      "cta": "Request unlock"
+    }
+  },
+  "emails": {
+    "pwd-reset": {
+      "subject": "Reset your password — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Reset your password",
+      "intro": "We received a request to reset the password for your account. Use the button below to choose a new one.",
+      "cta": "Choose a new password",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not ask for a reset, you can ignore this message."
+    },
+    "account-recover": {
+      "subject": "Account recovery — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Continue account recovery",
+      "intro": "We received a request to recover your account. Use the button below to continue the recovery challenge.",
+      "cta": "Continue recovery",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not ask to recover this account, you can ignore this message."
+    },
+    "account-unlock": {
+      "subject": "Unlock your account — {{brand}}",
+      "greeting": "Hello,",
+      "greetingNamed": "Hello {{nickname}},",
+      "heading": "Unlock your account",
+      "intro": "Your account was locked after too many failed sign-in attempts. Use the button below to unlock it.",
+      "cta": "Unlock account",
+      "expiry": "This link expires after a short time and can only be used once.",
+      "ignore": "If you did not request an unlock, you can ignore this message."
+    }
+  }
+}

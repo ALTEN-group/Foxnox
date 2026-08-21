@@ -38,8 +38,12 @@ export const CONFIG: AppConfig = {
   appKey: APP_KEY,
   storageKeys: AppStorageKey,
   sidenavItems: SIDENAV,
-  apiGateway: environment.apiGateway,
+  apiRoot: environment.apiRoot,
+  gatelinApi: environment.gatelinApi,
   apiUsers: environment.apiUsers,
+  webBase:
+    environment.webBase ??
+    `${environment.apiRoot.replace(/\/?$/, "/")}pwd/web`,
   env: environment,
 };
 
@@ -65,7 +69,10 @@ export function provideAppConfig() {
         title: CONFIG.title,
         appKey: CONFIG.appKey,
         storageKeys: CONFIG.storageKeys,
-        apiPrefix: environment.apiGateway,
+        // Foxnox entity CRUD is proxied at /api/pwd/… (not /api/gatelin/…).
+        // Login/sessions stay on gatelinApi; preferences are rewritten in
+        // preferences.interceptor.ts onto /api/gatelin/preferences/….
+        apiPrefix: environment.apiRoot,
       },
     },
     provideCrudLabels(CRUD_LABELS_CONFIG, PrimeNgTranslations),

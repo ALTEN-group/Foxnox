@@ -48,22 +48,22 @@ INSERT INTO security_question_category_trans ("categoryId", lang, trans) VALUES
 
 
 -- Insert default security questions
-INSERT INTO security_question (id, question, "categoryId") VALUES
-(1, 'First pet name', 1),
-(2, 'Mother maiden name', 2),
-(3, 'First school name', 5),
-(4, 'City of birth', 1),
-(5, 'Childhood nickname', 1),
-(6, 'Favorite childhood friend name', 1),
-(7, 'Street lived on in third grade', 1),
-(8, 'Childhood phone number including area code', 1),
-(9, 'First stuffed animal name', 1),
-(10, 'Father birth date', 2),
-(11, 'First car model', 1),
-(12, 'First job company name', 3),
-(13, 'Favorite childhood food', 4),
-(14, 'First concert attended', 4),
-(15, 'Favorite childhood book', 4)
+INSERT INTO security_question (id, question, "categoryId", active) VALUES
+(1, 'First pet name', 1, TRUE),
+(2, 'Mother maiden name', 2, TRUE),
+(3, 'First school name', 5, TRUE),
+(4, 'City of birth', 1, TRUE),
+(5, 'Childhood nickname', 1, TRUE),
+(6, 'Favorite childhood friend name', 1, TRUE),
+(7, 'Street lived on in third grade', 1, TRUE),
+(8, 'Childhood phone number including area code', 1, TRUE),
+(9, 'First stuffed animal name', 1, TRUE),
+(10, 'Father birth date', 2, TRUE),
+(11, 'First car model', 1, TRUE),
+(12, 'First job company name', 3, TRUE),
+(13, 'Favorite childhood food', 4, TRUE),
+(14, 'First concert attended', 4, TRUE),
+(15, 'Favorite childhood book', 4, TRUE)
 ;
 
 -- Insert security question translations

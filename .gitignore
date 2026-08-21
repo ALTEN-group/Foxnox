@@ -1,4 +1,5 @@
 node_modules/*
+website/node_modules/*
 /.scannerwork
 .DS_Store
 Thumbs.db
@@ -6,4 +7,8 @@ src/public/*
 tests/coverage/
 docker/conf/.env.dev
 website/docs/.vitepress/cache
+website/docs/.vitepress/dist
 swagger/src/foxnox.openapi.json
+
+# APM dependencies
+apm_modules/

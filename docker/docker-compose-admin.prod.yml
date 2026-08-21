@@ -16,7 +16,8 @@ services:
         - npmrc
       args:
         NODE_VERSION: ${NODE_VERSION}
-        NGINX_VERSION: ${NGINX_VERSION}
+        CADDY_VERSION: ${CADDY_VERSION}
+        ADMIN_PORT: ${ADMIN_PORT}
         TZ: ${TZ}
         UID: ${UID}
         GID: ${GID}
@@ -24,15 +25,17 @@ services:
     image: dwtechs/foxnox-admin:${VERSION:-latest}
     container_name: ${ADMIN_HOST}
     hostname: ${ADMIN_HOST}
+    environment:
+      ADMIN_PORT: ${ADMIN_PORT}
     networks:
       - internal
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.admin.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin.rule=PathPrefix(`/foxnox`)"
       - "traefik.http.routers.admin.entrypoints=web"
       - "traefik.http.routers.admin.service=admin"
-      - "traefik.http.services.admin.loadbalancer.server.port=80"
+      - "traefik.http.services.admin.loadbalancer.server.port=${ADMIN_PORT}"
 
 networks:
   internal:

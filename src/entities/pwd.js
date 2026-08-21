@@ -37,7 +37,7 @@ export default new SQLEntity("pwd", [
     // The hash itself is produced by @dwtechs/passken-express `create` middleware
     // before this entity runs, so callers never send a password directly.
     // `isPrivate: true` lets the service SELECT the hash internally (for compare
-    // and rotation) while `res/send.js` strips it from outbound responses.
+    // and rotation) while `send` / `sendPwd` strips it from responses.
     key: "pwdHash",
     type: "string",
     min: 32,
@@ -146,7 +146,8 @@ export default new SQLEntity("pwd", [
     isTypeChecked: true,
     isFilterable: false,
     requiredFor: [],
-    operations: ["UPDATE"],
+    // SELECT so internal TOTP verify can load the secret; still stripped by sendPwd.
+    operations: ["SELECT", "UPDATE"],
     isPrivate: true,
     sanitizer: null,
     normalizer: null,

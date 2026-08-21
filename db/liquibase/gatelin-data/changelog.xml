@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-  <!-- Registers Foxnox's own routes into Gatelin's gateway DB (mounted as gatelin_migration's optional /liquibase/data volume) -->
+  <!-- Registers Foxnox's own routes into Gatelin's database (mounted as gatelin_migration's optional /liquibase/data volume) -->
 
   <changeSet id="foxnox-data-01" author="lcluber">
     <comment>Foxnox service</comment>
@@ -18,6 +18,50 @@
   <changeSet id="foxnox-data-03" author="lcluber">
     <comment>Foxnox routes</comment>
     <sqlFile path="03-route.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-04" author="lcluber">
+    <comment>Foxnox route permissions for Super admin / Admin</comment>
+    <sqlFile path="04-permission.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-05" author="lcluber">
+    <comment>Foxnox web workflow resource</comment>
+    <sqlFile path="05-resource-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-06" author="lcluber">
+    <comment>Foxnox web workflow routes (recovery + 2FA pages)</comment>
+    <sqlFile path="06-route-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-07" author="lcluber">
+    <comment>Foxnox protected web workflow permissions</comment>
+    <sqlFile path="07-permission-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-08" author="lcluber">
+    <comment>Foxnox extra web workflows (recovery, questions, devices, unlock)</comment>
+    <sqlFile path="08-route-web-extra.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-09" author="lcluber">
+    <comment>Permissions for newly protected web workflow routes</comment>
+    <sqlFile path="07-permission-web.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-10" author="lcluber">
+    <comment>Login challenge mint API route + permissions</comment>
+    <sqlFile path="09-route-challenges.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-11" author="lcluber" runOnChange="true">
+    <comment>Allowed browser Origins for the admin UI (CORS whitelist)</comment>
+    <sqlFile path="10-cors.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-12" author="lcluber">
+    <comment>Foxnox admin preference resources</comment>
+    <sqlFile path="11-preference-resource.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-13" author="lcluber">
+    <comment>Foxnox admin table preference templates</comment>
+    <sqlFile path="12-preference.sql"/>
+  </changeSet>
+  <changeSet id="foxnox-data-14" author="lcluber">
+    <comment>Foxnox admin preference scopes</comment>
+    <sqlFile path="13-preference-scope.sql"/>
   </changeSet>
 
 </databaseChangeLog>

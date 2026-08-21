@@ -1,20 +1,9 @@
 // @ts-check
-import { deleteProps } from "@dwtechs/sparray";
 import pEnt from "../../entities/pwd.js";
+import { send } from "./send.js";
 
 /**
  * Terminal response handler for `/pwd/` routes.
- *
- * Mirrors the generic `send` shape (`{ rows, total }`) but strips any
- * `isPrivate: true` properties (e.g. `pwdHash`, `twoFactorSecret`) from
- * `res.locals.rows` first. Internal middlewares like
- * `@dwtechs/passken-express`'s `compare` still see the full row upstream —
- * the scrub only happens on the way out.
- *
- * @param {import('express').Request} _req
- * @param {import('express').Response} res
+ * Strips `pwdHash`, `twoFactorSecret`, etc. via the pwd entity's `isPrivate` flags.
  */
-export function sendPwd(_req, res) {
-  const rows = deleteProps(res.locals.rows, pEnt.privateProps);
-  res.status(200).json({ rows, total: res.locals.total });
-}
+export const sendPwd = send(pEnt);
