@@ -37,7 +37,6 @@ export class TrustedDevicesService {
   public readonly httpCalls: Calls<TrustedDevice> = {
     get: this.crud.get,
     update: this.crud.update,
-    archive: this.crud.archive,
     getHistory: this.crud.getHistory,
   };
 
