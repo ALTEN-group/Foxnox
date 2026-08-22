@@ -151,6 +151,9 @@ services:
       REFRESH_TOKEN_DURATION: ${GATELIN_REFRESH_TOKEN_DURATION}
       REFRESH_TOKEN_COOKIE: ${GATELIN_REFRESH_TOKEN_COOKIE}
       REFRESH_TOKEN_COOKIE_HTTPS_ONLY: "false" # dev stack is plain HTTP
+      # Enables the bundled admin UI (src/admin-server.js listens on its own port)
+      ADMIN_PORT: ${GATELIN_ADMIN_PORT}
+      ADMIN_BASE_PATH: ${GATELIN_ADMIN_BASE_PATH}
     depends_on:
       postgres:
         condition: service_healthy
@@ -168,6 +171,10 @@ services:
       - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
       - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
       - "traefik.http.services.gatelin.loadBalancer.server.port=${DEFAULT_PORT}"
+      - "traefik.http.routers.gatelin-admin.rule=PathPrefix(`${GATELIN_ADMIN_BASE_PATH}`)"
+      - "traefik.http.routers.gatelin-admin.entrypoints=web"
+      - "traefik.http.routers.gatelin-admin.service=gatelin-admin"
+      - "traefik.http.services.gatelin-admin.loadBalancer.server.port=${GATELIN_ADMIN_PORT}"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/gatelin/health"]
       interval: 10s
