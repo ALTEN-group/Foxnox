@@ -37,7 +37,6 @@ export class PasswordsService {
   public readonly httpCalls: Calls<Password> = {
     get: this.crud.get,
     update: this.crud.update,
-    archive: this.crud.archive,
     getHistory: this.crud.getHistory,
   };
 
