@@ -33,9 +33,9 @@ export class TrustedDevicesService {
     endpoint: ENTITY_API_PATHS[trustedDevicesEntity],
   });
 
+  // create intentionally omitted: deviceTokenHash is INSERT-only server-side, never settable from the admin UI
   public readonly httpCalls: Calls<TrustedDevice> = {
     get: this.crud.get,
-    create: this.crud.create,
     update: this.crud.update,
     archive: this.crud.archive,
     getHistory: this.crud.getHistory,

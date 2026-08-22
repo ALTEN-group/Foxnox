@@ -75,6 +75,11 @@ export const TOKEN_COLUMNS: (
         controlOptions: {
           dateShowTime: true,
         },
+        conditions: {
+          controlOptions: {
+            hidden: ({ model }) => model.id == null,
+          },
+        },
       },
       ...buildArchivedConfig(),
       ...buildAuditConfig(),

@@ -42,7 +42,7 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   trustedDevices: {
     get: 100, // searchDevices
     getHistory: 101, // getDeviceHistory
-    create: 102, // addDevices
+    // create intentionally omitted: deviceTokenHash is INSERT-only server-side, never settable from the admin UI
     update: 103, // updateDevices
     archive: 104, // archiveDevices
   },

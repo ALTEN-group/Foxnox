@@ -40,6 +40,7 @@ export const TRUSTED_DEVICE_COLUMNS: (
           isHardHidden: true,
         },
         controlOptions: {
+          hidden: true,
           validators: [required],
         },
       },
