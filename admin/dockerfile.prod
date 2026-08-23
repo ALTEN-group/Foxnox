@@ -45,8 +45,11 @@ RUN mkdir -p /data/caddy /config/caddy \
 
 COPY --chown=${UID}:${GID} Caddyfile /etc/caddy/Caddyfile
 COPY --from=build --chown=${UID}:${GID} /usr/src/app/dist/ /usr/share/caddy/foxnox/
+COPY --chown=${UID}:${GID} --chmod=755 scripts/entrypoint-prod.sh /entrypoint.sh
 
 USER ${UID}:${GID}
 EXPOSE ${ADMIN_PORT}
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -qO- http://127.0.0.1:${ADMIN_PORT}/healthz >/dev/null 2>&1 || exit 1
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

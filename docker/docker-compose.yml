@@ -309,6 +309,7 @@ services:
       # ng serve reads $PORT and overrides --port; keep it aligned with ADMIN_PORT
       # so Traefik's loadbalancer.server.port target actually has a listener.
       PORT: ${ADMIN_PORT}
+      ADMIN_SSO_TOKEN_KEY: ${ADMIN_SSO_TOKEN_KEY:-}
     networks:
       - internal
     volumes:

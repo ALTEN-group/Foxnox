@@ -23,16 +23,23 @@ import {
 } from "@dwtechs/ngx-crud-builder";
 import { environment } from "../../../environments/environment";
 import { filter, tap } from "rxjs";
+import { readAdminRuntimeConfig } from "./runtime-config";
 
 /**
  * Main Config
  */
 const TITLE = "Foxnox";
 const APP_KEY = "foxnox";
+const runtime = readAdminRuntimeConfig();
 const AppStorageKey = {
   TABLE_CONFIG: `${APP_KEY}_tableConfig`,
   THEME: `${APP_KEY}_theme`,
-  TOKEN: `${APP_KEY}_token`,
+  // Shared (not app-prefixed): Foxnox and Gatelin admin both authenticate
+  // against the same Gatelin session backend, so both must read/write the
+  // same slot for the cookie-based silent refresh to identify the consumer
+  // when switching between the two admin apps. Configurable via
+  // ADMIN_SSO_TOKEN_KEY so it can be changed without an Angular rebuild.
+  TOKEN: runtime.ssoTokenKey?.trim() || "sso_access_token",
 } as const;
 export const CONFIG: AppConfig = {
   title: TITLE,

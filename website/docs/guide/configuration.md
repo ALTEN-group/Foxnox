@@ -101,6 +101,12 @@ These are set on **Gatelin**, not on Foxnox, but they are what connects the two.
 | `USER_SEARCH_URL` | Gatelin's own user lookup for login; normally the same URL Foxnox uses. |
 | `ADMIN_PASSWORD_RECOVERY_URL` | Set to `/api/pwd/web/recover` so the admin login page shows a "Forgotten password?" link pointing at the Foxnox workflow. |
 
+## Admin UI
+
+| Variable | Default | Description |
+|---|---|---|
+| `ADMIN_SSO_TOKEN_KEY` | `sso_access_token` | localStorage key the admin UI stores the access token under. Injected at runtime (dev entrypoint + prod `entrypoint-prod.sh`), no rebuild required. Not app-prefixed by default because Foxnox and Gatelin admin share the same slot for cookie-based silent refresh when switching between the two apps — if you override it, set the same value on both. |
+
 ## Maintenance Jobs
 
 Foxnox starts two daily UTC cron jobs with the process:
