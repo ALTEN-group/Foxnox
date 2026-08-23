@@ -11,9 +11,9 @@ import { NavigationEnd, Router, RouterLink } from "@angular/router";
 import { AclService } from "@core/acl/acl.service";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { SidenavService } from "@core/ui/sidenav/sidenav.service";
-import { MenuItem } from "primeng/api";
-import { PanelModule } from "primeng/panel";
-import { PanelMenu, PanelMenuModule } from "primeng/panelmenu";
+import { MenuItem } from "@openng/optimus-ui/api";
+import { PanelModule } from "@openng/optimus-ui/panel";
+import { PanelMenu, PanelMenuModule } from "@openng/optimus-ui/panelmenu";
 import { filter, map, startWith } from "rxjs";
 
 @Component({

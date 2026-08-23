@@ -1,4 +1,4 @@
-import { environment } from "environments/environment";
+import { environment } from "../../../../environments/environment";
 import { MonoTypeOperatorFunction, tap } from "rxjs";
 
 export function debug<T>(description = "debug"): MonoTypeOperatorFunction<T> {

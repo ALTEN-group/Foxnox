@@ -6,8 +6,8 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { APP_CONFIG } from "@core/app-config/app-config.token";
-import { ButtonModule } from "primeng/button";
-import { CardModule } from "primeng/card";
+import { ButtonModule } from "@openng/optimus-ui/button";
+import { CardModule } from "@openng/optimus-ui/card";
 
 @Component({
   selector: "adm-home",

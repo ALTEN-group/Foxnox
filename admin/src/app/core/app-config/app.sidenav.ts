@@ -1,5 +1,5 @@
 import { AppPaths } from "app/app.routes";
-import { MenuItem } from "primeng/api";
+import { MenuItem } from "@openng/optimus-ui/api";
 
 export const SIDENAV: MenuItem[] = [
   {

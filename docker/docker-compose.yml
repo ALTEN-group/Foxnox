@@ -306,6 +306,9 @@ services:
     hostname: ${ADMIN_HOST}
     environment:
       <<: *defaultEnvs
+      # ng serve reads $PORT and overrides --port; keep it aligned with ADMIN_PORT
+      # so Traefik's loadbalancer.server.port target actually has a listener.
+      PORT: ${ADMIN_PORT}
     networks:
       - internal
     volumes:

@@ -1,6 +1,6 @@
 import { InjectionToken } from "@angular/core";
-import { Environment } from "environments/environment.model";
-import { MenuItem } from "primeng/api";
+import { Environment } from "../../../environments/environment.model";
+import { MenuItem } from "@openng/optimus-ui/api";
 
 export interface AppConfig {
   title: string;

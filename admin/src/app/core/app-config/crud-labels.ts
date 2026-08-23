@@ -45,6 +45,7 @@ export const CRUD_LABELS_CONFIG: Partial<CrudLabels> = {
     cancel: "Cancel",
     close: "Close",
     validate: "Submit",
+    restore: "Restore",
   },
   form: {
     reset: "Reset",
