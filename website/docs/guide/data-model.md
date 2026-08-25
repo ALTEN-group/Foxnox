@@ -38,7 +38,8 @@ erDiagram
     boolean strict
     varchar symbols
     int expiryDays
-    boolean active
+    int maxFailedAttempts
+    int lockoutMinutes
     boolean archived
     timestamp archivedAt
   }
@@ -90,7 +91,9 @@ One row per user, and the single source of truth for whether a sign-in can proce
 
 ### pwd_policy
 
-Password rules as data. Exactly one row is `active`, and it is read at the moment a password is created or changed rather than at boot — so activating a new policy takes effect on the next password change without a restart.
+Password rules as data. Foxnox uses the first non-archived row (`getCache` orders by `id` ASC). There is no `active` column — archive unused policies so the one you want is the oldest remaining row. Character-class rules are read when a password is created or changed; lockout limits are read on each failed compare.
+
+Server-side generation (`POST /pwd/`) is initialized at process start from that row, so a restart is needed before newly generated passwords pick up generation-rule changes. User-chosen passwords in the workflows are validated against the current first non-archived policy without a restart.
 
 ### token_type
 
@@ -173,6 +176,4 @@ Every table follows the same three patterns, which is worth knowing because it e
 
 ## Migrations
 
-The schema is managed by Liquibase in `db/liquibase/pwd/`, applied by the `dwtechs/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).
-
-There is also a `pwd_policies` **view** that adds a computed `expiryDate`, so callers can read when a password expires without recalculating it from `expiryDays`.
+The schema is managed by Liquibase in `db/liquibase/pwd/`, applied by the `ghcr.io/dwtechs/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).

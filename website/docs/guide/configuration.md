@@ -10,7 +10,7 @@ Variables for the `foxnox` container.
 | `DB_NAME` | Database name (default: `foxnox`) |
 | `DB_USER` | Database user for Foxnox |
 | `DB_PWD` | Database password for Foxnox |
-| `PWD_SECRET` | HMAC secret used for password hashes and token hashes, at least 32 characters. **Rotating it invalidates every stored password hash and every outstanding token**, so treat it as permanent for the life of the database. |
+| `PWD_SECRET` | Secret used by `@dwtechs/hashitaka`: salted PBKDF2 for password hashes and security-question answers, HMAC for workflow tokens and trusted-device cookies. At least 32 characters. `FOXNOX_PWD_SECRET` is accepted as an alias. **Rotating it invalidates every stored password hash, every outstanding token, and every remembered device**, so treat it as permanent for the life of the database. |
 | `USER_SEARCH_URL` | Search endpoint of your user management service. Email-driven workflows call it to resolve an email address to a `userId`. |
 | `SERVICE_NAME` | Container hostname of the Foxnox service (used for logs) |
 
@@ -45,9 +45,9 @@ Password reset, account recovery, and account unlock emails go out over SMTP.
 | Variable | Default | Description |
 |---|---|---|
 | `SMTP_HOST` | — | SMTP server hostname. **When unset, no mail is sent** — the payload is only logged, which is useful in tests but means users never receive their links. |
-| `SMTP_PORT` | `587` | SMTP port |
-| `SMTP_SECURE` | `true` | Whether to use TLS |
-| `SMTP_FROM` | — | From header, e.g. `"My Project <noreply@example.com>"` |
+| `SMTP_PORT` | `1025` | SMTP port. `1025` matches Mailpit in a local stack; production SMTPS is usually `587` or `465`. |
+| `SMTP_SECURE` | unset (`false`) | Set to `true` or `1` to use TLS. Any other value leaves TLS off. |
+| `SMTP_FROM` | `{WEB_BRAND_NAME} <noreply@localhost>` | From header, e.g. `"My Project <noreply@example.com>"` |
 | `SMTP_USER` | — | SMTP username, if authentication is required |
 | `SMTP_PASS` | — | SMTP password, if authentication is required |
 
@@ -73,7 +73,7 @@ Colour values are sanitized to `#RGB` / `#RRGGBB` before being applied as CSS va
 
 ## Database migration service
 
-These apply to the `foxnox-migration` container (`dwtechs/foxnox-migration`):
+These apply to the `foxnox-migration` container (`ghcr.io/dwtechs/foxnox-migration`):
 
 | Variable | Required | Description |
 |---|---|---|

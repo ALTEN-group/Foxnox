@@ -108,25 +108,26 @@ sequenceDiagram
     B->>G: POST /api/gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /pwd/compare { userId, pwd }
-    F->>F: verify hash
-    F-->>G: 200 { rows: [pwd row without secrets] }
-
-    Note over G: gateLoginChallenges reads the row
 
     alt lockedUntil in the future
+        F-->>G: 403 Account locked
         G-->>B: 403
-    else pwdExpiry passed, or 2FA without trusted device
-        G->>F: POST /pwd/challenges { userId, kind }
-        F-->>G: 201 { challenge, url }
-        G-->>B: 202 { challengeRequired, kind, url }
-        B->>F: workflow pages, one or more steps
-        F-->>B: 303 to resume URL with ?ticket=
-        B->>G: POST /api/gatelin/sessions/resume { ticket }
-        G->>F: POST /pwd/login-tickets/redeem
-        F-->>G: 200 { userId }
-        G-->>B: 200 session
-    else nothing blocking
-        G-->>B: 200 session
+    else password OK
+        F-->>G: 200 { rows: [pwd row without secrets] }
+        Note over G: gateLoginChallenges reads the row
+        alt pwdExpiry passed, or 2FA without trusted device
+            G->>F: POST /pwd/challenges { userId, kind }
+            F-->>G: 201 { challenge, url }
+            G-->>B: 202 { challengeRequired, kind, url }
+            B->>F: workflow pages, one or more steps
+            F-->>B: 303 to resume URL with ?ticket=
+            B->>G: POST /api/gatelin/sessions/resume { ticket }
+            G->>F: POST /pwd/login-tickets/redeem
+            F-->>G: 200 { userId }
+            G-->>B: 200 session
+        else nothing blocking
+            G-->>B: 200 session
+        end
     end
 ```
 
@@ -138,7 +139,7 @@ Four endpoints are called by Gatelin rather than by clients, all derived from th
 
 | Endpoint | Called when |
 |---|---|
-| `POST /pwd/compare` | Every login, to verify the password |
+| `POST /pwd/compare` | Every login, to verify the password (also returns **403** when the account is locked) |
 | `POST /pwd/trusted-devices/verify` | Before minting a 2FA challenge, to check the device cookie |
 | `POST /pwd/challenges` | When a mid-login step is required |
 | `POST /pwd/login-tickets/redeem` | When the frontend resumes after a challenge |
@@ -163,7 +164,7 @@ Neither job is responsible for expiry. Expired tokens and lapsed device trust st
 | Templates | express-handlebars |
 | Database | PostgreSQL 16, via `@dwtechs/antity-pgsql` |
 | Migrations | Liquibase 4.28 |
-| Hashing | `@dwtechs/hashitaka` (HMAC), `@dwtechs/passken` (generation and compare) |
+| Hashing | `@dwtechs/hashitaka` (salted PBKDF2 for passwords and security answers; HMAC for tokens and device cookies), `@dwtechs/passken` (generation and compare) |
 | TOTP | `otpauth` |
 | Mail | Nodemailer |
-| Admin UI | Angular 21 with PrimeNG |
+| Admin UI | Angular 22 with OpenNG Optimus UI |

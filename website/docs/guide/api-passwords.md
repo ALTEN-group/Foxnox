@@ -6,7 +6,7 @@ All paths below are shown as Gatelin exposes them (`/api/pwd/…`). Internally F
 
 ## Compare a Password
 
-The one endpoint Gatelin calls on every login. It verifies a plaintext password against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
+The one endpoint Gatelin calls on every login. Lockout is checked first: if `lockedUntil` is still in the future, Foxnox returns **403** without comparing the password. Otherwise it verifies the plaintext against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
 
 ```
 POST /pwd/compare
@@ -38,11 +38,13 @@ Content-Type: application/json
 }
 ```
 
-**Response (401 Unauthorized):** the password does not match.
-
 The returned row never contains `pwdHash` or `twoFactorSecret` — both are marked private and stripped before serialization, even though the service reads them internally.
 
-This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what Gatelin needs to decide between issuing a session and raising a [login challenge](./api-challenges).
+**Response (401 Unauthorized):** the password does not match. Foxnox increments `failedAttempts` and, once the in-force policy's `maxFailedAttempts` is reached, sets `lockedUntil`.
+
+**Response (403 Forbidden):** `lockedUntil` is still in the future. Compare does not try the password while the account is locked, so a correct guess during the lock window is refused as well.
+
+This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what Gatelin needs to decide between issuing a session and raising a [login challenge](./api-challenges). A locked account never reaches that decision — Foxnox answers 403 itself.
 
 ## Search Passwords
 
@@ -105,7 +107,7 @@ Authorization: Bearer <access_token>
 
 The `pwd` field is the **only time** the plaintext is ever returned. It is not stored anywhere in recoverable form, so deliver it to the user immediately or discard it and use the recovery workflow instead.
 
-Generation follows the active [password policy](./api-policies) — length, character classes, and allowed symbols.
+Generation follows the in-force [password policy](./api-policies) — length, character classes, and whether symbols are required. The generator is initialized at process start; restart Foxnox after changing those generation rules.
 
 ## Update Passwords
 

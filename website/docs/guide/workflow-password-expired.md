@@ -42,7 +42,7 @@ sequenceDiagram
 
 ## Setting the New Password
 
-The form asks for the password twice and shows the requirements from the active [password policy](./api-policies), so the rules on screen are the rules that will be enforced.
+The form asks for the password twice and shows the requirements from the in-force [password policy](./api-policies), so the rules on screen are the rules that will be enforced.
 
 | Error | Cause |
 |---|---|
@@ -66,13 +66,13 @@ These two flows both end with a new password, but they are reached from opposite
 
 ## What Changes
 
-Rotation writes a new hash, stamps `pwdUpdatedAt`, and computes a fresh `pwdExpiry` from the active policy's `expiryDays`. The challenge is consumed so the page cannot be replayed.
+Rotation writes a new hash, stamps `pwdUpdatedAt`, and computes a fresh `pwdExpiry` from the in-force policy's `expiryDays`. The challenge is consumed so the page cannot be replayed.
 
 The user is then either sent on to 2FA verification or handed a login resume ticket — they never have to type their credentials again.
 
 ## Configuring Expiry
 
-Expiry comes from the active policy, not from a per-user setting:
+Expiry comes from the in-force policy, not from a per-user setting:
 
 ```
 PUT /api/pwd/policies/
@@ -81,9 +81,9 @@ Authorization: Bearer <access_token>
 
 {
   "rows": [
-    { "id": 1, "name": "default", "length": 12, "number": true, "symbol": true,
+    { "id": 1, "name": "Public User", "length": 12, "number": true, "symbol": true,
       "lowerCase": true, "upperCase": true, "strict": true, "symbols": "!@#$%^&*",
-      "expiryDays": 90, "active": true }
+      "expiryDays": 90, "maxFailedAttempts": 5, "lockoutMinutes": 15 }
   ]
 }
 ```

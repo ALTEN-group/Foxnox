@@ -1,6 +1,6 @@
 # Account Unlock
 
-After too many failed sign-in attempts, a `pwd` row's `lockedUntil` is set and logins are refused with **403** until it lapses. This workflow lets the user clear the lock early instead of waiting.
+After too many failed sign-in attempts, a `pwd` row's `lockedUntil` is set and `POST /pwd/compare` (and therefore login) is refused with **403** until it lapses. How many failures and how long the lock lasts come from the in-force policy's `maxFailedAttempts` and `lockoutMinutes` (defaults 5 and 15). This workflow lets the user clear the lock early instead of waiting.
 
 Driven by the **Account unlock** token type: 30 minute lifetime, 3 attempts.
 

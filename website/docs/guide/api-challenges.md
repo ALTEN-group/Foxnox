@@ -30,26 +30,31 @@ sequenceDiagram
     B->>G: POST /gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /pwd/compare { userId, pwd }
-    F-->>G: 200 { rows: [pwd row] }
-
     alt lockedUntil in the future
+        F-->>G: 403 Account locked
         G-->>B: 403 Account locked
-    else pwdExpiry in the past
-        G->>F: POST /pwd/challenges { userId, kind: "expired-password" }
-        F-->>G: 201 { challenge, url, expiresAt }
-        G-->>B: 202 { challengeRequired, kind, url }
-    else twoFactorEnabled and no trusted device
-        G->>F: POST /pwd/trusted-devices/verify { userId, deviceToken }
-        F-->>G: 200 { trusted: false }
-        G->>F: POST /pwd/challenges { userId, kind: "2fa" }
-        F-->>G: 201 { challenge, url, expiresAt }
-        G-->>B: 202 { challengeRequired, kind, url }
-    else nothing blocking
-        G-->>B: 200 { accessToken, refreshToken }
+    else password does not match
+        F-->>G: 401
+        G-->>B: 401
+    else password OK
+        F-->>G: 200 { rows: [pwd row] }
+        alt pwdExpiry in the past
+            G->>F: POST /pwd/challenges { userId, kind: "expired-password" }
+            F-->>G: 201 { challenge, url, expiresAt }
+            G-->>B: 202 { challengeRequired, kind, url }
+        else twoFactorEnabled and no trusted device
+            G->>F: POST /pwd/trusted-devices/verify { userId, deviceToken }
+            F-->>G: 200 { trusted: false }
+            G->>F: POST /pwd/challenges { userId, kind: "2fa" }
+            F-->>G: 201 { challenge, url, expiresAt }
+            G-->>B: 202 { challengeRequired, kind, url }
+        else nothing blocking
+            G-->>B: 200 { accessToken, refreshToken }
+        end
     end
 
     B->>F: GET the challenge url, completes the step
-    F-->>B: 302 to WEB_LOGIN_RESUME_URL?ticket=…
+    F-->>B: 303 to WEB_LOGIN_RESUME_URL?ticket=…
     B->>G: POST /gatelin/sessions/resume { ticket }
     G->>F: POST /pwd/login-tickets/redeem { ticket }
     F-->>G: 200 { userId }

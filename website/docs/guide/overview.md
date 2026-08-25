@@ -69,4 +69,4 @@ A **trusted device** is a browser the user chose to remember. Foxnox stores a ha
 
 ### Password policies
 
-A **password policy** describes what a valid password looks like: minimum length, whether digits, symbols, lower case, and upper case are required, which symbol set to allow, and after how many days a password expires. Exactly one policy is `active` at a time, and it is used both to generate passwords server-side and to validate the ones users choose. See [Policies](./api-policies).
+A **password policy** describes what a valid password looks like: minimum length, whether digits, symbols, lower case, and upper case are required, which symbol set to allow, after how many days a password expires, and when lockout kicks in after failed sign-ins. Foxnox uses the first non-archived policy (lowest `id`) both to generate passwords server-side and to validate the ones users choose. See [Policies](./api-policies).

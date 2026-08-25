@@ -49,7 +49,7 @@ If the address is malformed, the form comes back with `Enter a valid email addre
 
 Opening the link validates the token before rendering anything. A missing, expired, consumed, or over-attempted token gets the invalid page with a link to request a fresh one — the form is never shown for a token that could not be used.
 
-The reset form itself asks for the password twice and displays the requirements from the active [password policy](./api-policies), so the rules the user sees are the rules that will actually be applied.
+The reset form itself asks for the password twice and displays the requirements from the in-force [password policy](./api-policies), so the rules the user sees are the rules that will actually be applied.
 
 Three things can send the form back:
 

@@ -1,11 +1,11 @@
 # Deployment
 
-Foxnox is distributed as Docker images on Docker Hub:
+Foxnox is distributed as Docker images on GitHub Container Registry:
 
-- **`dwtechs/foxnox`** — the password service itself, including the account workflow pages
-- **`dwtechs/foxnox-migration`** — the Liquibase migration container, with the full schema and seed data baked in
+- **`ghcr.io/dwtechs/foxnox`** — the password service itself, including the account workflow pages
+- **`ghcr.io/dwtechs/foxnox-migration`** — the Liquibase migration container, with the full schema and seed data baked in
 
-Two more images exist for the project itself but are not required to run it: `dwtechs/foxnox-admin` (Angular admin UI) and `dwtechs/foxnox-website` (this documentation site).
+The Angular admin UI and this documentation site are not published as required runtime images. The admin app lives in `admin/` and is typically built from source; the docs are published to GitHub Pages.
 
 See the [Integration](./integration) page for Gatelin registration and seed data, and [Environment Variables](./configuration) for the full variable reference.
 
@@ -31,7 +31,7 @@ This matters for two reasons. First, nothing except Gatelin can call `/pwd/compa
 
 ## docker-compose.yml template
 
-Drop this file into your project and replace the placeholder values. No Foxnox source code required — all images are pulled from Docker Hub.
+Drop this file into your project and replace the placeholder values. No Foxnox source code required — all images are pulled from GHCR.
 
 ```yaml
 name: my-project
@@ -78,7 +78,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   foxnox_migration:
-    image: dwtechs/foxnox-migration:latest
+    image: ghcr.io/dwtechs/foxnox-migration:latest
     container_name: my-project-foxnox-migration-local
     hostname: my-project-foxnox-migration-local
     depends_on:
@@ -104,7 +104,7 @@ services:
       - ./docker/foxnox/data:/liquibase/data
 
   foxnox:
-    image: dwtechs/foxnox:latest
+    image: ghcr.io/dwtechs/foxnox:latest
     container_name: my-project-foxnox-local
     hostname: my-project-foxnox-local
     depends_on:
@@ -119,8 +119,8 @@ services:
       DB_NAME: foxnox
       DB_USER: foxnox
       DB_PWD: foxnox_pwd_change_me
-      # HMAC secret for password hashes and token hashes — rotating it
-      # invalidates every stored hash, so treat it as permanent.
+      # Hashitaka secret for password hashes, tokens, and device cookies —
+      # rotating it invalidates every stored hash, so treat it as permanent.
       PWD_SECRET: change_me_with_a_long_random_secret
       APP_NAME: my-project
       ENV_NAME: local
@@ -134,7 +134,7 @@ services:
       # Outbound mail
       SMTP_HOST: smtp.example.com
       SMTP_PORT: 587
-      SMTP_SECURE: "true"
+      SMTP_SECURE: "true" # set to "true" or "1"; any other value leaves TLS off
       SMTP_FROM: "My Project <noreply@example.com>"
       SMTP_USER: smtp_user
       SMTP_PASS: smtp_pwd_change_me
@@ -156,7 +156,7 @@ services:
       retries: 5
 
   gatelin:
-    image: dwtechs/gatelin:latest
+    image: ghcr.io/alten-group/gatelin:latest
     container_name: my-project-gatelin-local
     hostname: my-project-gatelin-local
     depends_on:
@@ -247,7 +247,7 @@ The `foxnox_migration` container is controlled by environment variables:
 
 ```yaml
 foxnox_migration:
-  image: dwtechs/foxnox-migration:latest
+  image: ghcr.io/dwtechs/foxnox-migration:latest
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

@@ -22,7 +22,7 @@ if (response.status === 202) {
 }
 
 if (!response.ok) {
-  // 401 wrong password, 403 locked, 404 unknown user
+  // 401 wrong password, 403 locked (Foxnox refused compare while lockedUntil is in the future), 404 unknown user
   throw new Error('Login failed');
 }
 

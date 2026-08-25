@@ -35,7 +35,7 @@ docker compose run --rm -e UPDATE=0 -e ROLLBACK=1 foxnox_migration
 
 ## Every Password Check Suddenly Fails
 
-The most likely cause is that `PWD_SECRET` changed. It is the HMAC key for both password hashes and token hashes, so a new value means no stored hash can ever match again, and every outstanding reset link becomes invalid.
+The most likely cause is that `PWD_SECRET` changed. It is the Hashitaka key for password hashes (salted PBKDF2), security-question answers, token HMACs, and trusted-device cookies, so a new value means no stored hash can ever match again, and every outstanding reset link and remembered device becomes invalid.
 
 There is no migration path for this — restore the old secret if you still have it. If you do not, every user needs a password reset.
 
@@ -62,7 +62,7 @@ If `twoFactorEnabled` is false, no 2FA challenge will ever be raised — the use
 
 ## Account Locked (403)
 
-The user's `lockedUntil` is still in the future after too many failed attempts. They can clear it themselves through `/api/pwd/web/unlock`, which emails an unlock link. To clear it immediately as an administrator, update the row:
+The user's `lockedUntil` is still in the future after too many failed attempts (see the in-force policy's `maxFailedAttempts` and `lockoutMinutes`). They can clear it themselves through `/api/pwd/web/unlock`, which emails an unlock link. To clear it immediately as an administrator, update the row:
 
 ```
 PUT /api/pwd/

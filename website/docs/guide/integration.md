@@ -48,7 +48,7 @@ Gatelin only forwards requests that match a registered route, so Foxnox's endpoi
 
 ```yaml
 gatelin_migration:
-  image: dwtechs/gatelin-migration:latest
+  image: ghcr.io/alten-group/gatelin-migration:latest
   volumes:
     - ./db/liquibase/gatelin-data/:/liquibase/data
 ```
@@ -59,11 +59,14 @@ The seed registers:
 |---|---|
 | `01-service.sql` | The `foxnox` service, with an empty pattern because the password router is mounted at the Express root |
 | `02-resource.sql` | Resources `pwd`, `pwd/tokens`, `pwd/policies`, `pwd/trusted-devices` |
-| `03-route.sql` | The 25 JSON CRUD routes, all `protected` |
+| `03-route.sql` | The 25 JSON CRUD routes (including `/pwd/compare`), all `protected` |
 | `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
 | `05`–`08` | The `pwd/web` resource and every account workflow page route |
 | `09-route-challenges.sql` | The `pwd/challenges` resource and the challenge-minting route |
 | `10-cors.sql` | Allowed origins |
+| `11`–`13` | Admin table-preference resources (`passwords`, `policies`, `tokens`, `trustedDevices`), default column layouts, and Gatelin preference scopes |
+
+`POST /pwd/trusted-devices/verify` and `POST /pwd/login-tickets/redeem` are not Gatelin-proxied CRUD routes. Gatelin calls them on the internal network, derived from `PWD_CHECK_URL`.
 
 ### Protected vs. public routes
 
