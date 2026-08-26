@@ -209,7 +209,7 @@ services:
     networks:
       - internal
     volumes:
-      - ${PWD}/db/liquibase/pwd/:/liquibase/changelog
+      - ${PWD}/db/liquibase/foxnox/:/liquibase/changelog
       - ${PWD}/db/liquibase/data/:/liquibase/data
 
   mailpit:

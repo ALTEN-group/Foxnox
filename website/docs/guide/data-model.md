@@ -176,4 +176,4 @@ Every table follows the same three patterns, which is worth knowing because it e
 
 ## Migrations
 
-The schema is managed by Liquibase in `db/liquibase/pwd/`, applied by the `ghcr.io/dwtechs/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).
+The schema is managed by Liquibase in `db/liquibase/foxnox/`, applied by the `ghcr.io/dwtechs/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).

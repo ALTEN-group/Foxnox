@@ -11,6 +11,7 @@ website/docs/.vitepress/dist
 swagger/src/foxnox.openapi.json
 .github/instructions/
 .github/agents/
+.github/prompts/
 .agents/
 .cursor/
 

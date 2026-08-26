@@ -117,6 +117,17 @@ npm run test:coverage     # with coverage report
 
 See [tests/README.md](tests/README.md) for more details.
 
+### PostgreSQL contract tests
+
+```sh
+./scripts/test-db.sh
+```
+
+Starts an isolated PostgreSQL container, applies the Liquibase changelog, and
+runs every `tests/db/pwd/*.sql` file as the application database user.
+The stack and its data are removed after the run. This is a host Docker
+workflow, not an npm/Jest test — do not run it from the Foxnox app container.
+
 ### Admin unit tests
 
 ```sh

@@ -6,6 +6,7 @@ Run from the project root:
 npm test                  # all suites
 npm run test:watch        # watch mode
 npm run test:coverage     # coverage under tests/coverage/
+./scripts/test-db.sh      # PostgreSQL contracts (host Docker, not Jest)
 ```
 
 ## Suites
@@ -33,6 +34,12 @@ npm run test:coverage     # coverage under tests/coverage/
 | `routes/health.test.js` | Real `app.js`: `/pwd/health` liveness + `/pwd/health/ready` db probe (mocked pg-pool); proves healix is mounted before `startTimer` |
 
 Helpers: `helpers/auth-db-mock.js`, `helpers/token-db-mock.js`, `helpers/json-api-app.js` (JSON mounts mirroring `src/app.js`), `helpers/form.js` (CSRF forms).
+
+### PostgreSQL contracts
+
+SQL files under `tests/db/pwd/` run against a disposable migrated database via
+`./scripts/test-db.sh`. They cover schema behavior (writes, archive, history,
+seed), not the Node services.
 
 ## Notes
 

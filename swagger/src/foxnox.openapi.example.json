@@ -208,7 +208,7 @@
       },
       "historyEntry": {
         "type": "object",
-        "description": "One row of a `<entity>_hist` history table (written by the per-table triggers under `db/liquibase/pwd/versions/05-trig/`).",
+        "description": "One row of a `<entity>_hist` history table (written by the per-table triggers under `db/liquibase/foxnox/versions/05-trig/`).",
         "properties": {
           "id": { "type": "integer", "format": "int32" },
           "tstamp": { "type": "string", "format": "date-time" },

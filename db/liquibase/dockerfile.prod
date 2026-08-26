@@ -9,8 +9,8 @@ USER liquibase
 
 COPY --chown=liquibase:liquibase --chmod=700 ./entrypoint.sh /docker-entrypoint.sh
 
-# Bake the Foxnox pwd schema changelog into the image
-COPY --chown=liquibase:liquibase ./pwd /liquibase/changelog
+# Bake the Foxnox schema changelog into the image
+COPY --chown=liquibase:liquibase ./foxnox /liquibase/changelog
 
 # Optional user data volume (mount a data/changelog.xml at runtime)
 VOLUME ["/liquibase/data"]

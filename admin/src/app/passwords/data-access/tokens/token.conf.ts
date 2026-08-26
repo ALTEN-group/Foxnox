@@ -12,7 +12,7 @@ import {
 } from "@dwtechs/ngx-crud-builder";
 import { Token } from "app/passwords/data-access/tokens/token.model";
 
-// Static reference data (db/liquibase/pwd/versions/06-data/03-token-data.sql) —
+// Static reference data (db/liquibase/foxnox/versions/06-data/03-token-data.sql) —
 // token_type has no admin route of its own, so its 4 seeded rows are hardcoded here.
 const TOKEN_TYPES = [
   { label: "Email verification", value: 1 },
