@@ -10,7 +10,9 @@ import { log } from "@dwtechs/winstan";
 export async function findUserByEmail(email) {
   const url = process.env.USER_SEARCH_URL;
   if (!url) {
-    log.error("USER_SEARCH_URL is not configured — cannot resolve workflow recipients");
+    log.error(
+      "USER_SEARCH_URL is not configured — cannot resolve workflow recipients",
+    );
     return null;
   }
 
@@ -23,7 +25,10 @@ export async function findUserByEmail(email) {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+      },
       body: JSON.stringify(body),
     });
 

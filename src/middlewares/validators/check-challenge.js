@@ -22,8 +22,7 @@ export function checkChallengeBody(req, _res, next) {
   if (!isChallengeKind(kind)) {
     return next({
       statusCode: 400,
-      message:
-        'kind must be "2fa", "expired-password", or "trusted-device"',
+      message: 'kind must be "2fa", "expired-password", or "trusted-device"',
     });
   }
 

@@ -1,19 +1,19 @@
 # Foxnox
 
-[![Coverage](https://raw.githubusercontent.com/DWTechs/Foxnox/badges/badges/coverage.svg)](https://github.com/DWTechs/Foxnox/actions/workflows/test.yml)
-[![admin coverage](https://raw.githubusercontent.com/DWTechs/Foxnox/badges/badges/admin-coverage.svg)](https://github.com/DWTechs/Foxnox/actions/workflows/test.yml)
+[![Coverage](https://raw.githubusercontent.com/ALTEN-group/Foxnox/badges/badges/coverage.svg)](https://github.com/ALTEN-group/Foxnox/actions/workflows/test.yml)
+[![admin coverage](https://raw.githubusercontent.com/ALTEN-group/Foxnox/badges/badges/admin-coverage.svg)](https://github.com/ALTEN-group/Foxnox/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Version](https://img.shields.io/github/v/release/DWTechs/Foxnox)](https://github.com/DWTechs/Foxnox/releases/latest)
-[![Last release](https://img.shields.io/github/release-date/DWTechs/Foxnox)](https://github.com/DWTechs/Foxnox/releases/latest)
+[![Version](https://img.shields.io/github/v/release/ALTEN-group/Foxnox)](https://github.com/ALTEN-group/Foxnox/releases/latest)
+[![Last release](https://img.shields.io/github/release-date/ALTEN-group/Foxnox)](https://github.com/ALTEN-group/Foxnox/releases/latest)
 
-Password and account-security service: credential storage, 2FA, recovery tokens, and trusted devices, plus server-rendered account workflow pages. Sit Foxnox behind Gatelin — that BFF is the public API layer; Foxnox is the internal password store.
+Password and account-security service: credential storage, 2FA, recovery tokens, and trusted devices, plus server-rendered account workflow pages. Foxnox is an internal password store: put a Backend for Frontend in front of it as the public API layer. [Gatelin](https://gatelin.fr) is one such BFF, not a requirement.
 
 ## Images
 
 | Image | Registry |
 |---|---|
-| API (includes workflow pages under `/pwd/web`) | `ghcr.io/dwtechs/foxnox` |
-| Migration | `ghcr.io/dwtechs/foxnox-migration` |
+| API (includes workflow pages and Admin UI) | `ghcr.io/alten-group/foxnox` |
+| Migration | `ghcr.io/alten-group/foxnox-migration` |
 
 ## Features
 
@@ -28,19 +28,19 @@ Password and account-security service: credential storage, 2FA, recovery tokens,
 
 ## Documentation
 
-Full documentation is available at **[https://dwtechs.github.io/Foxnox](https://dwtechs.github.io/Foxnox)**.
+Full documentation is available at **[https://alten-group.github.io/Foxnox](https://alten-group.github.io/Foxnox)**.
 
 ## Quick Start for off the shelf usage
 
 Integrate Foxnox into your application using published Docker images : 
-- [Integration Guide](https://dwtechs.github.io/Foxnox/guide/integration)
-- [Frontend Integration Guide](https://dwtechs.github.io/Foxnox/guide/frontend)
+- [Integration Guide](https://alten-group.github.io/Foxnox/guide/integration)
+- [Frontend Integration Guide](https://alten-group.github.io/Foxnox/guide/frontend)
 
 ## Quick Start for contributors
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/DWTechs/Foxnox.git
+git clone https://github.com/ALTEN-group/Foxnox.git
 cd Foxnox
 
 # 2. Generate the development environment file
@@ -51,3 +51,7 @@ bash scripts/start-dev.sh
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development workflow, testing, and production build instructions.
+
+## License
+
+MIT — see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Published and maintained by ALTEN.

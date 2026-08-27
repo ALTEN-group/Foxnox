@@ -1,4 +1,4 @@
-// Mock users database (based on wapstr user entity)
+// Mock users database
 export const mockUsers = [
   {
     id: 1,
@@ -92,12 +92,12 @@ export const mockUsers = [
     id: 5,
     civility: "Ms",
     gender: "F",
-    firstName: "eBoutique",
+    firstName: "Service",
     middleName: null,
     lastName: "User",
-    nickname: "EbUser",
-    email: "ebuser@example.com",
-    address: "2 Shop Street",
+    nickname: "ServiceUser",
+    email: "service@example.com",
+    address: "2 Service Street",
     zipCode: "75005",
     city: "Paris",
     country: "France",

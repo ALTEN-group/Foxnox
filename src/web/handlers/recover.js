@@ -1,13 +1,18 @@
 // @ts-check
-import { buildViewContext, resolveLang } from "../context.js";
-import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
-import { issueWorkflowNotification } from "../issue-notification.js";
-import { passwordMeetsPolicy, rotatePassword, getPasswordFormPolicy } from "../../services/pwd.js";
+
+import {
+  getPasswordFormPolicy,
+  passwordMeetsPolicy,
+  rotatePassword,
+} from "../../services/pwd.js";
 import {
   consumeWorkflowToken,
   findValidWorkflowToken,
   TOKEN_TYPES,
 } from "../../services/token.js";
+import { buildViewContext, resolveLang } from "../context.js";
+import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
+import { issueWorkflowNotification } from "../issue-notification.js";
 
 /**
  * Password recovery workflow pages.
@@ -126,7 +131,7 @@ export async function postRecoverReset(req, res) {
     await rotatePassword(valid.userId, password);
     await consumeWorkflowToken(valid.id);
   } catch (err) {
-    // @ts-ignore
+    // @ts-expect-error
     if (err?.code === "WEAK_PASSWORD") {
       return res.status(400).render(
         "recover/reset",

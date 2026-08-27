@@ -18,8 +18,7 @@ const CSRF_TTL_MS = 60 * 60 * 1000;
  */
 function cookieSecure() {
   return (
-    process.env.COOKIE_SECURE === "1" ||
-    process.env.NODE_ENV === "production"
+    process.env.COOKIE_SECURE === "1" || process.env.NODE_ENV === "production"
   );
 }
 
@@ -98,13 +97,13 @@ export function setCsrfCookie(res, token) {
 export function ensureCsrfToken(req, res) {
   const fromCookie = readCookie(req, CSRF_COOKIE);
   if (fromCookie && verifyCsrfToken(fromCookie)) {
-    // @ts-ignore attach for handlers / buildViewContext
+    // @ts-expect-error attach for handlers / buildViewContext
     req.csrfToken = fromCookie;
     return fromCookie;
   }
   const token = mintCsrfToken();
   setCsrfCookie(res, token);
-  // @ts-ignore
+  // @ts-expect-error
   req.csrfToken = token;
   return token;
 }

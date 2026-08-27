@@ -63,7 +63,7 @@ export async function getActivePwdPolicy() {
 /**
  * Point passken's password generator at the active `pwd_policy` row.
  *
- * `POST /pwd/` mints passwords through passken-express's `create`, which reads a
+ * `POST /foxnox/` mints passwords through passken-express's `create`, which reads a
  * module-level option set that only `init()` populates. Without this call the
  * generator silently uses the library defaults — where `sym` is the one character
  * class defaulting to false — so generated passwords would carry no special
@@ -179,7 +179,7 @@ export async function rotatePassword(userId, plaintext) {
   const policy = await getActivePwdPolicy();
   if (!(await passwordMeetsPolicy(plaintext, policy))) {
     const err = new Error("Password does not meet the security policy");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "WEAK_PASSWORD";
     throw err;
   }
@@ -188,7 +188,7 @@ export async function rotatePassword(userId, plaintext) {
   if (pwdId == null) {
     log.error(`rotatePassword: no active pwd row for userId=${userId}`);
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }
@@ -219,7 +219,7 @@ export async function rotatePassword(userId, plaintext) {
   if (Number(updated.rowCount ?? 0) < 1) {
     log.error(`rotatePassword: update failed for userId=${userId} id=${pwdId}`);
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }
@@ -288,7 +288,7 @@ export async function unlockAccount(userId) {
   if (pwdId == null) {
     log.error(`unlockAccount: no active pwd row for userId=${userId}`);
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }
@@ -308,7 +308,7 @@ export async function unlockAccount(userId) {
   if (Number(updated.rowCount ?? 0) < 1) {
     log.error(`unlockAccount: update failed for userId=${userId} id=${pwdId}`);
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }
@@ -379,7 +379,7 @@ export async function enableTwoFactor(userId, secret) {
   const pwdId = await findActivePwdId(userId);
   if (pwdId == null) {
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }
@@ -406,7 +406,7 @@ export async function disableTwoFactor(userId) {
   const pwdId = await findActivePwdId(userId);
   if (pwdId == null) {
     const err = new Error("Password row not found");
-    // @ts-ignore
+    // @ts-expect-error
     err.code = "PWD_NOT_FOUND";
     throw err;
   }

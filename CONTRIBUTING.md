@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - [Docker](https://www.docker.com/) and Docker Compose
-- [Node.js](https://nodejs.org/) (for running tests locally)
+- [Node.js 24](https://nodejs.org/) (for running tests locally)
 
 ## First-time Setup
 
@@ -14,6 +14,10 @@
 ```
 
 This generates `docker/conf/.env.dev` from the example file and fills in random values for all passwords and secrets (including `FOXNOX_PWD_SECRET`).
+
+Public npm and Alpine repositories work by default. `NPMRC` and
+`APK_REPOSITORY` are optional BuildKit secrets for contributors who use private
+mirrors; never commit registry credentials.
 
 ### 2. Start the stack
 
@@ -31,12 +35,12 @@ Mock user passwords are **not** Liquibase seed data — they are created at runt
 ./scripts/setup-mocks.sh
 ```
 
-Waits for foxnox to be healthy, then calls `POST /pwd/` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
+Waits for foxnox to be healthy, then calls `POST /foxnox/` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
 
 - printed once to your terminal so you can save them for manual login;
 - substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
 
-Run it without a flag any time you want to rotate the mock credentials — it clears the previous mock rows first so `POST /pwd/compare` picks up the new hashes.
+Run it without a flag any time you want to rotate the mock credentials — it clears the previous mock rows first so `POST /foxnox/compare` picks up the new hashes.
 
 > If login ever fails with a **404 on `POST /api/gatelin/sessions`**, this is almost always the cause: Gatelin relays the 404 that Foxnox returns when a user has no `pwd` row. Run `./scripts/setup-mocks.sh`.
 
@@ -50,14 +54,14 @@ Operational paths (local Docker base `http://localhost:8100`):
 
 | Flow | Path |
 |---|---|
-| Password reset | `/api/pwd/web/recover`, `/api/pwd/web/recover/reset?token=…` |
-| 2FA | `/api/pwd/web/2fa/verify?challenge=…`, `/api/pwd/web/2fa/setup` |
-| Lost 2FA recovery | `/api/pwd/web/account-recover`, `…/challenge?token=…` |
-| Security questions | `/api/pwd/web/security-questions` |
-| Trusted devices | `/api/pwd/web/trusted-devices/prompt?challenge=…`, `/api/pwd/web/trusted-devices` |
-| Expired password | `/api/pwd/web/password/expired?challenge=…` |
-| Unlock | `/api/pwd/web/unlock`, `/api/pwd/web/unlock/confirm?token=…` |
-| Mint login challenge (API) | `POST /api/pwd/challenges` `{ userId, kind }` |
+| Password reset | `/api/foxnox/web/recover`, `/api/foxnox/web/recover/reset?token=…` |
+| 2FA | `/api/foxnox/web/2fa/verify?challenge=…`, `/api/foxnox/web/2fa/setup` |
+| Lost 2FA recovery | `/api/foxnox/web/account-recover`, `…/challenge?token=…` |
+| Security questions | `/api/foxnox/web/security-questions` |
+| Trusted devices | `/api/foxnox/web/trusted-devices/prompt?challenge=…`, `/api/foxnox/web/trusted-devices` |
+| Expired password | `/api/foxnox/web/password/expired?challenge=…` |
+| Unlock | `/api/foxnox/web/unlock`, `/api/foxnox/web/unlock/confirm?token=…` |
+| Mint login challenge (API) | `POST /api/foxnox/challenges` `{ userId, kind }` |
 
 Requires Gatelin `gatelin-data` changesets 05–10. Run Liquibase so login challenge token types exist.
 
@@ -179,44 +183,47 @@ Foxnox ships two releasable images:
 
 | Image | Description |
 |---|---|
-| `ghcr.io/dwtechs/foxnox` | The Node.js password service. Runs continuously as an API server. |
-| `ghcr.io/dwtechs/foxnox-migration` | A one-shot Liquibase container. Applies the Foxnox DB schema and core seed data, then exits. The gateway will not start until this container completes successfully. |
+| `ghcr.io/alten-group/foxnox` | The Node.js password service, account workflow pages, and bundled Angular admin UI. Runs continuously as an API server and serves the admin on a dedicated internal port when `ADMIN_PORT` is set. |
+| `ghcr.io/alten-group/foxnox-migration` | A one-shot Liquibase container. Applies the Foxnox DB schema and core seed data, then exits. The gateway will not start until this container completes successfully. |
 
 The `migration` image has the full Foxnox schema and core data baked in. Consumers can mount their own Foxnox registration data (services, routes, roles) at `/liquibase/data` without rebuilding the image — see [DB Migration](#db-migration) below.
 
-Two additional images exist for the Foxnox project itself but are not required by consumers:
-
-| Image | Description |
-|---|---|
-| `dwtechs/foxnox-admin` | Angular admin frontend. |
-| `dwtechs/foxnox-website` | Static documentation website. |
+Documentation is published to GitHub Pages from `website/`; it is not a Docker image.
 
 ### Build production images
 
-Requires `docker/conf/.env.prod` to exist. Create it by copying `.env.dev.example` and filling in production values (passwords, secrets, versions).
+Requires `docker/conf/.env.prod` to exist. Create it from
+`docker/conf/.env.prod.example`, replace placeholder values, and set
+`USER_SEARCH_URL` to the production user-management search endpoint. Production
+does not include the mock user service.
 
-Builds production images from their respective `dockerfile.prod` files. Each image is tagged as `dwtechs/foxnox-<target>:<version>` and `dwtechs/foxnox-<target>:latest`, where `<version>` is read from `package.json`.
+Builds production images from their respective `dockerfile.prod` files. Each image is tagged under `ghcr.io/alten-group/` with `<version>` and `latest`, where `<version>` is read from `package.json`.
 
 ```sh
-./scripts/build-prod.sh                   # build all four images
-./scripts/build-prod.sh gateway           # gateway only
+./scripts/build-prod.sh                   # build API and migration
+./scripts/build-prod.sh api               # Foxnox API + bundled admin
 ./scripts/build-prod.sh migration         # migration only
-./scripts/build-prod.sh admin             # admin only
-./scripts/build-prod.sh website           # website only
-./scripts/build-prod.sh gateway migration # multiple targets
+./scripts/build-prod.sh api migration     # multiple targets
 ```
 
 ### Publish to GHCR
 
-Images are published automatically via the `.github/workflows/publish.yml` workflow when a GitHub Release is created. Publishing is scoped to the `DWTechs` org — `GITHUB_TOKEN` is sufficient, no PAT is needed.
+Images are published automatically via the `.github/workflows/publish.yml` workflow when a GitHub Release is created. Publishing is scoped to the `ALTEN-group` org — `GITHUB_TOKEN` is sufficient, no PAT is needed.
 
-Each release produces two images with the following tag variants (e.g. for `v1.2.3`):
+### Maintainer weekly audit
+
+The public weekly workflow always runs `npm audit`, Biome, outdated, and TODO scans and opens an audit issue.
+
+Copilot CLI, APM (`apm.yml` / `apm.lock.yaml`), and `audit-fix.yml` stay in this repository so the ALTEN maintainer pipeline is versioned with the product. Those steps run only on `ALTEN-group/Foxnox` when `COPILOT_GITHUB_TOKEN` is set; forks skip them. Configure that secret (and optional `COPILOT_AUDITS_MODEL`) on the canonical repo.
+
+Each release produces the API (with bundled admin) and migration images with the following tag variants (for example,
+release `v0.1.1`):
 
 | Tag | Example |
 |---|---|
-| Full semver | `1.2.3` |
-| Major.minor | `1.2` |
-| Major | `1` |
+| Full semver | `0.1.1` |
+| Major.minor | `0.1` |
+| Major | `0` |
 | Floating | `latest` |
 
 Images include SBOM and provenance attestations (SLSA) by default.
@@ -244,7 +251,7 @@ The `foxnox_migration` container is controlled by environment variables:
 
 When `UPDATE=1`, the container runs the following steps in order:
 1. Creates the database if it does not exist
-2. Applies all baked-in schema changesets (`gateway/versions/`)
+2. Applies all baked-in schema changesets (`db/liquibase/foxnox/versions/`)
 3. Applies consumer data from `/liquibase/data/changelog.xml` if the file exists
 4. Takes a JSON snapshot of the current schema
 5. Creates the Foxnox DB user with the correct grants
@@ -253,7 +260,7 @@ When `UPDATE=1`, the container runs the following steps in order:
 
 ```yaml
 foxnox_migration:
-  image: dwtechs/foxnox-migration:latest
+  image: ghcr.io/alten-group/foxnox-migration:0.1.1
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

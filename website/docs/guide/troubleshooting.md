@@ -8,6 +8,19 @@ docker compose logs foxnox
 
 Foxnox connects to Postgres at boot, so the usual causes are a wrong `DB_HOST` / `DB_PWD`, or the migration container not having finished. Check that `foxnox_migration` exited successfully before the service tried to start.
 
+If production Compose reports `USER_SEARCH_URL must be set`, configure the
+search endpoint of your external user-management service in
+`docker/conf/.env.prod`. The development mock user service is intentionally not
+part of production.
+
+## Foxnox Is Reachable Directly
+
+Treat this as a deployment error. Foxnox relies on a BFF for authentication
+and ACL headers and must not have a public Traefik API router, published host
+port, or public load-balancer target. Remove that route and restrict the
+internal network so only the BFF and controlled operator workloads can reach
+port 3000.
+
 ## Database Connection Issues
 
 ```bash
@@ -18,10 +31,10 @@ docker exec my-project-postgres-local pg_isready -U root -d foxnox
 docker exec my-project-foxnox-local nc -zv my-project-postgres-local 5432
 
 # Readiness endpoint proves the app itself can query
-docker exec my-project-foxnox-local wget -qO- http://localhost:3000/pwd/health/ready
+docker exec my-project-foxnox-local wget -qO- http://localhost:3000/foxnox/health/ready
 ```
 
-If `/pwd/health` answers but `/pwd/health/ready` fails, the process is alive but has lost the database — the readiness probe is doing its job and taking the instance out of rotation.
+If `/foxnox/health` answers but `/foxnox/health/ready` fails, the process is alive but has lost the database — the readiness probe is doing its job and taking the instance out of rotation.
 
 ## Migration Failures
 
@@ -29,9 +42,12 @@ If `/pwd/health` answers but `/pwd/health/ready` fails, the process is alive but
 # View migration logs
 docker logs my-project-foxnox-migration-local
 
-# Rollback the last changeset
-docker compose run --rm -e UPDATE=0 -e ROLLBACK=1 foxnox_migration
+# Roll back the last two changesets
+docker compose run --rm -e UPDATE=0 -e ROLLBACK=2 foxnox_migration
 ```
+
+The migration entrypoint currently enters rollback mode only when `ROLLBACK` is
+greater than `1`; `ROLLBACK=1` falls through to diff mode.
 
 ## Every Password Check Suddenly Fails
 
@@ -45,8 +61,8 @@ There is no migration path for this — restore the old secret if you still have
 
 1. The frontend actually redirects the browser to the `url` from the 202 body, instead of treating 202 as a failure. This is by far the most common cause — see [Frontend Integration](./frontend).
 2. That URL is reachable. It is built from `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE`, so a wrong value here produces a link that 404s.
-3. The `pwd/web` routes are registered in Gatelin database (`db/liquibase/gatelin-data/`, changesets 05–08).
-4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code calls `POST /gatelin/sessions/resume`.
+3. The `foxnox/web` routes are registered on the BFF (for Gatelin: `db/liquibase/gatelin-data/`, changesets 05–08).
+4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code resumes the session (Gatelin: `POST /gatelin/sessions/resume`).
 5. Tickets are one-shot and last 10 minutes. Reloading the resume URL a second time correctly fails with **400**.
 
 ## Login Never Asks for 2FA
@@ -58,14 +74,14 @@ SELECT id, "userId", "twoFactorEnabled", "pwdExpiry", "lockedUntil"
 FROM pwd WHERE "userId" = 1;
 ```
 
-If `twoFactorEnabled` is false, no 2FA challenge will ever be raised — the user has to enroll first at `/api/pwd/web/2fa/setup`. If it is true and 2FA is still skipped, the browser probably holds a valid `trusted_device` cookie; clear it, or revoke the device at `/api/pwd/web/trusted-devices`.
+If `twoFactorEnabled` is false, no 2FA challenge will ever be raised — the user has to enroll first at `/api/foxnox/web/2fa/setup`. If it is true and 2FA is still skipped, the browser probably holds a valid `trusted_device` cookie; clear it, or revoke the device at `/api/foxnox/web/trusted-devices`.
 
 ## Account Locked (403)
 
-The user's `lockedUntil` is still in the future after too many failed attempts (see the in-force policy's `maxFailedAttempts` and `lockoutMinutes`). They can clear it themselves through `/api/pwd/web/unlock`, which emails an unlock link. To clear it immediately as an administrator, update the row:
+The user's `lockedUntil` is still in the future after too many failed attempts (see the in-force policy's `maxFailedAttempts` and `lockoutMinutes`). They can clear it themselves through `/api/foxnox/web/unlock`, which emails an unlock link. To clear it immediately as an administrator, update the row:
 
 ```
-PUT /api/pwd/
+PUT /api/foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -106,10 +122,10 @@ Also check that the link was not already used, and that the user opened the most
 
 ## Workflow Pages Look Unstyled
 
-The pages load their CSS from `/pwd/web/assets/…`. If that route is missing from Gatelin database (`getWebAssets` in changeset 06), the HTML renders but every asset request 404s. Confirm with:
+The pages load their CSS from `/foxnox/web/assets/…`. If that route is missing from the BFF (Gatelin: `getWebAssets` in changeset 06), the HTML renders but every asset request 404s. Confirm with:
 
 ```bash
-curl -i http://localhost:8100/api/pwd/web/assets/css/main.css
+curl -i http://localhost:8100/api/foxnox/web/assets/css/workflows.css
 ```
 
 ## CSRF Errors on Workflow Forms

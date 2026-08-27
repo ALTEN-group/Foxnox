@@ -3,16 +3,16 @@
 --
 
 INSERT INTO resources ("serviceId", name, core, "creatorId", "creatorName")
-SELECT id, 'pwd/challenges', false, -1, 'system'
+SELECT id, 'foxnox/challenges', false, -1, 'system'
 FROM service
 WHERE name = 'foxnox'
   AND NOT EXISTS (
-    SELECT 1 FROM resource WHERE name = 'pwd/challenges'
+    SELECT 1 FROM resource WHERE name = 'foxnox/challenges'
   );
 
 INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "operationId", "methodIds", "creatorId", "creatorName")
 SELECT
-  (SELECT id FROM resource WHERE name = 'pwd/challenges'),
+  (SELECT id FROM resource WHERE name = 'foxnox/challenges'),
   '',
   'createLoginChallenge',
   'Mint a mid-login challenge (2FA / expired password / trusted device)',

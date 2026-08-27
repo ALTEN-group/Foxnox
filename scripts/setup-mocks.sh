@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Seeds mock user passwords by calling Foxnox's own POST /pwd/ endpoint (which uses
+# Seeds mock user passwords by calling Foxnox's own POST /foxnox/ endpoint (which uses
 # @dwtechs/passken-express `create` to generate + hash server-side), then substitutes
 # the returned plaintexts into swagger/src/foxnox.openapi.json.
 #
@@ -107,9 +107,9 @@ docker exec -e PGPASSWORD="$POSTGRES_ROOT_PWD" "$POSTGRES_HOST" \
 
 # 4. Ask foxnox to generate a password for each mock user.
 #    Runs the HTTP call from inside the foxnox container so we don't have to expose
-#    /pwd/ externally (it lives on the internal network behind Gatelin).
+#    /foxnox/ externally (it lives on the internal network behind the BFF).
 BODY_JSON="{\"rows\":[$(printf '{"userId":%s},' "${MOCK_USER_IDS[@]}" | sed 's/,$//')]}"
-echo -e "${YELLOW}🔐 Generating passwords via POST /pwd/ ...${NC}"
+echo -e "${YELLOW}🔐 Generating passwords via POST /foxnox/ ...${NC}"
 RESPONSE=$(docker exec -i "$FOXNOX_HOST" node -e '
   let body = "";
   process.stdin.on("data", (c) => body += c);
@@ -118,7 +118,7 @@ RESPONSE=$(docker exec -i "$FOXNOX_HOST" node -e '
     const req = http.request({
       host: "localhost",
       port: process.env.PORT || 3000,
-      path: "/pwd/",
+      path: "/foxnox/",
       method: "POST",
       headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) },
     }, (res) => {
@@ -126,7 +126,7 @@ RESPONSE=$(docker exec -i "$FOXNOX_HOST" node -e '
       res.on("data", (c) => out += c);
       res.on("end", () => {
         if (res.statusCode >= 400) {
-          process.stderr.write(`POST /pwd/ failed (${res.statusCode}): ${out}\n`);
+          process.stderr.write(`POST /foxnox/ failed (${res.statusCode}): ${out}\n`);
           process.exit(1);
         }
         process.stdout.write(out);

@@ -2,7 +2,7 @@
 
 Account workflows are the server-rendered pages Foxnox serves to end users. They exist so that you do not have to build password reset, 2FA enrollment, and device management screens in every frontend you own — and so that the pages handling credentials live in the service that owns them.
 
-They are mounted at `/pwd/web/…` internally, and reached publicly at `/api/pwd/web/…` through Gatelin.
+They are mounted at `/foxnox/web/…` internally, and reached publicly at `/api/foxnox/web/…` through the BFF (Gatelin in the examples).
 
 ## Two Families
 
@@ -16,17 +16,17 @@ Every workflow is driven by a token in the URL, but where that token comes from 
 | [Account unlock](./workflow-unlock) | `/unlock` |
 | [Lost 2FA recovery](./workflow-account-recover) | `/account-recover` |
 
-**Login-step workflows** start mid-sign-in. The password was already accepted, Gatelin minted a challenge, and the browser was redirected. The token arrives as `?challenge=…`.
+**Login-step workflows** start mid-sign-in. The password was already accepted, the BFF minted a challenge, and the browser was redirected. The token arrives as `?challenge=…`.
 
 | Workflow | Entry point |
 |---|---|
 | [Two-factor authentication](./workflow-twofa) | `/2fa/verify` |
 | [Expired password](./workflow-password-expired) | `/password/expired` |
-| [Trusted devices](./workflow-trusted-devices) | `/trusted-devices/prompt` |
+| [Trusted devices](./workflow-devices) | `/trusted-devices/prompt` |
 
 The different query parameter name is not cosmetic: it is how each page knows which token type to validate against, so an email link can never be used to satisfy a login challenge or vice versa.
 
-A third, smaller group is **self-service settings** — pages a signed-in user visits deliberately, with no token at all: [2FA setup](./workflow-twofa#setup), [security questions](./workflow-security-questions), and [device management](./workflow-trusted-devices#manage-devices). These are the only workflow routes registered as `protected`.
+A third, smaller group is **self-service settings** — pages a signed-in user visits deliberately, with no token at all: [2FA setup](./workflow-twofa#setup), [security questions](./workflow-security-questions), and [device management](./workflow-devices#manage-devices). These are the only workflow routes registered as `protected`.
 
 ## The Email Pipeline
 
@@ -53,13 +53,19 @@ This is deliberate. A form that behaved differently for known and unknown addres
 
 ## Form Protections
 
-Every workflow `POST` passes through three gates before the handler sees it.
+Every workflow `POST` first passes through the CSRF middleware. The workflow
+handler then applies the relevant anti-bot checks.
 
 **CSRF.** A signed double-submit check: an `HttpOnly` cookie named `foxnox_csrf` plus a matching hidden `csrf` field. Both must be present, identical, and carry a valid signature, or the request is rejected with **403** and no body. Tokens are valid for one hour.
 
-**Honeypot.** Forms carry a decoy `website` field that real users never see. Anything filled in it is treated as automated.
+**Honeypot.** The three email request forms (`/recover`, `/unlock`, and
+`/account-recover`) carry a decoy `website` field that real users never see.
+Anything filled in it is treated as automated. Other workflow forms do not
+include this field.
 
-**Timing.** Forms carry the timestamp they were rendered at. A submission arriving in under 1.5 seconds, or more than an hour later, is treated as automated.
+**Timing.** Every workflow form carries the timestamp it was rendered at. The
+handler treats a submission arriving in under 1.5 seconds, or more than an hour
+later, as automated.
 
 Suspicious submissions get **204 No Content** — no error, no explanation, nothing to iterate against.
 

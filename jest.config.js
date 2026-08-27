@@ -25,16 +25,6 @@ export default {
   // Transform ES modules from node_modules
   transformIgnorePatterns: ["/node_modules/(?!(@dwtechs)/)"],
 
-  // Module name mapping for internal packages
-  moduleNameMapper: {
-    "^httpclient$": "<rootDir>/../common/libs/src/http/http.js",
-    "^error$": "<rootDir>/../common/libs/src/error/error.js",
-    "^health$": "<rootDir>/../common/libs/src/health/route.js",
-    "^prom$": "<rootDir>/../common/libs/src/prom/prom.js",
-    "^res$": "<rootDir>/../common/libs/src/res/res.js",
-    "^@internal/req$": "<rootDir>/../common/libs/src/req/req.js",
-  },
-
   // Coverage settings
   collectCoverageFrom: ["src/**/*.js", "!src/app.js", "!**/node_modules/**"],
 

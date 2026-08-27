@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * POST /pwd/compare — Gatelin login contract: validate payload, load pwd row,
+ * POST /foxnox/compare — Gatelin login contract: validate payload, load pwd row,
  * run passken compare, strip private fields on the way out.
  */
 import { jest } from "@jest/globals";
@@ -82,7 +82,7 @@ jest.unstable_mockModule("../../src/middlewares/history.js", () => ({
 for (const [file, privateProps] of [
   ["token.js", ["hash"]],
   ["pwd-policy.js", []],
-  ["user-trusted-device.js", ["deviceTokenHash"]],
+  ["user-device.js", ["deviceTokenHash"]],
 ]) {
   jest.unstable_mockModule(`../../src/entities/${file}`, () => ({
     default: {
@@ -105,7 +105,7 @@ jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   consumeLoginChallenge: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../src/services/trusted-devices.js", () => ({
+jest.unstable_mockModule("../../src/services/devices.js", () => ({
   verifyTrustedDevice: jest.fn(),
   getTrustedDeviceCookieName: () => "trusted_device",
   mintTrustedDeviceToken: jest.fn(),
@@ -123,7 +123,7 @@ jest.unstable_mockModule("../../src/web/login-resume.js", () => ({
 const { createJsonApiApp } = await import("../helpers/json-api-app.js");
 const app = await createJsonApiApp();
 
-describe("POST /pwd/compare", () => {
+describe("POST /foxnox/compare", () => {
   beforeEach(() => {
     get.mockClear();
     compare.mockClear().mockImplementation((_req, _res, next) => next());
@@ -131,7 +131,7 @@ describe("POST /pwd/compare", () => {
 
   it("rejects invalid payloads before loading a pwd row", async () => {
     const res = await request(app)
-      .post("/pwd/compare")
+      .post("/foxnox/compare")
       .send({ userId: 0, pwd: "x" });
     expect(res.status).toBe(400);
     expect(get).not.toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe("POST /pwd/compare", () => {
 
   it("returns the public pwd row and strips secrets", async () => {
     const res = await request(app)
-      .post("/pwd/compare")
+      .post("/foxnox/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(200);
@@ -167,7 +167,7 @@ describe("POST /pwd/compare", () => {
     );
 
     const res = await request(app)
-      .post("/pwd/compare")
+      .post("/foxnox/compare")
       .send({ userId: 42, pwd: "wrong" });
 
     expect(res.status).toBe(401);
@@ -190,7 +190,7 @@ describe("POST /pwd/compare", () => {
     });
 
     const res = await request(app)
-      .post("/pwd/compare")
+      .post("/foxnox/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(403);
@@ -214,7 +214,7 @@ describe("POST /pwd/compare", () => {
     });
 
     const res = await request(app)
-      .post("/pwd/compare")
+      .post("/foxnox/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(200);

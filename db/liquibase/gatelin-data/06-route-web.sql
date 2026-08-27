@@ -15,13 +15,13 @@
 --
 
 INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "operationId", "methodIds", "creatorId", "creatorName") VALUES
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/recover',              'getRecoverRequest',  'Password recovery request form',           false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/recover',              'postRecoverRequest', 'Submit password recovery request',        false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/recover/reset',        'getRecoverReset',    'Password reset form (token in query)',   false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/recover/reset',        'postRecoverReset',   'Submit new password',                    false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/2fa/verify',           'getTwofaVerify',     '2FA verification form',                  false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/2fa/verify',           'postTwofaVerify',    'Submit 2FA verification code',           false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/2fa/setup',            'getTwofaSetup',      '2FA setup form',                         true,  false, ARRAY[1],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/2fa/setup',            'postTwofaSetup',     'Confirm 2FA setup code',                 true,  false, ARRAY[6],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'pwd/web'), '/assets/(?<path>.+)',   'getWebAssets',       'Workflow static assets (css/js)',         false, false, ARRAY[2],  ARRAY[1], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/recover',              'getRecoverRequest',  'Password recovery request form',           false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/recover',              'postRecoverRequest', 'Submit password recovery request',        false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/recover/reset',        'getRecoverReset',    'Password reset form (token in query)',   false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/recover/reset',        'postRecoverReset',   'Submit new password',                    false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/2fa/verify',           'getTwofaVerify',     '2FA verification form',                  false, false, ARRAY[1],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/2fa/verify',           'postTwofaVerify',    'Submit 2FA verification code',           false, false, ARRAY[6],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/2fa/setup',            'getTwofaSetup',      '2FA setup form',                         true,  false, ARRAY[1],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/2fa/setup',            'postTwofaSetup',     'Confirm 2FA setup code',                 true,  false, ARRAY[6],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/web'), '/assets/(?<path>.+)',   'getWebAssets',       'Workflow static assets (css/js)',         false, false, ARRAY[2],  ARRAY[1], -1, 'system')
 ;

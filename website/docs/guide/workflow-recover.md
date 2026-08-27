@@ -72,7 +72,7 @@ Note what does *not* happen. Lockout state is untouched — a locked account is 
 Add this to your login page:
 
 ```
-/api/pwd/web/recover
+/api/foxnox/web/recover
 ```
 
-For the admin UI shipped with Gatelin, set `ADMIN_PASSWORD_RECOVERY_URL=/api/pwd/web/recover` and the "Forgotten password?" link appears on the login form automatically.
+For the admin UI shipped with Gatelin, set `ADMIN_PASSWORD_RECOVERY_URL=/api/foxnox/web/recover` and the "Forgotten password?" link appears on the login form automatically.

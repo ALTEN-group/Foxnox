@@ -1,7 +1,7 @@
 "use strict";
 
 // Stamp forms with a client-side render time (same anti-bot idea as the
-// DW Technologies contact form). No-JS bots keep the default "0".
+// ALTEN contact form). No-JS bots keep the default "0".
 for (const field of document.querySelectorAll("#renderedAt")) {
   field.value = String(Date.now());
 }

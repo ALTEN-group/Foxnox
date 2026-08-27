@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --port 4200 --poll=2000",
@@ -14,7 +14,17 @@
     "e2e:install": "playwright install chromium"
   },
   "private": true,
-  "author": "Ludovic Cluber",
+  "author": "ALTEN",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ALTEN-group/Foxnox.git",
+    "directory": "admin"
+  },
+  "bugs": {
+    "url": "https://github.com/ALTEN-group/Foxnox/issues"
+  },
+  "homepage": "https://github.com/ALTEN-group/Foxnox#readme",
   "dependencies": {
     "@angular/animations": "22.1.3",
     "@angular/cdk": "22.1.3",
@@ -59,5 +69,8 @@
     "ts-node": "10.9.1",
     "vitest": "4.1.11",
     "zone.js": "0.15.1"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }

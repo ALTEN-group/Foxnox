@@ -1,21 +1,19 @@
 // @ts-check
-import { buildViewContext } from "../context.js";
-import { getConsumerUserId } from "../consumer.js";
-import { isSuspiciousForm } from "../form-guards.js";
+
 import {
   consumeLoginChallenge,
   createLoginChallenge,
   findValidLoginChallenge,
 } from "../../services/challenge.js";
-import {
-  enableTwoFactor,
-  getTwoFactorSecret,
-} from "../../services/pwd.js";
+import { enableTwoFactor, getTwoFactorSecret } from "../../services/pwd.js";
 import {
   buildOtpauthUri,
   generateTotpSecret,
   verifyTotpCode,
 } from "../../services/totp.js";
+import { getConsumerUserId } from "../consumer.js";
+import { buildViewContext } from "../context.js";
+import { isSuspiciousForm } from "../form-guards.js";
 
 /**
  * Two-factor authentication workflow pages.

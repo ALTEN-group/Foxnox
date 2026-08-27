@@ -46,7 +46,7 @@ docker rm -f "$ADMIN_CONTAINER" 2>/dev/null \
 # Remove image
 echo -e ""
 echo -e "${YELLOW}🖼️  Removing admin image...${NC}"
-ADMIN_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "(dwtechs/)?${APP_NAME}.*admin" || true)
+ADMIN_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "(alten-group/)?${APP_NAME}.*admin" || true)
 if [[ -z "$ADMIN_IMAGES" ]]; then
   echo -e "${YELLOW}⚠${NC}  No admin images found"
 else

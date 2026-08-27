@@ -30,7 +30,7 @@ That ID stability is what lets recovery match an answer given in French today ag
 Prompt for security questions **at the same time** the user enables 2FA. A user who turns on 2FA without enrolling questions has no self-service recovery path at all — losing their phone becomes a support ticket that only an administrator can close.
 
 ```
-/api/pwd/web/security-questions
+/api/foxnox/web/security-questions
 ```
 
 ## Re-enrolling

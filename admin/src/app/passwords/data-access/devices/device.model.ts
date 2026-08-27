@@ -2,7 +2,7 @@ import { ArchiveInfo } from "@dwtechs/ngx-crud-builder";
 
 /**
  * Represents a trusted device remembered for a user (skips 2FA challenges)
- * Maps to the user_trusted_device entity in src/entities/user-trusted-device.js
+ * Maps to the user_trusted_device entity in src/entities/user-device.js
  */
 export interface TrustedDevice extends ArchiveInfo {
   id: number | null;

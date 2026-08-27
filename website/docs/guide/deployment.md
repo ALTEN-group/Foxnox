@@ -2,16 +2,27 @@
 
 Foxnox is distributed as Docker images on GitHub Container Registry:
 
-- **`ghcr.io/dwtechs/foxnox`** — the password service itself, including the account workflow pages
-- **`ghcr.io/dwtechs/foxnox-migration`** — the Liquibase migration container, with the full schema and seed data baked in
+- **`ghcr.io/alten-group/foxnox`** — the password service, account workflow pages, and Angular admin UI
+- **`ghcr.io/alten-group/foxnox-migration`** — the Liquibase migration container, with the full schema and seed data baked in
 
-The Angular admin UI and this documentation site are not published as required runtime images. The admin app lives in `admin/` and is typically built from source; the docs are published to GitHub Pages.
+In production the admin UI is built into the Foxnox image and enabled by
+setting `ADMIN_PORT`; Traefik routes `ADMIN_BASE_PATH` (default `/foxnox`) to
+that internal port. Development keeps the admin in its own container for live
+reloading. The documentation site is published to GitHub Pages from `website/`.
 
-See the [Integration](./integration) page for Gatelin registration and seed data, and [Environment Variables](./configuration) for the full variable reference.
+See the [Integration](./integration) page for BFF wiring (Gatelin is the worked example) and [Environment Variables](./configuration) for the full variable reference.
+
+Production also requires a separate user-management service. Foxnox does not
+store email addresses or user profiles, and the production Compose stack does
+not start the development mock. Set `USER_SEARCH_URL` to a reachable search
+endpoint before starting the stack; Compose rejects an unset value.
+
+Use immutable release tags in production. The examples below use `0.1.1`;
+upgrade the API and migration images together when adopting a newer release.
 
 ## Architecture
 
-Foxnox is an **internal service**. It has no public Traefik router: browsers and API clients always reach it through Gatelin, which strips the `/api` prefix and forwards to Foxnox on the internal network.
+Foxnox is an **internal service**. It has no public Traefik router for the API: browsers and API clients reach it through a BFF, which typically strips a public `/api` prefix and forwards to Foxnox on the internal network. The Compose template below uses [Gatelin](https://gatelin.fr); another BFF that issues sessions and proxies `/foxnox` and `/foxnox/web` works the same way.
 
 ```
 Browser / Client
@@ -19,15 +30,13 @@ Browser / Client
       v
   Traefik  (:80)   ← edge gateway
       |
-      +-- /api/*   --> Gatelin BFF  (sessions, routing, ACL)
+      +-- /api/*   --> BFF (e.g. Gatelin)  (sessions, routing, ACL)
       |                   |
-      |                   +-- /pwd/*      --> Foxnox JSON API
-      |                   +-- /pwd/web/*  --> Foxnox workflow pages
-      |
-      +-- /docs/*  --> Documentation site
+      |                   +-- /foxnox/*      --> Foxnox JSON API
+      |                   +-- /foxnox/web/*  --> Foxnox workflow pages
 ```
 
-This matters for two reasons. First, nothing except Gatelin can call `/pwd/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the public prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
+This matters for two reasons. First, nothing except the BFF can call `/foxnox/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the public prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
 
 ## docker-compose.yml template
 
@@ -78,7 +87,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   foxnox_migration:
-    image: ghcr.io/dwtechs/foxnox-migration:latest
+    image: ghcr.io/alten-group/foxnox-migration:0.1.1
     container_name: my-project-foxnox-migration-local
     hostname: my-project-foxnox-migration-local
     depends_on:
@@ -97,14 +106,13 @@ services:
       ROLLBACK: 0
       SNAPSHOT: snapshot/snapshot1
       LIQUIBASE_LOG_LEVEL: INFO
-      LIQUIBASE_COMMAND_CONTEXTS: v1,oauth
     networks:
       - internal
     volumes:
       - ./docker/foxnox/data:/liquibase/data
 
   foxnox:
-    image: ghcr.io/dwtechs/foxnox:latest
+    image: ghcr.io/alten-group/foxnox:0.1.1
     container_name: my-project-foxnox-local
     hostname: my-project-foxnox-local
     depends_on:
@@ -126,10 +134,10 @@ services:
       ENV_NAME: local
       SERVICE_NAME: my-project-foxnox-local
       # Resolves an email address to a userId
-      USER_SEARCH_URL: http://my-project-msuser-local:3000/users/search
+      USER_SEARCH_URL: https://users.internal.example/users/search
       # Public URLs for workflow pages and email deep links
       WEB_PUBLIC_ORIGIN: http://localhost:8100
-      WEB_PUBLIC_BASE: /api/pwd/web
+      WEB_PUBLIC_BASE: /api/foxnox/web
       WEB_LOGIN_RESUME_URL: http://localhost:8100/foxnox/login
       # Outbound mail
       SMTP_HOST: smtp.example.com
@@ -148,9 +156,9 @@ services:
       WEB_BRAND_BACKGROUND_COLOR: "#f4f6f8"
     networks:
       - internal
-    # No public Traefik router on purpose: traffic is Traefik → Gatelin → Foxnox.
+    # No public Traefik router on purpose: traffic is Traefik → BFF → Foxnox.
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/foxnox/health/ready"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -164,9 +172,12 @@ services:
         condition: service_healthy
     environment:
       TZ: Europe/Paris
-      # Points Gatelin at the Foxnox password check
-      PWD_CHECK_URL: http://my-project-foxnox-local:3000/pwd/compare
-      USER_SEARCH_URL: http://my-project-msuser-local:3000/users/search
+      # Points Gatelin at the Foxnox password check and mid-login endpoints
+      PWD_CHECK_URL: http://my-project-foxnox-local:3000/foxnox/compare
+      PWD_CHALLENGES_URL: http://my-project-foxnox-local:3000/foxnox/challenges
+      PWD_TRUSTED_DEVICES_URL: http://my-project-foxnox-local:3000/foxnox/devices/verify
+      PWD_LOGIN_TICKET_URL: http://my-project-foxnox-local:3000/foxnox/login-tickets/redeem
+      USER_SEARCH_URL: https://users.internal.example/users/search
       DB_HOST: my-project-postgres-local
       DB_NAME: gatelin
       DB_USER: gatelin
@@ -207,30 +218,33 @@ The dependencies above are not decorative — Foxnox will fail to start without 
 
 1. **postgres** must be healthy, because Foxnox connects at boot and probes the database on every readiness check.
 2. **foxnox_migration** must have completed successfully, because the schema and the seeded token types have to exist before the first request.
-3. **foxnox** should be healthy before Gatelin starts serving logins, otherwise the first sign-in attempts fail on `PWD_CHECK_URL`.
+3. **foxnox** should be healthy before the BFF starts serving logins, otherwise the first sign-in attempts fail on the password-check URL.
 
 ## Health Check
 
 Foxnox exposes both a liveness and a readiness endpoint:
 
 ```
-GET /pwd/health
-GET /pwd/health/ready
+GET /foxnox/health
+GET /foxnox/health/ready
 ```
 
-`/pwd/health` is dependency-free and only proves the process is up. `/pwd/health/ready` additionally runs a `SELECT 1` against Postgres, so an instance that lost its database drops out of rotation instead of failing requests. Use the readiness endpoint in your container health check.
+`/foxnox/health` is dependency-free and only proves the process is up. `/foxnox/health/ready` additionally runs a `SELECT 1` against Postgres, so an instance that lost its database drops out of rotation instead of failing requests. Use the readiness endpoint in your container health check.
 
 From inside the network:
 
 ```bash
-curl http://my-project-foxnox-local:3000/pwd/health/ready
+curl http://my-project-foxnox-local:3000/foxnox/health/ready
 ```
 
-Through Gatelin, if you registered the health route:
+Through the BFF, only if you add a custom health route to the BFF:
 
 ```bash
-curl http://localhost:8100/api/pwd/health
+curl http://localhost:8100/api/foxnox/health
 ```
+
+The supplied Gatelin seed does not register Foxnox health routes. Its normal
+deployment health check calls Foxnox directly on the internal network.
 
 ## Database Migration
 
@@ -239,15 +253,14 @@ The `foxnox_migration` container is controlled by environment variables:
 | Variable | Values | Description |
 |---|---|---|
 | `UPDATE` | `1` / `0` | When `1`: creates the database, applies all schema changesets and seed data, takes a snapshot, and creates the Foxnox DB user. This is the normal deploy mode. When `0` (and `ROLLBACK=0`): diffs the live database against the reference snapshot and generates a changelog. Development tool only. |
-| `ROLLBACK` | integer > `1` | Rolls back the given number of changesets and takes a new snapshot. |
-| `LIQUIBASE_SNAPSHOT` | integer | Index of the snapshot file used as the baseline for diff operations. |
-| `LIQUIBASE_COMMAND_CONTEXTS` | e.g. `v1,oauth` | Liquibase contexts to activate during the update. |
+| `ROLLBACK` | integer > `1` | Rolls back the given number of changesets and takes a new snapshot. The current entrypoint does not enter rollback mode for `1`. |
+| `SNAPSHOT` | path | Reference snapshot path without the `.json` suffix, for example `snapshot/snapshot1`. Compose may build this value from its separate `LIQUIBASE_SNAPSHOT` index. |
 
 **Adding your own seed data:** mount a folder containing a `changelog.xml` at `/liquibase/data`. It is applied after the core schema, so you can add your own policies or reference rows without rebuilding the image.
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/dwtechs/foxnox-migration:latest
+  image: ghcr.io/alten-group/foxnox-migration:0.1.1
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

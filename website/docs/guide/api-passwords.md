@@ -2,14 +2,16 @@
 
 The `pwd` resource is the core of Foxnox: one row per user, holding the hash and every piece of state that can block a sign-in.
 
-All paths below are shown as Gatelin exposes them (`/api/pwd/…`). Internally Foxnox serves them at `/pwd/…`.
+Paths below use Foxnox's internal `/foxnox/…` mount. Gatelin typically exposes
+the same routes publicly under `/api/foxnox/…`; a custom BFF may use another
+public prefix.
 
 ## Compare a Password
 
-The one endpoint Gatelin calls on every login. Lockout is checked first: if `lockedUntil` is still in the future, Foxnox returns **403** without comparing the password. Otherwise it verifies the plaintext against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
+The one endpoint the BFF calls on every login. Lockout is checked first: if `lockedUntil` is still in the future, Foxnox returns **403** without comparing the password. Otherwise it verifies the plaintext against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
 
 ```
-POST /pwd/compare
+POST /foxnox/compare
 Content-Type: application/json
 
 {
@@ -30,7 +32,7 @@ Content-Type: application/json
       "pwdExpiry": "2026-04-15T09:12:00.000Z",
       "failedAttempts": 0,
       "lockedUntil": null,
-      "lastLoginAt": "2026-08-18T17:40:00.000Z",
+      "lastLoginAt": null,
       "twoFactorEnabled": true,
       "archived": false
     }
@@ -40,16 +42,19 @@ Content-Type: application/json
 
 The returned row never contains `pwdHash` or `twoFactorSecret` — both are marked private and stripped before serialization, even though the service reads them internally.
 
+`lastLoginAt` is returned and can be written as metadata, but Foxnox does not
+set it automatically when a password comparison succeeds.
+
 **Response (401 Unauthorized):** the password does not match. Foxnox increments `failedAttempts` and, once the in-force policy's `maxFailedAttempts` is reached, sets `lockedUntil`.
 
 **Response (403 Forbidden):** `lockedUntil` is still in the future. Compare does not try the password while the account is locked, so a correct guess during the lock window is refused as well.
 
-This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what Gatelin needs to decide between issuing a session and raising a [login challenge](./api-challenges). A locked account never reaches that decision — Foxnox answers 403 itself.
+This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry`, and `lockedUntil` are exactly what the BFF needs to decide between issuing a session and raising a [login challenge](./api-challenges). A locked account never reaches that decision — Foxnox answers 403 itself.
 
 ## Search Passwords
 
 ```
-POST /pwd/search
+POST /foxnox/search
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -82,7 +87,7 @@ Every field marked filterable can appear in `filters`, which makes this the endp
 Note what is **not** in the request body: a password. You send user IDs, and Foxnox generates a policy-compliant plaintext and hashes it server-side. This keeps plaintext out of your logs and request traces.
 
 ```
-POST /pwd/
+POST /foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -112,7 +117,7 @@ Generation follows the in-force [password policy](./api-policies) — length, ch
 ## Update Passwords
 
 ```
-PUT /pwd/
+PUT /foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -137,7 +142,7 @@ Authorization: Bearer <access_token>
 | `pwdExpiry` | When the password must be changed; a past date triggers the expired-password challenge on next login |
 | `failedAttempts` | Failed attempt counter |
 | `lockedUntil` | Lock expiry; set to `null` to unlock immediately |
-| `lastLoginAt` | Last successful sign-in |
+| `lastLoginAt` | Optional login timestamp maintained by the BFF or an administrator; password comparison does not update it |
 | `twoFactorEnabled` | Turn 2FA on or off |
 
 Clearing `lockedUntil` is how an administrator unlocks an account without waiting for the lock to lapse or sending an unlock email.
@@ -147,7 +152,7 @@ Clearing `lockedUntil` is how an administrator unlocks an account without waitin
 ## Get Password History
 
 ```
-GET /pwd/:id/history
+GET /foxnox/:id/history
 Authorization: Bearer <access_token>
 ```
 
@@ -156,7 +161,7 @@ Returns the audit trail for one row, built from database triggers that record ev
 ## Archive Passwords
 
 ```
-POST /pwd/archive
+POST /foxnox/archive
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -173,7 +178,7 @@ Authorization: Bearer <access_token>
 ## Get Entity Schema
 
 ```
-GET /pwd/schema
+GET /foxnox/schema
 Authorization: Bearer <access_token>
 ```
 

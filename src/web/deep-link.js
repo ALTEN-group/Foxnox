@@ -11,12 +11,13 @@ export function getPublicOrigin() {
 
   const scheme = process.env.SERVER_SCHEME || "http://";
   const host = process.env.SERVER_URL || "localhost";
-  const port = process.env.TRAEFIK_PORT || process.env.WEB_PUBLIC_PORT || "8100";
+  const port =
+    process.env.TRAEFIK_PORT || process.env.WEB_PUBLIC_PORT || "8100";
   return `${scheme}${host}:${port}`.replace(/\/$/, "");
 }
 
 /**
- * Browser path prefix for workflows (`/api/pwd/web`).
+ * Browser path prefix for workflows (`/api/foxnox/web`).
  */
 export function getPublicWebBase() {
   return WEB_PUBLIC_BASE;

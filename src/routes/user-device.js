@@ -3,7 +3,7 @@ import express from "express";
 
 const router = express.Router();
 
-import tdEnt from "../entities/user-trusted-device.js";
+import tdEnt from "../entities/user-device.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";

@@ -70,4 +70,4 @@ bootstrapApplication(AppComponent, {
     ConfirmationService,
     DialogService,
   ],
-}).catch((err) => console.log(err));
+}).catch(() => console.error("Foxnox admin failed to start"));

@@ -1,5 +1,5 @@
 // @ts-check
-import { isValidInteger, isStringOfLength } from "@dwtechs/checkard";
+import { isStringOfLength, isValidInteger } from "@dwtechs/checkard";
 
 /**
  * Validates the compare payload and builds the internal filters for pEnt.get,

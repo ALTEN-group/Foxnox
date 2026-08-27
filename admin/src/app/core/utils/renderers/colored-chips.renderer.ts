@@ -16,6 +16,15 @@ function safeString(v: unknown): string {
     : "";
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 /**
  * Builds a customCellRenderer that displays a comma-separated string (or array) as
  * individual colored chips — one chip per value.
@@ -42,7 +51,7 @@ export function buildColoredChipsCellRenderer(
         const color = HEX_COLOR_REGEX.test(rawColor)
           ? rawColor
           : FALLBACK_COLOR;
-        return `<span style="display:inline-flex;align-items:center;padding:2px 10px;border-radius:12px;background:${color};color:#fff;font-size:0.85em;">${label}</span>`;
+        return `<span style="display:inline-flex;align-items:center;padding:2px 10px;border-radius:12px;background:${color};color:#fff;font-size:0.85em;">${escapeHtml(label)}</span>`;
       })
       .join(" ");
     return sanitizer.bypassSecurityTrustHtml(html) as unknown as string;

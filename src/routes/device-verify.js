@@ -1,7 +1,8 @@
 // @ts-check
-import express from "express";
+
 import { isValidInteger } from "@dwtechs/checkard";
-import { verifyTrustedDevice } from "../services/trusted-devices.js";
+import express from "express";
+import { verifyTrustedDevice } from "../services/devices.js";
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const router = express.Router();
  *
  * Body: { userId: number, deviceToken: string }
  */
-// Mounted at `/pwd/trusted-devices/verify` in app.js → POST that path.
+// Mounted at `/foxnox/devices/verify` in app.js → POST that path.
 router.post("/", async (req, res, next) => {
   try {
     const userId = Number(req.body?.userId);

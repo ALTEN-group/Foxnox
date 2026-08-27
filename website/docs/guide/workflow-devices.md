@@ -23,7 +23,7 @@ Reached by redirect from a successful [2FA verification](./workflow-twofa), carr
 sequenceDiagram
     participant B as Browser
     participant F as Foxnox
-    participant G as Gatelin
+    participant G as BFF
 
     B->>F: POST /2fa/verify (code accepted)
     F-->>B: 303 to /trusted-devices/prompt?challenge=…
@@ -51,13 +51,13 @@ The optional device name is there because "Chrome on macOS" tells a user very li
 
 Accepting creates a `user_trusted_device` row with a hash of the cookie value, the device name, the IP address, the user agent, and an expiry **90 days** out. The cookie itself is `HttpOnly`, `SameSite=Lax`, and scoped to `Path=/`.
 
-That path scope matters: the cookie has to reach Gatelin's login endpoint, not just the Foxnox workflow pages, or it could never be checked during a sign-in. Set `COOKIE_SECURE=1` to add the `Secure` flag when serving over HTTPS.
+That path scope matters: the cookie has to reach the BFF's login endpoint, not just the Foxnox workflow pages, or it could never be checked during a sign-in. Set `COOKIE_SECURE=1` to add the `Secure` flag when serving over HTTPS.
 
 Only the hash is stored, so the table cannot be read back into working cookies.
 
 ## How the Skip Works
 
-On the next login, Gatelin forwards the `trusted_device` cookie to Foxnox's [verify endpoint](./api-trusted-devices#verify-a-device-token). A live matching row means the 2FA challenge is never minted, and `lastUsedAt` is refreshed.
+On the next login, the BFF forwards the `trusted_device` cookie to Foxnox's [verify endpoint](./api-devices#verify-a-device-token). A live matching row means the 2FA challenge is never minted, and `lastUsedAt` is refreshed.
 
 The check is against the database rather than the cookie alone, which is what makes revocation immediate — there is no need to reach the browser and delete anything.
 
@@ -68,11 +68,11 @@ A signed-in user can list their devices with the name, last-used date, and expir
 This is the page to point someone at when they lose a laptop.
 
 ```
-/api/pwd/web/trusted-devices
+/api/foxnox/web/trusted-devices
 ```
 
 ## Expiry
 
 Trust lapses on its own after 90 days, because verification filters on `expiresAt`. No job is needed to clean up — an expired row simply stops matching. Archived rows are deleted for good by the nightly job two months later.
 
-To cut a device's trust short without revoking it, shorten `expiresAt` through the [admin API](./api-trusted-devices#update-trusted-devices).
+To cut a device's trust short without revoking it, shorten `expiresAt` through the [admin API](./api-devices#update-trusted-devices).

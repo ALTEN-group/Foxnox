@@ -20,13 +20,7 @@ npm install
 npm run dev
 ```
 
-### Build for production
-
-```sh
-./scripts/build-prod.sh website
-```
-
-Builds the `website` production image using `website/dockerfile.prod`. The production container runs nginx and serves the pre-built static files under `/docs`. The build sets `VITEPRESS_BASE=/docs/` so asset URLs match the nginx location; override that variable if you serve the site from a different path.
+Production docs are built and published by `.github/workflows/deploy-docs.yml` to GitHub Pages. There is no documentation Docker image.
 
 ### Adding or editing pages
 

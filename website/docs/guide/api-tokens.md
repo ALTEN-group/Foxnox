@@ -4,11 +4,13 @@ A token is a single-use, time-limited secret that proves the holder followed a l
 
 ## How It Works
 
-The security property that matters here is that **Foxnox never stores the token itself**. When a token is created:
+The security property that matters here is that **Foxnox never stores a
+workflow token's plaintext**. When a workflow creates a token:
 
 1. A random plaintext value is generated.
 2. That plaintext is HMAC-hashed with `PWD_SECRET` and only the hash is written to the `token` row.
-3. The plaintext is returned once, to be embedded in a URL.
+3. The plaintext is returned once to the workflow service code, which embeds it
+   in a URL.
 
 When the user comes back with `?token=…`, Foxnox hashes what it received and looks for a matching row. A dump of the `token` table is therefore useless to an attacker — the hashes cannot be replayed as links.
 
@@ -23,17 +25,19 @@ Each token belongs to a **token type**, which carries the rules rather than hard
 | Account unlock | 30 min | 3 | [Account unlock](./workflow-unlock) |
 | 2FA challenge | 10 min | 5 | [Two-factor authentication](./workflow-twofa) |
 | Expired password challenge | 15 min | 3 | [Expired password](./workflow-password-expired) |
-| Trusted device challenge | 10 min | 3 | [Trusted devices](./workflow-trusted-devices) |
+| Trusted device challenge | 10 min | 3 | [Trusted devices](./workflow-devices) |
 | Login resume | 10 min | 1 | Finishing a session after challenges |
 
 `maxAttempts` bounds guessing: each failed verification increments `attempts`, and once the ceiling is reached the token is dead even though it has not expired. Successful use stamps `verifiedAt`, which is what makes tokens single-use.
 
-You will rarely create tokens through this API — the workflows mint their own. It exists mainly so administrators can inspect and revoke outstanding links.
+Workflow handlers mint usable tokens through Foxnox's internal token service.
+The CRUD API exists mainly so administrators can inspect, update, and revoke
+rows; its create operation does not mint or return a usable plaintext token.
 
 ## Search Tokens
 
 ```
-POST /pwd/tokens/search
+POST /foxnox/tokens/search
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -63,14 +67,20 @@ To list only tokens that are still live:
 ## Get Token History
 
 ```
-GET /pwd/tokens/:id/history
+GET /foxnox/tokens/:id/history
 Authorization: Bearer <access_token>
 ```
 
-## Create Tokens
+## Create Token Rows
+
+This generic CRUD operation inserts a database row. PostgreSQL supplies an
+opaque random `hash` when none is provided, and the response strips that private
+field. No corresponding plaintext is generated or returned, so the resulting
+row cannot be used as a recovery link or login challenge. Use the workflow or
+challenge endpoint to mint a usable token.
 
 ```
-POST /pwd/tokens/
+POST /foxnox/tokens/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -85,22 +95,23 @@ Authorization: Bearer <access_token>
 }
 ```
 
-**Response (200 OK):** the created rows, without `hash`.
+**Response (200 OK):** the created rows, without `hash` and without any
+plaintext token.
 
 ### Token fields
 
 | Field | Required | Description |
 |---|---|---|
-| `typeId` | ✅ | ID of the token type, which sets the TTL and attempt ceiling |
+| `typeId` | ✅ | ID of the token type used when validating the row |
 | `userId` | ✅ | User the token belongs to |
-| `expiresAt` | ⬜ | Explicit expiry; defaults to now plus the type's TTL |
+| `expiresAt` | ⬜ | Explicit expiry. The generic CRUD route does not derive it from the token type's TTL. |
 | `attempts` | ⬜ | Failed verification counter, starts at `0` |
 | `verifiedAt` | ⬜ | Set when the token is consumed |
 
 ## Update Tokens
 
 ```
-PUT /pwd/tokens/
+PUT /foxnox/tokens/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -116,7 +127,7 @@ Authorization: Bearer <access_token>
 ## Archive Tokens
 
 ```
-POST /pwd/tokens/archive
+POST /foxnox/tokens/archive
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -134,6 +145,6 @@ Note that expired tokens do not need archiving. They stop validating on their ow
 ## Get Entity Schema
 
 ```
-GET /pwd/tokens/schema
+GET /foxnox/tokens/schema
 Authorization: Bearer <access_token>
 ```

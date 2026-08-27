@@ -11,7 +11,7 @@ import { csrfForm } from "./helpers/form.js";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 process.env.WEB_PUBLIC_ORIGIN = "http://localhost:8100";
-process.env.WEB_PUBLIC_BASE = "/api/pwd/web";
+process.env.WEB_PUBLIC_BASE = "/api/foxnox/web";
 
 const issueWorkflowNotification = jest.fn(async () => ({ issued: true }));
 const findValidWorkflowToken = jest.fn();
@@ -25,7 +25,7 @@ const createLoginChallenge = jest.fn(async () => ({
   kind: "trusted-device",
   challenge: "next-challenge",
   path: "/trusted-devices/prompt",
-  url: "http://localhost:8100/api/pwd/web/trusted-devices/prompt?challenge=next-challenge",
+  url: "http://localhost:8100/api/foxnox/web/trusted-devices/prompt?challenge=next-challenge",
   expiresAt: new Date(Date.now() + 60_000),
   typeName: "Trusted device challenge",
 }));
@@ -118,7 +118,7 @@ jest.unstable_mockModule("../src/services/totp.js", () => ({
   verifyTotpCode: jest.fn(() => true),
 }));
 
-jest.unstable_mockModule("../src/services/trusted-devices.js", () => ({
+jest.unstable_mockModule("../src/services/devices.js", () => ({
   getTrustedDeviceCookieName: () => "trusted_device",
   mintTrustedDeviceToken: jest.fn(() => ({
     plaintext: "devicetok",
@@ -209,7 +209,7 @@ beforeEach(() => {
     kind: "trusted-device",
     challenge: "next-challenge",
     path: "/trusted-devices/prompt",
-    url: "http://localhost:8100/api/pwd/web/trusted-devices/prompt?challenge=next-challenge",
+    url: "http://localhost:8100/api/foxnox/web/trusted-devices/prompt?challenge=next-challenge",
     expiresAt: new Date(Date.now() + 60_000),
     typeName: "Trusted device challenge",
   });

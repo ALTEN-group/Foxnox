@@ -12,13 +12,13 @@ Foxnox is the password and account-security service for a microservices architec
 - 🖥️ **Account workflow pages** — Server-rendered recovery, unlock, 2FA, and device pages in English and French
 - 📧 **Email delivery** — Reset and unlock links sent over SMTP from Handlebars templates
 - 🎛️ **Front-end admin** — Manage passwords, policies, tokens, and devices through a web interface
-- 🛡️ **Gatelin ACL enforcement** — Enforce Gatelin field allow-lists and row conditions on JSON reads and writes
+- 🛡️ **BFF ACL enforcement** — Enforce field allow-lists and row conditions forwarded by the BFF on JSON reads and writes
 
 ## What Foxnox Is Not
 
 Foxnox deliberately stops at credentials and authentication factors. **User profiles** — names, email addresses, email verification, contact details — belong to your user management service. Foxnox only ever refers to a user by a numeric `userId`, and resolves an email address to that ID by calling out to user management (see [`USER_SEARCH_URL`](./configuration)).
 
-Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?"; the BFF ([Gatelin](https://gatelin.fr)) is what turns that answer into a JWT session.
+Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?". A **Backend for Frontend** turns that answer into a session. [Gatelin](https://gatelin.fr) is the reference BFF used in these docs and in the Compose examples; any BFF that speaks the same HTTP contract works.
 
 ## Two Surfaces
 
@@ -26,10 +26,10 @@ Foxnox exposes two very different kinds of endpoint, and it helps to keep them a
 
 | Surface | Mount | Consumer | Format |
 |---|---|---|---|
-| **JSON API** | `/pwd/…` | Gatelin and the admin UI | JSON request/response |
-| **Account workflows** | `/pwd/web/…` | End users, in a browser | Server-rendered HTML |
+| **JSON API** | `/foxnox/…` | Your BFF and the admin UI | JSON request/response |
+| **Account workflows** | `/foxnox/web/…` | End users, in a browser | Server-rendered HTML |
 
-Both are normally reached through Gatelin, which adds an `/api` prefix — so the public URLs are `/api/pwd/…` and `/api/pwd/web/…`. See [Request Flow](./architecture).
+Both are reached through the BFF, which typically adds a public `/api` prefix — so the public URLs are `/api/foxnox/…` and `/api/foxnox/web/…`. See [Request Flow](./architecture).
 
 ## Key Concepts
 
@@ -41,9 +41,12 @@ Every user with a password has exactly one **`pwd` row**. It is the heart of the
 - `pwdUpdatedAt` / `pwdExpiry` — when the password was last rotated, and when it must be rotated again
 - `failedAttempts` / `lockedUntil` — lockout state after repeated bad passwords
 - `twoFactorEnabled` / `twoFactorSecret` — 2FA state; the secret is never returned by the API
-- `lastLoginAt` — last successful sign-in
 
-Because a single row answers "can this user log in right now?", Gatelin only needs one call to Foxnox to find out. See [Passwords](./api-passwords).
+Because a single row answers "can this user log in right now?", the BFF only needs one call to Foxnox to find out. See [Passwords](./api-passwords).
+
+The row also has an optional `lastLoginAt` metadata field, but Foxnox does not
+update it during password comparison. A BFF or administrator must write it
+explicitly if the deployment uses it.
 
 ### Tokens
 
@@ -53,7 +56,7 @@ Each token type carries its own time-to-live and maximum attempt count, which is
 
 ### Login challenges
 
-A **login challenge** is a token that represents an unfinished sign-in. When the password is correct but something else stands in the way — 2FA is enabled, or the password has expired — Gatelin does not issue a session. Instead it asks Foxnox to mint a challenge, and answers the login request with **HTTP 202** and a URL pointing at the matching workflow page.
+A **login challenge** is a token that represents an unfinished sign-in. When the password is correct but something else stands in the way — 2FA is enabled, or the password has expired — the BFF does not issue a session. Instead it asks Foxnox to mint a challenge, and answers the login request with **HTTP 202** and a URL pointing at the matching workflow page.
 
 The user completes the step in the browser; Foxnox then hands back a one-shot **login resume ticket** which the frontend redeems to finally get its session. See [Login Challenges](./api-challenges).
 
@@ -65,7 +68,7 @@ They ship with the service, so you do not have to build reset and 2FA screens in
 
 ### Trusted devices
 
-A **trusted device** is a browser the user chose to remember. Foxnox stores a hash of a random cookie value along with the device name, IP address, user agent, and an expiry date — 90 days by default. While that cookie is valid, Gatelin skips the 2FA challenge for that user on that browser. Users can list and revoke their devices themselves. See [Trusted Devices](./api-trusted-devices).
+A **trusted device** is a browser the user chose to remember. Foxnox stores a hash of a random cookie value along with the device name, IP address, user agent, and an expiry date — 90 days by default. While that cookie is valid, the BFF skips the 2FA challenge for that user on that browser. Users can list and revoke their devices themselves. See [Trusted Devices](./api-devices).
 
 ### Password policies
 

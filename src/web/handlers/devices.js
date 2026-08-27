@@ -1,8 +1,5 @@
 // @ts-check
-import { buildLoginResumeUrl } from "../login-resume.js";
-import { buildViewContext } from "../context.js";
-import { getConsumerUserId } from "../consumer.js";
-import { isSuspiciousForm } from "../form-guards.js";
+
 import {
   consumeLoginChallenge,
   findValidLoginChallenge,
@@ -13,15 +10,18 @@ import {
   getTrustedDeviceCookieName,
   listTrustedDevices,
   mintTrustedDeviceToken,
-} from "../../services/trusted-devices.js";
+} from "../../services/devices.js";
+import { getConsumerUserId } from "../consumer.js";
+import { buildViewContext } from "../context.js";
+import { isSuspiciousForm } from "../form-guards.js";
+import { buildLoginResumeUrl } from "../login-resume.js";
 
 /**
  * @returns {boolean}
  */
 function cookieSecure() {
   return (
-    process.env.COOKIE_SECURE === "1" ||
-    process.env.NODE_ENV === "production"
+    process.env.COOKIE_SECURE === "1" || process.env.NODE_ENV === "production"
   );
 }
 
@@ -54,7 +54,7 @@ export async function getTrustedDevicePrompt(req, res) {
     return res
       .status(400)
       .render(
-        "trusted-devices/invalid",
+        "devices/invalid",
         buildViewContext(req, "trustedDeviceInvalid"),
       );
   }
@@ -67,13 +67,13 @@ export async function getTrustedDevicePrompt(req, res) {
     return res
       .status(400)
       .render(
-        "trusted-devices/invalid",
+        "devices/invalid",
         buildViewContext(req, "trustedDeviceInvalid"),
       );
   }
 
   res.render(
-    "trusted-devices/prompt",
+    "devices/prompt",
     buildViewContext(req, "trustedDevicePrompt", {
       form: { challenge },
     }),
@@ -93,7 +93,7 @@ export async function postTrustedDevicePrompt(req, res) {
     return res
       .status(400)
       .render(
-        "trusted-devices/invalid",
+        "devices/invalid",
         buildViewContext(req, "trustedDeviceInvalid"),
       );
   }
@@ -124,7 +124,7 @@ export async function postTrustedDevicePrompt(req, res) {
     return res
       .status(500)
       .render(
-        "trusted-devices/invalid",
+        "devices/invalid",
         buildViewContext(req, "trustedDeviceInvalid"),
       );
   }
@@ -135,7 +135,7 @@ export async function getTrustedDevicesManage(req, res) {
   const userId = getConsumerUserId(req);
   if (!userId) {
     return res.status(401).render(
-      "trusted-devices/manage",
+      "devices/manage",
       buildViewContext(req, "trustedDevicesManage", {
         form: { devices: [] },
         error: buildViewContext(req, "trustedDevicesManage").page.errorGeneric,
@@ -145,7 +145,7 @@ export async function getTrustedDevicesManage(req, res) {
 
   const devices = await listTrustedDevices(userId);
   res.render(
-    "trusted-devices/manage",
+    "devices/manage",
     buildViewContext(req, "trustedDevicesManage", {
       form: { devices },
     }),
@@ -162,7 +162,7 @@ export async function postTrustedDevicesManage(req, res) {
   if (!userId || !Number.isInteger(deviceId) || deviceId < 1) {
     const devices = userId ? await listTrustedDevices(userId) : [];
     return res.status(400).render(
-      "trusted-devices/manage",
+      "devices/manage",
       buildViewContext(req, "trustedDevicesManage", {
         form: { devices },
         error: buildViewContext(req, "trustedDevicesManage").page.errorGeneric,
@@ -172,7 +172,7 @@ export async function postTrustedDevicesManage(req, res) {
 
   await archiveTrustedDevice(userId, deviceId);
   return res.render(
-    "trusted-devices/revoked",
+    "devices/revoked",
     buildViewContext(req, "trustedDeviceRevoked"),
   );
 }

@@ -9,7 +9,7 @@ import {
 
 /**
  * Mid-login challenges (not email magic links).
- * Gatelin (or compare flow) mints one via POST /pwd/challenges after password OK;
+ * Compare flow mints one via POST /foxnox/challenges after password OK;
  * SSR pages bind GET/POST to the matching token type before mutating anything.
  *
  * @typedef {"2fa" | "expired-password" | "trusted-device"} ChallengeKind

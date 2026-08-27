@@ -3,7 +3,7 @@ import { hash } from "@dwtechs/hashitaka";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 process.env.WEB_PUBLIC_ORIGIN = "http://localhost:8100";
-process.env.WEB_PUBLIC_BASE = "/api/pwd/web";
+process.env.WEB_PUBLIC_BASE = "/api/foxnox/web";
 
 describe("workflow token hashing", () => {
   it("hashes deterministically via Hashitaka HMAC", async () => {
@@ -26,7 +26,7 @@ describe("deep links", () => {
   it("builds absolute workflow URLs", async () => {
     const { buildDeepLink } = await import("../src/web/deep-link.js");
     expect(buildDeepLink("/recover/reset", { token: "tok", lang: "fr" })).toBe(
-      "http://localhost:8100/api/pwd/web/recover/reset?token=tok&lang=fr",
+      "http://localhost:8100/api/foxnox/web/recover/reset?token=tok&lang=fr",
     );
   });
 });
@@ -91,7 +91,7 @@ describe("login challenges", () => {
     expect(
       buildDeepLink("/2fa/verify", { challenge: "abc", lang: "en" }),
     ).toBe(
-      "http://localhost:8100/api/pwd/web/2fa/verify?challenge=abc&lang=en",
+      "http://localhost:8100/api/foxnox/web/2fa/verify?challenge=abc&lang=en",
     );
   });
 });
@@ -116,7 +116,7 @@ describe("email notify", () => {
     );
     _resetNotifyCachesForTests();
     const url =
-      "http://localhost:8100/api/pwd/web/recover/reset?token=tok&lang=en";
+      "http://localhost:8100/api/foxnox/web/recover/reset?token=tok&lang=en";
     const { subject, html, text } = renderEmail({
       template: "pwd-reset",
       lang: "en",

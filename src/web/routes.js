@@ -1,43 +1,43 @@
 // @ts-check
 import express from "express";
+import { csrfProtection } from "./csrf.js";
+import {
+  getAccountRecoverChallenge,
+  getAccountRecoverRequest,
+  postAccountRecoverChallenge,
+  postAccountRecoverRequest,
+} from "./handlers/account-recover.js";
+import {
+  getPasswordExpired,
+  postPasswordExpired,
+} from "./handlers/password-expired.js";
 import {
   getRecoverRequest,
-  postRecoverRequest,
   getRecoverReset,
+  postRecoverRequest,
   postRecoverReset,
 } from "./handlers/recover.js";
-import {
-  getTwofaVerify,
-  postTwofaVerify,
-  getTwofaSetup,
-  postTwofaSetup,
-} from "./handlers/twofa.js";
-import {
-  getAccountRecoverRequest,
-  postAccountRecoverRequest,
-  getAccountRecoverChallenge,
-  postAccountRecoverChallenge,
-} from "./handlers/account-recover.js";
 import {
   getSecurityQuestionsSetup,
   postSecurityQuestionsSetup,
 } from "./handlers/security-questions.js";
 import {
   getTrustedDevicePrompt,
-  postTrustedDevicePrompt,
   getTrustedDevicesManage,
+  postTrustedDevicePrompt,
   postTrustedDevicesManage,
-} from "./handlers/trusted-devices.js";
+} from "./handlers/devices.js";
 import {
-  getPasswordExpired,
-  postPasswordExpired,
-} from "./handlers/password-expired.js";
+  getTwofaSetup,
+  getTwofaVerify,
+  postTwofaSetup,
+  postTwofaVerify,
+} from "./handlers/twofa.js";
 import {
+  getUnlockConfirm,
   getUnlockRequest,
   postUnlockRequest,
-  getUnlockConfirm,
 } from "./handlers/unlock.js";
-import { csrfProtection } from "./csrf.js";
 
 const router = express.Router();
 

@@ -31,12 +31,12 @@ echo -e "${GREEN}✅ Development environment started!${NC}"
 # Mock passwords live in the pwd table but are created at runtime by setup-mocks.sh, not
 # by Liquibase — so any run against a fresh postgres volume (stop-dev.sh and reset-db.sh
 # both remove it) comes up with no credentials, and login fails with a 404 relayed from
-# /pwd/compare. Seeding here keeps that from being a manual step people forget.
+# /foxnox/compare. Seeding here keeps that from being a manual step people forget.
 echo -e ""
 if ! ./scripts/setup-mocks.sh --if-missing; then
   echo -e ""
   echo -e "${RED}✗ Mock password seeding failed.${NC} The stack is up, but logins will fail"
-  echo -e "  with a 404 from /pwd/compare until you run: ${YELLOW}scripts/setup-mocks.sh${NC}"
+  echo -e "  with a 404 from /foxnox/compare until you run: ${YELLOW}scripts/setup-mocks.sh${NC}"
 fi
 
 echo -e ""

@@ -1,8 +1,8 @@
 name: ${APP_NAME}
 
 x-service-healthcheck: &healthcheck
-  # /pwd/health/ready also proves Postgres is reachable; /pwd/health is liveness only.
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
+  # /foxnox/health/ready also proves Postgres is reachable; /foxnox/health is liveness only.
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/foxnox/health/ready"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -137,6 +137,9 @@ services:
       PORT: ${DEFAULT_PORT}
       TZ: ${TZ}
       PWD_CHECK_URL: ${GATELIN_PWD_CHECK_URL}
+      PWD_CHALLENGES_URL: ${GATELIN_PWD_CHALLENGES_URL}
+      PWD_TRUSTED_DEVICES_URL: ${GATELIN_PWD_TRUSTED_DEVICES_URL}
+      PWD_LOGIN_TICKET_URL: ${GATELIN_PWD_LOGIN_TICKET_URL}
       USER_SEARCH_URL: ${GATELIN_USER_SEARCH_URL}
       DB_HOST: ${POSTGRES_HOST}
       DB_NAME: ${GATELIN_DB_NAME}
@@ -233,7 +236,7 @@ services:
         TZ: ${TZ}
         NODE_VERSION: ${NODE_VERSION}
         NODE_ENV: ${NODE_ENV}
-    image: dwtechs/foxnox:${NODE_ENV:-development}
+    image: foxnox:${NODE_ENV:-development}
     container_name: ${FOXNOX_HOST}
     hostname: ${FOXNOX_HOST}
     depends_on:
@@ -257,7 +260,7 @@ services:
       SERVICE_NAME: ${FOXNOX_HOST}
       ACCESS_TOKEN_DURATION: ${FOXNOX_ACCESS_TOKEN_DURATION}
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
-      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
+      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/foxnox/web}
       WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}}
       WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/foxnox/login}
       USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
@@ -288,9 +291,9 @@ services:
       - ${PWD}/babel.config.json:/usr/src/app/babel.config.json
       - ${PWD}/package.json:/usr/src/app/package.json
       - foxnox_node_modules:/usr/src/app/node_modules
-    # No public Traefik router: Foxnox now sits behind Gatelin (Traefik -> gatelin -> foxnox,
-    # reached over the internal network via PWD_CHECK_URL) — publicly exposing /api on both
-    # foxnox and gatelin would create two routers matching the same rule with undefined priority.
+    # No public Traefik router: Foxnox sits behind a BFF (Traefik -> BFF -> foxnox,
+    # reached over the internal network via PWD_CHECK_URL). Publicly exposing /api on both
+    # foxnox and the BFF would create two routers matching the same rule with undefined priority.
     healthcheck: *healthcheck
   
   admin:

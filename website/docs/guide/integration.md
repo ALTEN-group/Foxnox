@@ -1,50 +1,59 @@
 # Integration
 
-Foxnox does not sit on the public internet by itself. Getting it working means wiring up three connections: **Gatelin** in front of it, your **user management** service beside it, and the **public URLs** users will see.
+Foxnox does not sit on the public internet by itself. Getting it working means wiring up three connections: a **Backend for Frontend** in front of it, your **user management** service beside it, and the **public URLs** users will see.
 
-## 1. Point Gatelin at Foxnox
+The BFF authenticates callers, issues sessions, and proxies `/foxnox` and `/foxnox/web`. [Gatelin](https://gatelin.fr) is the reference implementation used below (`PWD_CHECK_URL`, route seed, `/api` prefix). Another BFF that speaks the same HTTP contract is fine.
 
-Gatelin needs one variable to find Foxnox:
+## 1. Point the BFF at Foxnox
+
+With Gatelin, each internal endpoint gets its own variable:
 
 ```
-PWD_CHECK_URL=http://my-project-foxnox-local:3000/pwd/compare
+PWD_CHECK_URL=http://my-project-foxnox-local:3000/foxnox/compare
+PWD_CHALLENGES_URL=http://my-project-foxnox-local:3000/foxnox/challenges
+PWD_TRUSTED_DEVICES_URL=http://my-project-foxnox-local:3000/foxnox/devices/verify
+PWD_LOGIN_TICKET_URL=http://my-project-foxnox-local:3000/foxnox/login-tickets/redeem
 ```
 
-Everything else is derived from that same base, so there is nothing more to configure:
+Only the first is mandatory; the other three are what the mid-login challenges need. A custom BFF should call the same endpoints:
 
-| Derived URL | Used for |
+| Endpoint | Used for |
 |---|---|
-| `{base}/pwd/challenges` | Minting a 2FA / expired-password / trusted-device challenge |
-| `{base}/pwd/trusted-devices/verify` | Checking the `trusted_device` cookie to skip 2FA |
-| `{base}/pwd/login-tickets/redeem` | Redeeming the one-shot ticket that finishes a session |
+| `POST /foxnox/challenges` | Minting a 2FA / expired-password / trusted-device challenge |
+| `POST /foxnox/devices/verify` | Checking the `trusted_device` cookie to skip 2FA |
+| `POST /foxnox/login-tickets/redeem` | Redeeming the one-shot ticket that finishes a session |
 
-Use the container hostname on the internal Docker network, not the public URL. Foxnox has no public route, and routing password checks back out through Traefik would expose them.
+Use the container hostname on the internal Docker network, not the public URL. Foxnox has no public API route, and routing password checks back out through Traefik would expose them.
 
 ## 2. Point Foxnox at User Management
 
 Foxnox knows users only by numeric ID. When a user types their email address into the "forgot password" form, Foxnox has to translate it:
 
 ```
-USER_SEARCH_URL=http://my-project-msuser-local:3000/users/search
+USER_SEARCH_URL=https://users.internal.example/users/search
 ```
 
-Without this variable, the email-driven workflows (password recovery, account unlock, lost-2FA recovery) cannot resolve an address and will silently show their non-enumerating confirmation page without sending anything.
+This service is an external production dependency, not part of the Foxnox
+production image or Compose stack. Set the same endpoint on the BFF for login.
+Production Compose fails before startup when `USER_SEARCH_URL` is unset.
+Without a working endpoint, email-driven workflows cannot resolve an address
+and show their non-enumerating confirmation page without sending anything.
 
 ## 3. Set the Public URLs
 
-Because requests arrive through Gatelin, Foxnox cannot work out its own public address. Tell it explicitly:
+Because requests arrive through the BFF, Foxnox cannot work out its own public address. Tell it explicitly:
 
 ```
 WEB_PUBLIC_ORIGIN=https://app.example.com
-WEB_PUBLIC_BASE=/api/pwd/web
+WEB_PUBLIC_BASE=/api/foxnox/web
 WEB_LOGIN_RESUME_URL=https://app.example.com/foxnox/login
 ```
 
-`WEB_PUBLIC_BASE` is the public routing prefix (`/api`) plus Foxnox's own mount (`/pwd/web`). If you change Traefik's strip-prefix rule, change this too — otherwise every reset link in every email will 404.
+`WEB_PUBLIC_BASE` is the public routing prefix (`/api`) plus Foxnox's own mount (`/foxnox/web`). If you change Traefik's strip-prefix rule, change this too — otherwise every reset link in every email will 404.
 
-## 4. Register Foxnox in the Gatelin Database
+## 4. Register Foxnox with the BFF (Gatelin example)
 
-Gatelin only forwards requests that match a registered route, so Foxnox's endpoints have to exist as rows in Gatelin's database. Foxnox ships this seed data at `db/liquibase/gatelin-data/`; mount that folder into Gatelin's migration container:
+Gatelin only forwards requests that match a registered route, so Foxnox's endpoints have to exist as rows in Gatelin's database. A Foxnox checkout ships this seed data at `db/liquibase/gatelin-data/`; mount that exact folder into Gatelin's migration container. A different BFF needs its own equivalent: public workflow paths, protected JSON CRUD, and internal-only compare/challenge/verify/redeem calls.
 
 ```yaml
 gatelin_migration:
@@ -58,15 +67,15 @@ The seed registers:
 | Changeset | What it adds |
 |---|---|
 | `01-service.sql` | The `foxnox` service, with an empty pattern because the password router is mounted at the Express root |
-| `02-resource.sql` | Resources `pwd`, `pwd/tokens`, `pwd/policies`, `pwd/trusted-devices` |
-| `03-route.sql` | The 25 JSON CRUD routes (including `/pwd/compare`), all `protected` |
+| `02-resource.sql` | Resources `foxnox`, `foxnox/tokens`, `foxnox/policies`, `foxnox/devices` (Gatelin caps `resource.name` at 20 characters) |
+| `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/compare`), all `protected` |
 | `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
-| `05`–`08` | The `pwd/web` resource and every account workflow page route |
-| `09-route-challenges.sql` | The `pwd/challenges` resource and the challenge-minting route |
+| `05`–`08` | The `foxnox/web` resource and every account workflow page route |
+| `09-route-challenges.sql` | The `foxnox/challenges` resource and the challenge-minting route |
 | `10-cors.sql` | Allowed origins |
 | `11`–`13` | Admin table-preference resources (`passwords`, `policies`, `tokens`, `trustedDevices`), default column layouts, and Gatelin preference scopes |
 
-`POST /pwd/trusted-devices/verify` and `POST /pwd/login-tickets/redeem` are not Gatelin-proxied CRUD routes. Gatelin calls them on the internal network, derived from `PWD_CHECK_URL`.
+`POST /foxnox/devices/verify` and `POST /foxnox/login-tickets/redeem` are not proxied CRUD routes. The BFF calls them on the internal network (Gatelin uses `PWD_TRUSTED_DEVICES_URL` and `PWD_LOGIN_TICKET_URL`).
 
 ### Protected vs. public routes
 
@@ -74,16 +83,16 @@ This distinction is the heart of the integration, and it is easy to get wrong. A
 
 | Route group | Protected | Why |
 |---|---|---|
-| All JSON CRUD (`/pwd/…`) | ✅ | Administrative data; only admins should read or write it |
-| `/pwd/challenges` | ✅ | Only Gatelin mints challenges |
-| `/pwd/web/recover`, `/pwd/web/unlock` | ⬜ | The user has forgotten their password — by definition they cannot be signed in |
-| `/pwd/web/2fa/verify`, `/pwd/web/password/expired`, `/pwd/web/trusted-devices/prompt` | ⬜ | Mid-login: the password was accepted but no session exists yet. Access is gated by the challenge token in the URL, not by a session. |
-| `/pwd/web/account-recover` | ⬜ | The user cannot produce a 2FA code, so they cannot sign in |
-| `/pwd/web/2fa/setup`, `/pwd/web/security-questions`, `/pwd/web/trusted-devices` | ✅ | Managing your own security settings requires proving who you are first |
+| All JSON CRUD (`/foxnox/…`) | ✅ | Administrative data; only admins should read or write it |
+| `/foxnox/challenges` | ✅ | Only the BFF mints challenges |
+| `/foxnox/web/recover`, `/foxnox/web/unlock` | ⬜ | The user has forgotten their password — by definition they cannot be signed in |
+| `/foxnox/web/2fa/verify`, `/foxnox/web/password/expired`, `/foxnox/web/trusted-devices/prompt` | ⬜ | Mid-login: the password was accepted but no session exists yet. Access is gated by the challenge token in the URL, not by a session. |
+| `/foxnox/web/account-recover` | ⬜ | The user cannot produce a 2FA code, so they cannot sign in |
+| `/foxnox/web/2fa/setup`, `/foxnox/web/security-questions`, `/foxnox/web/trusted-devices` | ✅ | Managing your own security settings requires proving who you are first |
 
 ### Field and condition ACL
 
-For protected JSON CRUD routes, Gatelin forwards its resolved data restrictions:
+For protected JSON CRUD routes, the BFF forwards its resolved data restrictions:
 
 | Header | Foxnox enforcement |
 |---|---|
@@ -92,14 +101,19 @@ For protected JSON CRUD routes, Gatelin forwards its resolved data restrictions:
 
 Foxnox accepts condition operators `=`, `!=`, `<`, `>`, `<=`, and `>=`. It rejects malformed JSON, unknown or non-filterable fields, object/array values, unsupported operators, and more than 50 conditions with **403**.
 
-Keep Foxnox on the internal network with no public Traefik router. An omitted ACL header intentionally means unrestricted for protected administrator permissions and for trusted internal flows, so exposing Foxnox directly would allow a client to bypass Gatelin by omitting the headers.
+Keep Foxnox and the BFF on the same trusted internal network and give Foxnox no
+public Traefik API router, host port, or external load-balancer target. Foxnox
+trusts the BFF to authenticate callers and construct ACL headers. An omitted ACL
+header intentionally means unrestricted for protected administrator
+permissions and trusted internal flows, so exposing Foxnox directly would let a
+client bypass the BFF by omitting those headers.
 
 ## 5. Seed the First Passwords
 
 A fresh Foxnox database has a schema, seeded token types, and a default password policy — but no passwords. Create one per user by posting the user IDs; the service generates and hashes the plaintext itself:
 
 ```
-POST /api/pwd/
+POST /api/foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -119,11 +133,11 @@ Foxnox pages are only useful if users can reach them. Two links matter:
 
 | Where | Link to |
 |---|---|
-| Login page, "Forgotten password?" | `/api/pwd/web/recover` |
-| Account settings, "Two-factor authentication" | `/api/pwd/web/2fa/setup` |
-| Account settings, "Remembered devices" | `/api/pwd/web/trusted-devices` |
+| Login page, "Forgotten password?" | `/api/foxnox/web/recover` |
+| Account settings, "Two-factor authentication" | `/api/foxnox/web/2fa/setup` |
+| Account settings, "Remembered devices" | `/api/foxnox/web/trusted-devices` |
 
-For the admin UI shipped with Gatelin, setting `ADMIN_PASSWORD_RECOVERY_URL=/api/pwd/web/recover` adds the first link automatically.
+For the admin UI shipped with Gatelin, setting `ADMIN_PASSWORD_RECOVERY_URL=/api/foxnox/web/recover` adds the first link automatically.
 
 Your login code also has to handle the **202 challenge response**, or users with 2FA enabled will never be able to sign in. See [Frontend Integration](./frontend).
 
@@ -133,18 +147,18 @@ Work through these in order — each one depends on the last:
 
 ```bash
 # 1. Foxnox is up and can reach its database
-docker exec my-project-foxnox-local wget -qO- http://localhost:3000/pwd/health/ready
+docker exec my-project-foxnox-local wget -qO- http://localhost:3000/foxnox/health/ready
 
-# 2. Gatelin can reach Foxnox
+# 2. The BFF can reach Foxnox (Gatelin example)
 docker exec my-project-gatelin-local nc -zv my-project-foxnox-local 3000
 
-# 3. A workflow page renders through Gatelin
-curl -i http://localhost:8100/api/pwd/web/recover
+# 3. A workflow page renders through the BFF
+curl -i http://localhost:8100/api/foxnox/web/recover
 
-# 4. A login succeeds end to end
+# 4. A login succeeds end to end (Gatelin session endpoint)
 curl -i -X POST http://localhost:8100/api/gatelin/sessions \
   -H 'Content-Type: application/json' \
   -d '{"email":"admin@example.com","pwd":"<plaintext>"}'
 ```
 
-Step 3 returning **404** almost always means the `pwd/web` routes were not seeded into Gatelin database. Step 4 returning **202** is not a failure — it means a login challenge is required, which is the subject of [Login Challenges](./api-challenges).
+Step 3 returning **404** almost always means the `foxnox/web` routes were not registered on the BFF (for Gatelin, the seed in `db/liquibase/gatelin-data/`). Step 4 returning **202** is not a failure — it means a login challenge is required, which is the subject of [Login Challenges](./api-challenges).

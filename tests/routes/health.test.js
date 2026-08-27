@@ -9,7 +9,7 @@ import request from "supertest";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 process.env.WEB_PUBLIC_ORIGIN = "http://localhost:8100";
-process.env.WEB_PUBLIC_BASE = "/api/pwd/web";
+process.env.WEB_PUBLIC_BASE = "/api/foxnox/web";
 
 jest.unstable_mockModule("@dwtechs/winstan", () => ({
   log: {
@@ -37,7 +37,7 @@ jest.unstable_mockModule("pg-pool", () => ({
   },
 }));
 
-describe("GET /pwd/health", () => {
+describe("GET /foxnox/health", () => {
   /** @type {import("express").Express} */
   let app;
 
@@ -51,7 +51,7 @@ describe("GET /pwd/health", () => {
   });
 
   it("responds without hitting startTimer (mounted before it)", async () => {
-    const res = await request(app).get("/pwd/health");
+    const res = await request(app).get("/foxnox/health");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -66,14 +66,14 @@ describe("GET /pwd/health", () => {
   it("stays 200 with no database, so an outage cannot trigger a restart loop", async () => {
     poolQuery.mockRejectedValue(new Error("connection refused"));
 
-    const res = await request(app).get("/pwd/health");
+    const res = await request(app).get("/foxnox/health");
 
     expect(res.status).toBe(200);
     expect(poolQuery).not.toHaveBeenCalled();
   });
 });
 
-describe("GET /pwd/health/ready", () => {
+describe("GET /foxnox/health/ready", () => {
   /** @type {import("express").Express} */
   let app;
 
@@ -89,7 +89,7 @@ describe("GET /pwd/health/ready", () => {
   it("reports the database unavailable when it cannot be reached", async () => {
     poolQuery.mockRejectedValue(new Error("connection refused"));
 
-    const res = await request(app).get("/pwd/health/ready");
+    const res = await request(app).get("/foxnox/health/ready");
 
     expect(res.status).toBe(503);
     expect(res.body.status).toBe("unavailable");
@@ -101,7 +101,7 @@ describe("GET /pwd/health/ready", () => {
   it("reports ready when the database probe succeeds", async () => {
     poolQuery.mockResolvedValue({ rows: [{ "?column?": 1 }] });
 
-    const res = await request(app).get("/pwd/health/ready");
+    const res = await request(app).get("/foxnox/health/ready");
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("ready");
@@ -112,7 +112,7 @@ describe("GET /pwd/health/ready", () => {
   it("is mounted before startTimer", async () => {
     poolQuery.mockResolvedValue({ rows: [] });
 
-    await request(app).get("/pwd/health/ready");
+    await request(app).get("/foxnox/health/ready");
 
     expect(startTimer).not.toHaveBeenCalled();
   });

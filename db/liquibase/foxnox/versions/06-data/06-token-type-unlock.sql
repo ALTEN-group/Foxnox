@@ -1,5 +1,5 @@
 --
--- Account unlock token type for the /pwd/web/unlock workflow.
+-- Account unlock token type for the /foxnox/web/unlock workflow.
 --
 
 INSERT INTO token_type (name, description, ttl, "maxAttempts")

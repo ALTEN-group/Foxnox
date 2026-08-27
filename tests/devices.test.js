@@ -22,7 +22,7 @@ const {
   verifyTrustedDevice,
   listTrustedDevices,
   archiveTrustedDevice,
-} = await import("../src/services/trusted-devices.js");
+} = await import("../src/services/devices.js");
 
 describe("trusted devices", () => {
   beforeEach(() => {

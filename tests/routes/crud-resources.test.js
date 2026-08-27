@@ -19,29 +19,29 @@ process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 const RESOURCES = [
   {
     name: "pwd",
-    mount: "/pwd",
+    mount: "/foxnox",
     entityFile: "pwd.js",
     historyTable: "pwd",
     privateProps: ["pwdHash", "twoFactorSecret"],
   },
   {
     name: "tokens",
-    mount: "/pwd/tokens",
+    mount: "/foxnox/tokens",
     entityFile: "token.js",
     historyTable: "token",
     privateProps: ["hash"],
   },
   {
     name: "policies",
-    mount: "/pwd/policies",
+    mount: "/foxnox/policies",
     entityFile: "pwd-policy.js",
     historyTable: "pwd_policy",
     privateProps: [],
   },
   {
     name: "trusted-devices",
-    mount: "/pwd/trusted-devices",
-    entityFile: "user-trusted-device.js",
+    mount: "/foxnox/devices",
+    entityFile: "user-device.js",
     historyTable: "user_trusted_device",
     privateProps: ["deviceTokenHash"],
   },
@@ -176,7 +176,7 @@ jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   consumeLoginChallenge: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../src/services/trusted-devices.js", () => ({
+jest.unstable_mockModule("../../src/services/devices.js", () => ({
   verifyTrustedDevice: jest.fn(),
   getTrustedDeviceCookieName: () => "trusted_device",
   mintTrustedDeviceToken: jest.fn(),
@@ -291,7 +291,7 @@ describe("Gatelin ACL header wiring", () => {
     entityGets.policies.mockClear();
 
     const res = await request(app)
-      .post("/pwd/policies/search")
+      .post("/foxnox/policies/search")
       .set(
         "x-acl-conditions",
         JSON.stringify([{ field: "id", op: ">", value: 2 }]),
@@ -310,7 +310,7 @@ describe("Gatelin ACL header wiring", () => {
     entityUpdates.policies.mockClear();
 
     const res = await request(app)
-      .put("/pwd/policies")
+      .put("/foxnox/policies")
       .set("x-acl-fields", "")
       .send({ rows: [{ id: 1, entity: "policies" }] });
 
@@ -321,21 +321,21 @@ describe("Gatelin ACL header wiring", () => {
 });
 
 describe("mount order", () => {
-  it("keeps /pwd/policies off the catch-all /pwd/ sendPwd path", async () => {
+  it("keeps /foxnox/policies off the catch-all /foxnox/ sendPwd path", async () => {
     entityGets.policies.mockClear();
     entityGets.pwd.mockClear();
 
-    const res = await request(app).post("/pwd/policies/search").send({});
+    const res = await request(app).post("/foxnox/policies/search").send({});
     expect(res.status).toBe(200);
     expect(entityGets.policies).toHaveBeenCalledTimes(1);
     expect(entityGets.pwd).not.toHaveBeenCalled();
   });
 
-  it("keeps /pwd/tokens off the catch-all /pwd/ path", async () => {
+  it("keeps /foxnox/tokens off the catch-all /foxnox/ path", async () => {
     entityGets.tokens.mockClear();
     entityGets.pwd.mockClear();
 
-    const res = await request(app).post("/pwd/tokens/search").send({});
+    const res = await request(app).post("/foxnox/tokens/search").send({});
     expect(res.status).toBe(200);
     expect(entityGets.tokens).toHaveBeenCalledTimes(1);
     expect(entityGets.pwd).not.toHaveBeenCalled();

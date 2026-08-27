@@ -34,7 +34,7 @@ export default withMermaid(defineConfig({
           { text: 'Passwords', link: '/guide/api-passwords' },
           { text: 'Tokens', link: '/guide/api-tokens' },
           { text: 'Policies', link: '/guide/api-policies' },
-          { text: 'Trusted Devices', link: '/guide/api-trusted-devices' },
+          { text: 'Trusted Devices', link: '/guide/api-devices' },
           { text: 'Login Challenges', link: '/guide/api-challenges' },
         ],
       },
@@ -58,7 +58,7 @@ export default withMermaid(defineConfig({
             items: [
               { text: 'Two-Factor Authentication', link: '/guide/workflow-twofa' },
               { text: 'Expired Password', link: '/guide/workflow-password-expired' },
-              { text: 'Trusted Devices', link: '/guide/workflow-trusted-devices' },
+              { text: 'Trusted Devices', link: '/guide/workflow-devices' },
             ],
           },
           { text: 'Branding', link: '/guide/branding' },
@@ -75,7 +75,7 @@ export default withMermaid(defineConfig({
     ],
     socialLinks: [],
     footer: {
-      message: 'Published and maintained by DW Techs',
+      message: 'Published and maintained by ALTEN',
     },
   },
 }))

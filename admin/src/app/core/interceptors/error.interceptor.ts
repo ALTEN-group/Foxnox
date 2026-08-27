@@ -89,7 +89,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((err) => {
       loadingService.stop();
-      console.log("The error was: ", err);
       if (err instanceof HttpErrorResponse) {
         if (isNotFound(err)) {
           return returnError(err, true);

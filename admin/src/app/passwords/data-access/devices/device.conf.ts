@@ -11,7 +11,7 @@ import {
   required,
   StrictCrudItemOptions,
 } from "@dwtechs/ngx-crud-builder";
-import { TrustedDevice } from "app/passwords/data-access/trusted-devices/trusted-device.model";
+import { TrustedDevice } from "app/passwords/data-access/devices/device.model";
 
 export const TRUSTED_DEVICE_COLUMNS: (
   acls: Acls | undefined,

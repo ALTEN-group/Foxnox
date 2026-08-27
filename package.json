@@ -1,6 +1,6 @@
 {
   "name": "foxnox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Password management service",
   "main": "src/server.js",
   "type": "module",
@@ -15,8 +15,16 @@
     "format": "biome format src/",
     "format:fix": "biome format --write src/"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "ALTEN",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ALTEN-group/Foxnox.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ALTEN-group/Foxnox/issues"
+  },
+  "homepage": "https://github.com/ALTEN-group/Foxnox#readme",
   "dependencies": {
     "@dwtechs/antity-pgsql": "0.23.0",
     "@dwtechs/checkard": "3.6.1",
@@ -36,7 +44,7 @@
     "otpauth": "9.5.1"
   },
   "devDependencies": {
-    "@babel/core": "7.28.4",
+    "@babel/core": "7.29.7",
     "@babel/preset-env": "7.28.3",
     "@biomejs/biome": "2.3.12",
     "@types/jest": "29.5.0",

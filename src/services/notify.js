@@ -1,9 +1,9 @@
 // @ts-check
 import fs from "node:fs";
 import path from "node:path";
+import { log } from "@dwtechs/winstan";
 import Handlebars from "handlebars";
 import nodemailer from "nodemailer";
-import { log } from "@dwtechs/winstan";
 import { getBranding } from "../web/branding.js";
 import { LOCALES_ROOT, WEB_ROOT } from "../web/engine.js";
 
@@ -35,7 +35,11 @@ let transporter = null;
  * @returns {"en"|"fr"}
  */
 function normalizeLang(lang) {
-  return String(lang || "en").toLowerCase().startsWith("fr") ? "fr" : "en";
+  return String(lang || "en")
+    .toLowerCase()
+    .startsWith("fr")
+    ? "fr"
+    : "en";
 }
 
 /**
@@ -99,8 +103,7 @@ function getTransporter() {
  */
 function mailFrom() {
   return (
-    process.env.SMTP_FROM?.trim() ||
-    `${getBranding().name} <noreply@localhost>`
+    process.env.SMTP_FROM?.trim() || `${getBranding().name} <noreply@localhost>`
   );
 }
 
@@ -119,12 +122,17 @@ export function renderEmail({ template, lang = "en", vars }) {
   const locale = loadLocale(lang);
   const copy = locale.emails?.[template];
   if (!copy) {
-    throw new Error(`Missing locale emails.${template} for lang=${locale.lang}`);
+    throw new Error(
+      `Missing locale emails.${template} for lang=${locale.lang}`,
+    );
   }
 
   const brand = getBranding();
   const greeting = vars.nickname
-    ? String(copy.greetingNamed).replaceAll("{{nickname}}", String(vars.nickname))
+    ? String(copy.greetingNamed).replaceAll(
+        "{{nickname}}",
+        String(vars.nickname),
+      )
     : String(copy.greeting);
   const subject = String(copy.subject).replaceAll("{{brand}}", brand.name);
   const ctx = {
@@ -165,9 +173,9 @@ export async function notifyUser(payload) {
   const transport = getTransporter();
 
   if (!transport) {
-    // No SMTP in unit tests / bare local runs — keep the deep link discoverable.
+    // Never log template variables: workflow URLs contain bearer tokens.
     log.info(
-      `notifyUser [log-notifier] template=${template} to=${to} lang=${lang ?? "en"} subject=${rendered.subject} vars=${JSON.stringify(vars)}`,
+      `notifyUser [log-notifier] template=${template} to=${to} lang=${lang ?? "en"} subject=${rendered.subject}`,
     );
     return;
   }
@@ -180,7 +188,9 @@ export async function notifyUser(payload) {
     html: rendered.html,
   });
 
-  log.info(`notifyUser sent template=${template} to=${to} lang=${lang ?? "en"}`);
+  log.info(
+    `notifyUser sent template=${template} to=${to} lang=${lang ?? "en"}`,
+  );
 }
 
 /** Test helper: drop cached transporter / templates. */

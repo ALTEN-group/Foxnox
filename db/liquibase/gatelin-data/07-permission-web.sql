@@ -18,7 +18,7 @@ JOIN service s ON s.id = res."serviceId"
 JOIN route_operation ro ON ro."routeId" = r.id
 CROSS JOIN (VALUES (1), (2)) AS roles(id)
 WHERE s.name = 'foxnox'
-  AND res.name = 'pwd/web'
+  AND res.name = 'foxnox/web'
   AND r.protected = true
   AND NOT EXISTS (
     SELECT 1

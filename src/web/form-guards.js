@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * Shared anti-bot checks inspired by the DW Technologies contact form.
+ * Shared anti-bot checks inspired by the ALTEN contact form.
  * Fail closed without revealing why (no tip-off for automated clients).
  *
  * @param {import('express').Request} req

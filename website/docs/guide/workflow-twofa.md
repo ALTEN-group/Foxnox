@@ -16,18 +16,18 @@ There are two distinct pages here, and they are almost opposites. **Verify** is 
 
 ## Verify
 
-Reached only by redirect. When Gatelin sees `twoFactorEnabled` on a `pwd` row and no valid trusted-device cookie, it mints a `2fa` challenge and answers the login with **202** and this page's URL.
+Reached only by redirect. When the BFF sees `twoFactorEnabled` on a `pwd` row and no valid trusted-device cookie, it mints a `2fa` challenge and answers the login with **202** and this page's URL.
 
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gatelin
+    participant G as BFF
     participant F as Foxnox
 
     B->>G: POST /gatelin/sessions { email, pwd }
-    G->>F: POST /pwd/compare
+    G->>F: POST /foxnox/compare
     F-->>G: 200 { twoFactorEnabled: true }
-    G->>F: POST /pwd/challenges { kind: "2fa" }
+    G->>F: POST /foxnox/challenges { kind: "2fa" }
     F-->>G: 201 { url }
     G-->>B: 202 { challengeRequired, kind, url }
 
@@ -41,7 +41,7 @@ sequenceDiagram
 
 The challenge is validated on `GET` as well as `POST`, so an expired link shows the invalid page rather than a form that cannot work. An incorrect code re-renders the form with `That code is not valid. Try again.` and leaves the challenge usable — up to its 5-attempt ceiling, after which the token is dead and the user starts the login again.
 
-Note the last step: success does **not** end the flow. It consumes the 2FA challenge and immediately mints a *trusted-device* challenge, redirecting to the "remember this device?" prompt. Only that page issues the login resume ticket. See [Trusted Devices](./workflow-trusted-devices).
+Note the last step: success does **not** end the flow. It consumes the 2FA challenge and immediately mints a *trusted-device* challenge, redirecting to the "remember this device?" prompt. Only that page issues the login resume ticket. See [Trusted Devices](./workflow-devices).
 
 The form also carries a "Lost access to your authenticator?" link into [Lost 2FA recovery](./workflow-account-recover) — without it, a user who has changed phones is permanently locked out.
 
@@ -60,7 +60,7 @@ Because the secret only becomes real on confirmation, abandoning the page mid-wa
 Add the setup page to your account settings:
 
 ```
-/api/pwd/web/2fa/setup
+/api/foxnox/web/2fa/setup
 ```
 
 The verify page needs no link — it is only ever reached by redirect from a 202 login response. Your frontend does need to follow that redirect, though. See [Frontend Integration](./frontend).
@@ -70,7 +70,7 @@ The verify page needs no link — it is only ever reached by redirect from a 202
 Two routes exist. A user who has lost their authenticator goes through [account recovery](./workflow-account-recover), which disables 2FA after they answer their security questions. An administrator can clear the flag directly:
 
 ```
-PUT /api/pwd/
+PUT /api/foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

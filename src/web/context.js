@@ -72,7 +72,7 @@ export function buildViewContext(req, pageKey, extra = {}) {
     page,
     assetBase: base,
     // Set by csrfProtection middleware (signed double-submit cookie).
-    // @ts-ignore
+    // @ts-expect-error
     csrfToken: req.csrfToken || "",
     urls: {
       recoverRequest: `${base}/recover`,

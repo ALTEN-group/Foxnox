@@ -1,13 +1,23 @@
 {
   "name": "foxnox-docs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "vitepress dev docs --host",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs"
   },
-  "author": "Ludovic Cluber",
+  "author": "ALTEN",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ALTEN-group/Foxnox.git",
+    "directory": "website"
+  },
+  "bugs": {
+    "url": "https://github.com/ALTEN-group/Foxnox/issues"
+  },
+  "homepage": "https://github.com/ALTEN-group/Foxnox#readme",
   "devDependencies": {
     "vitepress": "1.6.3"
   },

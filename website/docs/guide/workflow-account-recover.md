@@ -58,7 +58,7 @@ An incomplete submission is treated the same as a wrong one, which avoids leakin
 If the user never set up security questions, the challenge page shows the invalid state instead of a form. There is nothing to verify against, so recovery cannot proceed and an administrator has to disable 2FA manually:
 
 ```
-PUT /api/pwd/
+PUT /api/foxnox/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -82,5 +82,5 @@ The done page tells the user to sign in and set 2FA up again. That re-enrollment
 The 2FA verify page already carries a "Lost access to your authenticator?" link here, which is where most users will find it. You can also surface it on your login page:
 
 ```
-/api/pwd/web/account-recover
+/api/foxnox/web/account-recover
 ```

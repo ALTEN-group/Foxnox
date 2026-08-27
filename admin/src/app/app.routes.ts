@@ -71,7 +71,7 @@ export const ROUTES: Routes = [
     path: AppPaths.TRUSTEDDEVICES,
     loadComponent: () =>
       import(
-        "./passwords/features/trusted-devices/trusted-devices.component"
+        "./passwords/features/devices/devices.component"
       ).then((m) => m.TrustedDevicesComponent),
     title: "Trusted devices",
     canActivate: [aclGuard()],

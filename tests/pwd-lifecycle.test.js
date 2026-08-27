@@ -8,7 +8,7 @@ import { createAuthDbMock } from "./helpers/auth-db-mock.js";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 process.env.WEB_PUBLIC_ORIGIN = "http://localhost:8100";
-process.env.WEB_PUBLIC_BASE = "/api/pwd/web";
+process.env.WEB_PUBLIC_BASE = "/api/foxnox/web";
 
 const db = createAuthDbMock();
 

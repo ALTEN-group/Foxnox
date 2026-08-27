@@ -1,11 +1,12 @@
 // @ts-check
-import { log } from "@dwtechs/winstan";
+
 import { execute } from "@dwtechs/antity-pgsql";
-import { scheduleDailyAt } from "./scheduler.js";
+import { log } from "@dwtechs/winstan";
 import pEnt from "../entities/pwd.js";
-import tEnt from "../entities/token.js";
 import ppEnt from "../entities/pwd-policy.js";
-import tdEnt from "../entities/user-trusted-device.js";
+import tEnt from "../entities/token.js";
+import tdEnt from "../entities/user-device.js";
+import { scheduleDailyAt } from "./scheduler.js";
 
 /**
  * Cron job to delete archived entities from the database.
@@ -49,8 +50,11 @@ export function startDeleteArchivedEntitiesJob() {
       // Process all entities concurrently
       const results = await Promise.allSettled(
         entities.map((entity) =>
-          deleteArchived(entity.entity, twoMonthsAgo).then((count) => ({ entity, count }))
-        )
+          deleteArchived(entity.entity, twoMonthsAgo).then((count) => ({
+            entity,
+            count,
+          })),
+        ),
       );
 
       for (const result of results) {
@@ -61,7 +65,9 @@ export function startDeleteArchivedEntitiesJob() {
           else log.info(`    • No archived ${entity.name} to delete`);
           totalDeleted += count;
         } else {
-          log.error(`    ✗ Failed: ${result.reason?.message || result.reason?.msg}`);
+          log.error(
+            `    ✗ Failed: ${result.reason?.message || result.reason?.msg}`,
+          );
         }
       }
 
@@ -75,5 +81,7 @@ export function startDeleteArchivedEntitiesJob() {
     }
   });
 
-  log.info("Delete archived entities job initialized (runs daily at 2:00 AM UTC, deletes entities archived > 2 months)");
+  log.info(
+    "Delete archived entities job initialized (runs daily at 2:00 AM UTC, deletes entities archived > 2 months)",
+  );
 }

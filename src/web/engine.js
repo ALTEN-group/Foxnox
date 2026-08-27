@@ -10,18 +10,18 @@ export const PUBLIC_ROOT = path.join(WEB_ROOT, "public");
 export const LOCALES_ROOT = path.join(WEB_ROOT, "locales");
 
 /**
- * Public browser prefix (Traefik keeps `/api`, Foxnox serves `/pwd/web`).
+ * Public browser prefix (Traefik keeps `/api`, Foxnox serves `/foxnox/web`).
  * Override with WEB_PUBLIC_BASE when Gatelin path changes.
  */
 export const WEB_PUBLIC_BASE =
-  process.env.WEB_PUBLIC_BASE?.replace(/\/$/, "") || "/api/pwd/web";
+  process.env.WEB_PUBLIC_BASE?.replace(/\/$/, "") || "/api/foxnox/web";
 
 /** Internal Express mount path (what Foxnox itself listens on). */
-export const WEB_MOUNT = "/pwd/web";
+export const WEB_MOUNT = "/foxnox/web";
 
 /**
  * Configure Handlebars for Foxnox workflow pages.
- * Layout/partial conventions mirror the DW Technologies `website/` project.
+ * Layout/partial conventions mirror the ALTEN `website/` project.
  *
  * @param {import('express').Express} app
  */

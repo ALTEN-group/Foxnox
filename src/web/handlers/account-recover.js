@@ -1,7 +1,5 @@
 // @ts-check
-import { buildViewContext, resolveLang } from "../context.js";
-import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
-import { issueWorkflowNotification } from "../issue-notification.js";
+
 import { disableTwoFactor } from "../../services/pwd.js";
 import {
   getSecurityQuestionsByIds,
@@ -14,6 +12,9 @@ import {
   findValidWorkflowToken,
   TOKEN_TYPES,
 } from "../../services/token.js";
+import { buildViewContext, resolveLang } from "../context.js";
+import { isSuspiciousForm, isValidEmail } from "../form-guards.js";
+import { issueWorkflowNotification } from "../issue-notification.js";
 
 /**
  * Lost-2FA / account recovery using the Account recovery token type
@@ -116,7 +117,9 @@ export async function postAccountRecoverChallenge(req, res) {
   }
 
   const questionIds = [].concat(req.body?.questionIds ?? []);
-  const answers = [].concat(req.body?.answers ?? []).map((a) => String(a).trim());
+  const answers = []
+    .concat(req.body?.answers ?? [])
+    .map((a) => String(a).trim());
 
   const pairs = questionIds.map((id, i) => ({
     questionId: Number(id),
@@ -125,7 +128,9 @@ export async function postAccountRecoverChallenge(req, res) {
 
   const incomplete =
     pairs.length === 0 ||
-    pairs.some((p) => !Number.isInteger(p.questionId) || p.questionId < 1 || !p.answer);
+    pairs.some(
+      (p) => !Number.isInteger(p.questionId) || p.questionId < 1 || !p.answer,
+    );
 
   let matched = false;
   if (!incomplete) {

@@ -6,9 +6,10 @@
     "outDir": "./out-tsc/spec",
     "types": ["vitest/globals", "@angular/localize"],
     "paths": {
-      "@messages/*": ["app/messages/*"],
-      "@core/*": ["app/core/*"],
-      "file-saver": ["testing/file-saver.stub.ts"]
+      "@messages/*": ["./src/app/messages/*"],
+      "@core/*": ["./src/app/core/*"],
+      "app/*": ["./src/app/*"],
+      "file-saver": ["./src/testing/file-saver.stub.ts"]
     }
   },
   "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]

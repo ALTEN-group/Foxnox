@@ -19,7 +19,7 @@ describe("SchemaService", () => {
         SchemaService,
         {
           provide: APP_CONFIG,
-          useValue: { apiRoot: "/api/" },
+          useValue: { foxnoxApi: "/api/foxnox" },
         },
       ],
     });
@@ -38,7 +38,7 @@ describe("SchemaService", () => {
       rows = value;
     });
 
-    const req = http.expectOne("/api/pwd/policies/schema");
+    const req = http.expectOne("/api/foxnox/policies/schema");
     expect(req.request.method).toBe("GET");
     req.flush({
       rows: [{ key: "name", operations: ["INSERT"] }],
@@ -53,7 +53,13 @@ describe("SchemaService", () => {
       rows = value;
     });
 
-    http.expectOne("/api/pwd/policies/schema").flush({});
+    http.expectOne("/api/foxnox/policies/schema").flush({});
     expect(rows).toEqual([]);
+  });
+
+  it("does not add a double slash for the root password resource", () => {
+    service.get("passwords").subscribe();
+
+    http.expectOne("/api/foxnox/schema").flush({ rows: [] });
   });
 });

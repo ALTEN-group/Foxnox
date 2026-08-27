@@ -1,6 +1,6 @@
 # Trusted Devices
 
-A trusted device is a browser the user chose to remember so that 2FA is not demanded on every sign-in. This page covers the administrative API; the user-facing side is described in [Trusted Devices workflow](./workflow-trusted-devices).
+A trusted device is a browser the user chose to remember so that 2FA is not demanded on every sign-in. This page covers the administrative API; the user-facing side is described in [Trusted Devices workflow](./workflow-devices).
 
 ## How It Works
 
@@ -8,17 +8,17 @@ Trusting a device is a cookie plus a row, tied together by a hash:
 
 1. After a successful 2FA check, the user is offered a "remember this device" prompt.
 2. If they accept, Foxnox generates a random value, sets it as the `trusted_device` cookie, and stores an HMAC hash of it in `user_trusted_device` — alongside the device name, IP address, user agent, and an expiry date 90 days out.
-3. On the next login, Gatelin forwards the cookie to Foxnox, which hashes it and looks for a live matching row.
+3. On the next login, the BFF forwards the cookie to Foxnox, which hashes it and looks for a live matching row.
 4. A match means the 2FA challenge is skipped, and `lastUsedAt` is refreshed.
 
 As with tokens, only the hash is stored, so the table cannot be turned into a set of working cookies. A row stops counting as trusted the moment it is archived or its `expiresAt` passes — no cookie invalidation is needed, which is what makes revocation instant.
 
 ## Verify a Device Token
 
-Called by Gatelin during login, not by clients.
+Called by the BFF during login, not by browsers.
 
 ```
-POST /pwd/trusted-devices/verify
+POST /foxnox/devices/verify
 Content-Type: application/json
 
 {
@@ -40,7 +40,7 @@ The response is always a plain boolean — an unknown, revoked, or expired token
 ## Search Trusted Devices
 
 ```
-POST /pwd/trusted-devices/search
+POST /foxnox/devices/search
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -75,7 +75,7 @@ Authorization: Bearer <access_token>
 ## Get Device History
 
 ```
-GET /pwd/trusted-devices/:id/history
+GET /foxnox/devices/:id/history
 Authorization: Bearer <access_token>
 ```
 
@@ -84,7 +84,7 @@ Authorization: Bearer <access_token>
 Normally created by the workflow prompt rather than by hand, since only the workflow can set the matching browser cookie.
 
 ```
-POST /pwd/trusted-devices/
+POST /foxnox/devices/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -117,7 +117,7 @@ Authorization: Bearer <access_token>
 ## Update Trusted Devices
 
 ```
-PUT /pwd/trusted-devices/
+PUT /foxnox/devices/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -133,7 +133,7 @@ Authorization: Bearer <access_token>
 ## Archive Trusted Devices
 
 ```
-POST /pwd/trusted-devices/archive
+POST /foxnox/devices/archive
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -149,6 +149,6 @@ Authorization: Bearer <access_token>
 ## Get Entity Schema
 
 ```
-GET /pwd/trusted-devices/schema
+GET /foxnox/devices/schema
 Authorization: Bearer <access_token>
 ```

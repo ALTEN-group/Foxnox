@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { TABLES } from "@core/app-config/app.tables";
 import { TableComponent } from "@dwtechs/ngx-crud-builder";
-import { TrustedDevicesService } from "app/passwords/data-access/trusted-devices/trusted-devices.service";
+import { TrustedDevicesService } from "app/passwords/data-access/devices/devices.service";
 
 /**
  * Component to display and manage trusted devices
  */
 @Component({
-  selector: "adm-trusted-devices",
-  templateUrl: "./trusted-devices.component.html",
+  selector: "adm-devices",
+  templateUrl: "./devices.component.html",
   imports: [TableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

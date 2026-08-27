@@ -8,11 +8,11 @@ Keeping these rules in the database rather than in code means you can tighten re
 
 There is no `active` flag. The migration seeds three policies (`Public User`, `High Security`, `Standard`); the in-force one is whichever non-archived row comes first by `id`. Archive the others if you want a later row to take effect.
 
-Character-class and expiry rules for **user-chosen** passwords are read at the moment a password is rotated, not at boot. **Generated** passwords (`POST /pwd/`) follow the policy that was loaded during `initPwdGeneration` at process start — restart Foxnox after changing generation rules.
+Character-class and expiry rules for **user-chosen** passwords are read at the moment a password is rotated, not at boot. **Generated** passwords (`POST /foxnox/`) follow the policy that was loaded during `initPwdGeneration` at process start — restart Foxnox after changing generation rules.
 
 `expiryDays` is used to compute the `pwdExpiry` stamped on a `pwd` row when the password is set. Set it to `0` to disable expiry entirely.
 
-`maxFailedAttempts` and `lockoutMinutes` are applied on each failed `POST /pwd/compare`. Defaults when a policy omits them (or no policy exists) are **5** attempts and **15** minutes.
+`maxFailedAttempts` and `lockoutMinutes` are applied on each failed `POST /foxnox/compare`. Defaults when a policy omits them (or no policy exists) are **5** attempts and **15** minutes.
 
 Passken generates passwords between **12** and **64** characters. A policy `length` below 12 is still enforced when users choose a password, but generated passwords are clamped up to 12.
 
@@ -21,7 +21,7 @@ The custom `symbols` pool is used when validating user-chosen passwords. The gen
 ## Search Policies
 
 ```
-POST /pwd/policies/search
+POST /foxnox/policies/search
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -60,14 +60,14 @@ Authorization: Bearer <access_token>
 ## Get Policy History
 
 ```
-GET /pwd/policies/:id/history
+GET /foxnox/policies/:id/history
 Authorization: Bearer <access_token>
 ```
 
 ## Create Policies
 
 ```
-POST /pwd/policies/
+POST /foxnox/policies/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -105,7 +105,7 @@ Authorization: Bearer <access_token>
 | `strict` | boolean | When true, every enabled character class must be present. When false, the classes act as a pool to draw from rather than a checklist. |
 | `symbols` | 0–50 chars | The set of symbols considered valid for user-chosen passwords |
 | `expiryDays` | ≥ 0 | Days until a new password expires; `0` disables expiry |
-| `maxFailedAttempts` | ≥ 1 | Failed `POST /pwd/compare` attempts before `lockedUntil` is set |
+| `maxFailedAttempts` | ≥ 1 | Failed `POST /foxnox/compare` attempts before `lockedUntil` is set |
 | `lockoutMinutes` | ≥ 0 | How long that lock lasts |
 
 At least one of `number`, `symbol`, `lowerCase`, or `upperCase` must be true (enforced by a database check).
@@ -115,7 +115,7 @@ A newly inserted row only becomes the in-force policy if every lower-`id` policy
 ## Update Policies
 
 ```
-PUT /pwd/policies/
+PUT /foxnox/policies/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -146,7 +146,7 @@ Most fields are required on `PUT` — send the whole policy rather than a partia
 ## Archive Policies
 
 ```
-POST /pwd/policies/archive
+POST /foxnox/policies/archive
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -162,6 +162,6 @@ Authorization: Bearer <access_token>
 ## Get Entity Schema
 
 ```
-GET /pwd/policies/schema
+GET /foxnox/policies/schema
 Authorization: Bearer <access_token>
 ```

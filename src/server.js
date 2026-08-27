@@ -1,23 +1,31 @@
 // @ts-check
 
-import { listen } from "@dwtechs/servpico-express";
+import { failFast, listen } from "@dwtechs/servpico-express";
 import { log } from "@dwtechs/winstan";
+import { startAdminServer } from "./admin-server.js";
 import app from "./app.js";
+import { validateRuntimeEnv } from "./conf/runtime.js";
 
 // Cron jobs
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
 import { initPwdGeneration } from "./services/pwd.js";
 
-// Init cached reference data
-Promise.all([
-  // routeSvc.init(),
-  initPwdGeneration(),
-])
+Promise.resolve()
+  .then(validateRuntimeEnv)
+  .then(() => Promise.all([initPwdGeneration()]))
   .then(() => {
-    // Start cron jobs
+    const adminServer = startAdminServer();
+    if (adminServer) {
+      for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"]) {
+        process.once(signal, () =>
+          adminServer.close(() => log.info("Admin UI server closed")),
+        );
+      }
+    }
+    // Start cron jobs only after all required listeners initialized.
     startDeleteArchivedEntitiesJob();
     startDeleteOldHistoryJob();
     listen(app);
   })
-  .catch((err) => log.error(`App cannot start: ${err.message || err.msg}`));
+  .catch(failFast);

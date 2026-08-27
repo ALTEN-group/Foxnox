@@ -15,5 +15,5 @@ swagger/src/foxnox.openapi.json
 .agents/
 .cursor/
 
-# APM dependencies
+# Local agent-package artifacts (not part of the public toolchain)
 apm_modules/

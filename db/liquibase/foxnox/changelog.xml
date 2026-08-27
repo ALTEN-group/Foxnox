@@ -53,7 +53,7 @@
   
   <changeSet id="03-struct-05" author="lcluber">
     <comment>Trusted device table structure for 2FA</comment>
-    <sqlFile path="versions/03-struct/05-trusted-device-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/05-device-struct.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- views -->
@@ -77,7 +77,7 @@
   </changeSet>
   <changeSet id="05-trig-07" author="lcluber">
     <comment>Trusted device history trigger</comment>
-    <sqlFile path="versions/05-trig/07-trusted-device-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/07-device-trig.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- data -->
@@ -95,7 +95,7 @@
   </changeSet>
   <changeSet id="06-data-04" author="lcluber">
     <comment>Trusted device seed data</comment>
-    <sqlFile path="versions/06-data/04-trusted-device-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/04-device-data.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-05" author="lcluber">
     <comment>Mock token rows for admin UI (per mock user × token type)</comment>

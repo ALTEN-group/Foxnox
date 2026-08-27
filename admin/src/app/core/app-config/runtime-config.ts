@@ -1,7 +1,7 @@
 /**
  * Runtime admin config injected into index.html by the Docker entrypoint (dev)
- * or by scripts/entrypoint-prod.sh (prod). Lets ops set ADMIN_SSO_TOKEN_KEY
- * without rebuilding Angular.
+ * or by src/admin-server.js (prod). Lets ops set ADMIN_SSO_TOKEN_KEY without
+ * rebuilding Angular.
  */
 export interface FoxnoxAdminRuntime {
   ssoTokenKey?: string;

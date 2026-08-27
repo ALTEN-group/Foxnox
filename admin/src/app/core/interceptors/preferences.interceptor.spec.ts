@@ -66,6 +66,14 @@ describe("preferencesInterceptor", () => {
     );
   });
 
+  it("removes the Foxnox API segment when forwarding preferences", () => {
+    http.get("/api/foxnox/preferences/table").subscribe();
+
+    httpMock
+      .expectOne("/api/gatelin/preferences/table")
+      .flush({ rows: [] });
+  });
+
   it("ignores non-preferences GET responses", () => {
     let body: { rows: { name: string }[] } | undefined;
     http.get("/api/roles").subscribe((res) => {

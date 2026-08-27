@@ -3,7 +3,7 @@
   "info": {
     "version": "1.0.0",
     "title": "Foxnox — password management service",
-    "description": "Manages password hashes, verification, rotation, tokens, password policies, and trusted devices for the Foxnox stack.\n\n**Dev credentials.** The `__PWD_<userId>__` placeholders in the `/pwd/compare` examples are replaced with real plaintext passwords by `scripts/setup-mocks.sh` after it seeds mock accounts via `POST /pwd/`. If you still see literal `__PWD_*__` tokens below, run `scripts/setup-mocks.sh`."
+    "description": "Manages password hashes, verification, rotation, tokens, password policies, and trusted devices for the Foxnox stack.\n\n**Dev credentials.** The `__PWD_<userId>__` placeholders in the `/foxnox/compare` examples are replaced with real plaintext passwords by `scripts/setup-mocks.sh` after it seeds mock accounts via `POST /foxnox/`. If you still see literal `__PWD_*__` tokens below, run `scripts/setup-mocks.sh`."
   },
   "servers": [
     {
@@ -53,7 +53,7 @@
     "schemas": {
       "pwd": {
         "type": "object",
-        "description": "One password row per user. Set by `POST /pwd/` (which generates the plaintext and hash server-side) and rotated with `PUT /pwd/`.",
+        "description": "One password row per user. Set by `POST /foxnox/` (which generates the plaintext and hash server-side) and rotated with `PUT /foxnox/`.",
         "properties": {
           "id": { "type": "integer", "format": "int32", "readOnly": true },
           "userId": {
@@ -271,7 +271,7 @@
     }
   },
   "paths": {
-    "/pwd/compare": {
+    "/foxnox/compare": {
       "post": {
         "tags": ["Password"],
         "summary": "Verify a plaintext password against the stored hash for a user",
@@ -293,7 +293,7 @@
                 "standard": { "summary": "Standard (userId 2)", "value": { "userId": 2, "pwd": "__PWD_2__" } },
                 "coco": { "summary": "Coco (userId 3)", "value": { "userId": 3, "pwd": "__PWD_3__" } },
                 "guest": { "summary": "Guest (userId 4)", "value": { "userId": 4, "pwd": "__PWD_4__" } },
-                "eboutique": { "summary": "eBoutique (userId 5)", "value": { "userId": 5, "pwd": "__PWD_5__" } },
+                "service": { "summary": "Service (userId 5)", "value": { "userId": 5, "pwd": "__PWD_5__" } },
                 "wrong_pwd": { "summary": "Wrong password — expect 401", "value": { "userId": 1, "pwd": "WrongPassword123!" } }
               }
             }
@@ -319,7 +319,7 @@
         }
       }
     },
-    "/pwd/search": {
+    "/foxnox/search": {
       "post": {
         "tags": ["Password"],
         "summary": "Search pwd rows",
@@ -359,7 +359,7 @@
         }
       }
     },
-    "/pwd/": {
+    "/foxnox/": {
       "post": {
         "tags": ["Password"],
         "summary": "Generate a password for one or more users",
@@ -430,7 +430,7 @@
       "put": {
         "tags": ["Password"],
         "summary": "Update pwd rows (rotation, lock, 2FA state, …)",
-        "description": "Update UPDATE-flagged columns. To rotate a password, the caller must hash externally with `@dwtechs/hashitaka` (using the same `PWD_SECRET`) and pass the result as `pwdHash` + a fresh `pwdUpdatedAt`. For simple minting, prefer `POST /pwd/`.",
+        "description": "Update UPDATE-flagged columns. To rotate a password, the caller must hash externally with `@dwtechs/hashitaka` (using the same `PWD_SECRET`) and pass the result as `pwdHash` + a fresh `pwdUpdatedAt`. For simple minting, prefer `POST /foxnox/`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -479,11 +479,11 @@
         }
       }
     },
-    "/pwd/archive": {
+    "/foxnox/archive": {
       "post": {
         "tags": ["Password"],
         "summary": "Archive pwd rows by id",
-        "description": "Soft delete: sets `archived = true` and `archivedAt = NOW()`. Archived rows are hidden from `POST /pwd/search` and `POST /pwd/compare`.",
+        "description": "Soft delete: sets `archived = true` and `archivedAt = NOW()`. Archived rows are hidden from `POST /foxnox/search` and `POST /foxnox/compare`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -498,7 +498,7 @@
         }
       }
     },
-    "/pwd/{id}/history": {
+    "/foxnox/{id}/history": {
       "get": {
         "tags": ["Password"],
         "summary": "Get the change history for a pwd row",
@@ -518,7 +518,7 @@
         }
       }
     },
-    "/pwd/schema": {
+    "/foxnox/schema": {
       "get": {
         "tags": ["Password"],
         "summary": "Get the pwd entity schema (public fields only)",
@@ -534,7 +534,7 @@
       }
     },
 
-    "/pwd/tokens/search": {
+    "/foxnox/tokens/search": {
       "post": {
         "tags": ["Token"],
         "summary": "Search tokens",
@@ -566,7 +566,7 @@
         }
       }
     },
-    "/pwd/tokens/": {
+    "/foxnox/tokens/": {
       "post": {
         "tags": ["Token"],
         "summary": "Create tokens",
@@ -654,7 +654,7 @@
         }
       }
     },
-    "/pwd/tokens/archive": {
+    "/foxnox/tokens/archive": {
       "post": {
         "tags": ["Token"],
         "summary": "Archive tokens by id",
@@ -672,7 +672,7 @@
         }
       }
     },
-    "/pwd/tokens/{id}/history": {
+    "/foxnox/tokens/{id}/history": {
       "get": {
         "tags": ["Token"],
         "summary": "Get the change history for a token row",
@@ -691,7 +691,7 @@
         }
       }
     },
-    "/pwd/tokens/schema": {
+    "/foxnox/tokens/schema": {
       "get": {
         "tags": ["Token"],
         "summary": "Get the token entity schema",
@@ -706,7 +706,7 @@
       }
     },
 
-    "/pwd/policies/search": {
+    "/foxnox/policies/search": {
       "post": {
         "tags": ["Password Policy"],
         "summary": "Search password policies",
@@ -738,7 +738,7 @@
         }
       }
     },
-    "/pwd/policies/": {
+    "/foxnox/policies/": {
       "post": {
         "tags": ["Password Policy"],
         "summary": "Create password policies",
@@ -829,7 +829,7 @@
         }
       }
     },
-    "/pwd/policies/archive": {
+    "/foxnox/policies/archive": {
       "post": {
         "tags": ["Password Policy"],
         "summary": "Archive password policies by id",
@@ -847,7 +847,7 @@
         }
       }
     },
-    "/pwd/policies/{id}/history": {
+    "/foxnox/policies/{id}/history": {
       "get": {
         "tags": ["Password Policy"],
         "summary": "Get the change history for a policy row",
@@ -866,7 +866,7 @@
         }
       }
     },
-    "/pwd/policies/schema": {
+    "/foxnox/policies/schema": {
       "get": {
         "tags": ["Password Policy"],
         "summary": "Get the pwd_policy entity schema",
@@ -881,7 +881,7 @@
       }
     },
 
-    "/pwd/trusted-devices/search": {
+    "/foxnox/devices/search": {
       "post": {
         "tags": ["Trusted Device"],
         "summary": "Search trusted devices",
@@ -913,7 +913,7 @@
         }
       }
     },
-    "/pwd/trusted-devices/": {
+    "/foxnox/devices/": {
       "post": {
         "tags": ["Trusted Device"],
         "summary": "Register trusted devices",
@@ -999,7 +999,7 @@
         }
       }
     },
-    "/pwd/trusted-devices/archive": {
+    "/foxnox/devices/archive": {
       "post": {
         "tags": ["Trusted Device"],
         "summary": "Archive trusted devices by id",
@@ -1017,7 +1017,7 @@
         }
       }
     },
-    "/pwd/trusted-devices/{id}/history": {
+    "/foxnox/devices/{id}/history": {
       "get": {
         "tags": ["Trusted Device"],
         "summary": "Get the change history for a trusted-device row",
@@ -1036,7 +1036,7 @@
         }
       }
     },
-    "/pwd/trusted-devices/schema": {
+    "/foxnox/devices/schema": {
       "get": {
         "tags": ["Trusted Device"],
         "summary": "Get the user_trusted_device entity schema",

@@ -1,8 +1,8 @@
 name: ${APP_NAME}
 
 x-foxnox-healthcheck: &foxnoxHealthcheck
-  # /pwd/health/ready also proves Postgres is reachable; /pwd/health is liveness only.
-  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/pwd/health/ready"]
+  # /foxnox/health/ready also proves Postgres is reachable; /foxnox/health is liveness only.
+  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/foxnox/health/ready"]
   interval: 10s
   timeout: 5s
   retries: 5
@@ -61,14 +61,12 @@ services:
       - --log.level=${TRAEFIK_LOG_LEVEL}
       - --accesslog=${TRAEFIK_ACCESSLOG}
       - --ping=true
-      - --api.dashboard=true
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
     restart: always
     ports:
       - ${TRAEFIK_PORT}:80
-      - ${TRAEFIK_DASH_PORT}:8080
     networks:
       - internal
       - external
@@ -110,7 +108,10 @@ services:
       PORT: ${DEFAULT_PORT}
       TZ: ${TZ}
       PWD_CHECK_URL: ${GATELIN_PWD_CHECK_URL}
-      USER_SEARCH_URL: ${GATELIN_USER_SEARCH_URL}
+      PWD_CHALLENGES_URL: ${GATELIN_PWD_CHALLENGES_URL}
+      PWD_TRUSTED_DEVICES_URL: ${GATELIN_PWD_TRUSTED_DEVICES_URL}
+      PWD_LOGIN_TICKET_URL: ${GATELIN_PWD_LOGIN_TICKET_URL}
+      USER_SEARCH_URL: ${USER_SEARCH_URL:?USER_SEARCH_URL must be set}
       DB_HOST: ${POSTGRES_HOST}
       DB_NAME: ${GATELIN_DB_NAME}
       DB_USER: ${GATELIN_DB_USER}
@@ -149,7 +150,7 @@ services:
       dockerfile: dockerfile.prod
       args:
         LIQUIBASE_VERSION: ${LIQUIBASE_VERSION}
-    image: dwtechs/foxnox-migration:${VERSION:-latest}
+    image: ghcr.io/alten-group/foxnox-migration:${VERSION:-latest}
     container_name: ${FOXNOX_MIGRATION_HOST}
     hostname: ${FOXNOX_MIGRATION_HOST}
     environment:
@@ -172,25 +173,8 @@ services:
     networks:
       - internal
 
-  ms_user_mock:
-    build:
-      context: ${PWD}/mocks/ms_user
-      dockerfile: dockerfile
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NODE_ENV: ${NODE_ENV}
-    container_name: ${MSUSER_HOST}
-    hostname: ${MSUSER_HOST}
-    environment:
-      PORT: ${DEFAULT_PORT}
-    networks:
-      - internal
-
   foxnox:
-    image: dwtechs/foxnox:${VERSION:-latest}
+    image: ghcr.io/alten-group/foxnox:${VERSION:-latest}
     container_name: ${FOXNOX_HOST}
     hostname: ${FOXNOX_HOST}
     environment:
@@ -207,11 +191,11 @@ services:
       SERVICE_NAME: ${FOXNOX_HOST}
       ACCESS_TOKEN_DURATION: ${FOXNOX_ACCESS_TOKEN_DURATION}
       REFRESH_TOKEN_DURATION: ${FOXNOX_REFRESH_TOKEN_DURATION}
-      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/pwd/web}
+      WEB_PUBLIC_BASE: ${WEB_PUBLIC_BASE:-/api/foxnox/web}
       WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN}
       # Admin login that redeems mid-login resume tickets (?ticket=…)
       WEB_LOGIN_RESUME_URL: ${WEB_LOGIN_RESUME_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/foxnox/login}
-      USER_SEARCH_URL: ${MSUSER_SEARCH_URL}
+      USER_SEARCH_URL: ${USER_SEARCH_URL:?USER_SEARCH_URL must be set}
       WEB_BRAND_NAME: ${WEB_BRAND_NAME:-Foxnox}
       WEB_BRAND_TAGLINE: ${WEB_BRAND_TAGLINE:-Account security}
       WEB_BRAND_MARK: ${WEB_BRAND_MARK:-F}
@@ -229,40 +213,27 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
+      # Bundled admin UI, served on a dedicated internal port.
+      ADMIN_PORT: ${ADMIN_PORT}
+      ADMIN_BASE_PATH: ${ADMIN_BASE_PATH:-/foxnox}
+      ADMIN_SSO_TOKEN_KEY: ${ADMIN_SSO_TOKEN_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
       foxnox_migration:
         condition: service_completed_successfully
-      ms_user_mock:
-        condition: service_started
-    networks:
-      - internal
-    # No public Traefik router: traffic is Traefik → Gatelin → foxnox
-    # (PWD_CHECK_URL / service DNS on the internal network).
-    healthcheck: *foxnoxHealthcheck
-
-  website:
-    build:
-      context: ${PWD}/website
-      dockerfile: dockerfile.prod
-      args:
-        UID: ${UID}
-        GID: ${GID}
-        TZ: ${TZ}
-        NODE_VERSION: ${NODE_VERSION}
-        NGINX_VERSION: ${NGINX_VERSION}
-    container_name: ${WEBSITE_HOST}
-    hostname: ${WEBSITE_HOST}
     networks:
       - internal
     labels:
       - "traefik.enable=true"
       - "stack.name=${STACK_NAME}"
-      - "traefik.http.routers.website.rule=PathPrefix(`/docs`)"
-      - "traefik.http.routers.website.entrypoints=web"
-      - "traefik.http.routers.website.service=website"
-      - "traefik.http.services.website.loadbalancer.server.port=80"
+      - "traefik.http.routers.foxnox-admin.rule=PathPrefix(`${ADMIN_BASE_PATH:-/foxnox}`)"
+      - "traefik.http.routers.foxnox-admin.entrypoints=web"
+      - "traefik.http.routers.foxnox-admin.service=foxnox-admin"
+      - "traefik.http.services.foxnox-admin.loadbalancer.server.port=${ADMIN_PORT}"
+    # Only the admin port is public through Traefik. API traffic remains
+    # Traefik → BFF → Foxnox on the internal network.
+    healthcheck: *foxnoxHealthcheck
 
 networks:
   internal:

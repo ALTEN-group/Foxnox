@@ -9,7 +9,7 @@ import express from "express";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 process.env.WEB_PUBLIC_ORIGIN = "http://localhost:8100";
-process.env.WEB_PUBLIC_BASE = "/api/pwd/web";
+process.env.WEB_PUBLIC_BASE = "/api/foxnox/web";
 
 const createLoginChallenge = jest.fn();
 const verifyTrustedDevice = jest.fn();
@@ -35,7 +35,7 @@ jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   consumeLoginChallenge: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../src/services/trusted-devices.js", () => ({
+jest.unstable_mockModule("../../src/services/devices.js", () => ({
   verifyTrustedDevice,
   getTrustedDeviceCookieName: () => "trusted_device",
   mintTrustedDeviceToken: jest.fn(),
@@ -58,7 +58,7 @@ const { checkCompareBody } = await import(
 );
 const challengeRouter = (await import("../../src/routes/challenge.js")).default;
 const trustedVerifyRouter = (
-  await import("../../src/routes/trusted-device-verify.js")
+  await import("../../src/routes/device-verify.js")
 ).default;
 const loginTicketRouter = (await import("../../src/routes/login-ticket.js"))
   .default;
@@ -66,9 +66,9 @@ const loginTicketRouter = (await import("../../src/routes/login-ticket.js"))
 function buildApp() {
   const app = express();
   app.use(express.json());
-  app.use("/pwd/challenges", challengeRouter);
-  app.use("/pwd/trusted-devices/verify", trustedVerifyRouter);
-  app.use("/pwd/login-tickets", loginTicketRouter);
+  app.use("/foxnox/challenges", challengeRouter);
+  app.use("/foxnox/devices/verify", trustedVerifyRouter);
+  app.use("/foxnox/login-tickets", loginTicketRouter);
   app.use((err, _req, res, _next) => {
     const status = err.statusCode || 500;
     res.status(status).json({ error: err.message || "error" });
@@ -84,17 +84,17 @@ beforeEach(() => {
     kind: "2fa",
     challenge: "chal-abc",
     path: "/2fa/verify",
-    url: "http://localhost:8100/api/pwd/web/2fa/verify?challenge=chal-abc",
+    url: "http://localhost:8100/api/foxnox/web/2fa/verify?challenge=chal-abc",
     expiresAt: new Date("2099-01-01T00:00:00.000Z"),
   });
   verifyTrustedDevice.mockResolvedValue(true);
   redeemLoginResumeTicket.mockResolvedValue({ userId: 44 });
 });
 
-describe("POST /pwd/challenges", () => {
+describe("POST /foxnox/challenges", () => {
   it("mints a challenge for a valid kind", async () => {
     const res = await request(app)
-      .post("/pwd/challenges")
+      .post("/foxnox/challenges")
       .send({ userId: 12, kind: "2fa" });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({
@@ -110,21 +110,21 @@ describe("POST /pwd/challenges", () => {
 
   it("rejects invalid payloads", async () => {
     const badUser = await request(app)
-      .post("/pwd/challenges")
+      .post("/foxnox/challenges")
       .send({ userId: 0, kind: "2fa" });
     expect(badUser.status).toBe(400);
 
     const badKind = await request(app)
-      .post("/pwd/challenges")
+      .post("/foxnox/challenges")
       .send({ userId: 1, kind: "nope" });
     expect(badKind.status).toBe(400);
   });
 });
 
-describe("POST /pwd/trusted-devices/verify", () => {
+describe("POST /foxnox/devices/verify", () => {
   it("returns trusted flag", async () => {
     const res = await request(app)
-      .post("/pwd/trusted-devices/verify")
+      .post("/foxnox/devices/verify")
       .send({ userId: 9, deviceToken: "tok" });
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ trusted: true });
@@ -133,16 +133,16 @@ describe("POST /pwd/trusted-devices/verify", () => {
 
   it("rejects invalid payloads", async () => {
     const res = await request(app)
-      .post("/pwd/trusted-devices/verify")
+      .post("/foxnox/devices/verify")
       .send({ userId: 9 });
     expect(res.status).toBe(400);
   });
 });
 
-describe("POST /pwd/login-tickets/redeem", () => {
+describe("POST /foxnox/login-tickets/redeem", () => {
   it("redeems a valid ticket", async () => {
     const res = await request(app)
-      .post("/pwd/login-tickets/redeem")
+      .post("/foxnox/login-tickets/redeem")
       .send({ ticket: "abc" });
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ userId: 44 });
@@ -150,12 +150,12 @@ describe("POST /pwd/login-tickets/redeem", () => {
 
   it("rejects missing or invalid tickets", async () => {
     expect(
-      (await request(app).post("/pwd/login-tickets/redeem").send({})).status,
+      (await request(app).post("/foxnox/login-tickets/redeem").send({})).status,
     ).toBe(400);
 
     redeemLoginResumeTicket.mockResolvedValue(null);
     const res = await request(app)
-      .post("/pwd/login-tickets/redeem")
+      .post("/foxnox/login-tickets/redeem")
       .send({ ticket: "gone" });
     expect(res.status).toBe(400);
   });

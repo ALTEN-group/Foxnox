@@ -16,7 +16,8 @@ export class SchemaService {
   private readonly appConfig = inject(APP_CONFIG);
 
   public get(entityId: AdminEntity): Observable<SchemaRow[]> {
-    const endpoint = `${this.appConfig.apiRoot}${ENTITY_API_PATHS[entityId]}/schema`;
+    const entityPath = ENTITY_API_PATHS[entityId];
+    const endpoint = `${this.appConfig.foxnoxApi}${entityPath}/schema`;
     return this.http
       .get<{ rows?: SchemaRow[] }>(endpoint)
       .pipe(map((res) => res.rows ?? []));

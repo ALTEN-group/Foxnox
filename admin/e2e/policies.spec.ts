@@ -21,7 +21,7 @@ test.describe("Password policies CRUD", () => {
 
     const createResponsePromise = page.waitForResponse(
       (response) =>
-        /\/pwd\/policies\/?$/.test(new URL(response.url()).pathname) &&
+        /\/foxnox\/policies\/?$/.test(new URL(response.url()).pathname) &&
         response.request().method() === "POST",
     );
     await createDialog.getByRole("button", { name: "Submit" }).click();
@@ -46,7 +46,7 @@ test.describe("Password policies CRUD", () => {
 
     const archiveResponsePromise = page.waitForResponse(
       (response) =>
-        /\/pwd\/policies\/archive\/?$/.test(new URL(response.url()).pathname) &&
+        /\/foxnox\/policies\/archive\/?$/.test(new URL(response.url()).pathname) &&
         response.request().method() === "POST",
     );
     await confirm.getByRole("button", { name: "Confirm" }).click();

@@ -1,12 +1,13 @@
 // @ts-check
-import { buildViewContext, resolveLang } from "../context.js";
-import { getConsumerUserId } from "../consumer.js";
-import { isSuspiciousForm } from "../form-guards.js";
+
 import {
   emptyQuestionSlots,
   listSecurityQuestionCatalog,
   saveSecurityAnswers,
 } from "../../services/security-questions.js";
+import { getConsumerUserId } from "../consumer.js";
+import { buildViewContext, resolveLang } from "../context.js";
+import { isSuspiciousForm } from "../form-guards.js";
 
 /**
  * Enroll security questions for later account-recovery challenges.
@@ -21,7 +22,8 @@ export async function getSecurityQuestionsSetup(req, res) {
       "security-questions/setup",
       buildViewContext(req, "securityQuestionsSetup", {
         form: { slots: emptyQuestionSlots(3), catalog: [] },
-        error: buildViewContext(req, "securityQuestionsSetup").page.errorIncomplete,
+        error: buildViewContext(req, "securityQuestionsSetup").page
+          .errorIncomplete,
       }),
     );
   }
@@ -60,7 +62,9 @@ export async function postSecurityQuestionsSetup(req, res) {
   }
 
   const questionIds = [].concat(req.body?.questionIds ?? []);
-  const answers = [].concat(req.body?.answers ?? []).map((a) => String(a).trim());
+  const answers = []
+    .concat(req.body?.answers ?? [])
+    .map((a) => String(a).trim());
   const uniqueIds = new Set(questionIds.filter(Boolean).map(String));
   const allowed = new Set(catalog.map((q) => String(q.id)));
   const allKnown = questionIds.every((id) => allowed.has(String(id)));

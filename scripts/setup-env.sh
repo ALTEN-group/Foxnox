@@ -19,6 +19,7 @@ POSTGRES_ROOT_PWD=$(openssl rand -base64 24)
 FOXNOX_DB_USER="foxnox_$(openssl rand -hex 4)"
 FOXNOX_DB_PWD=$(openssl rand -base64 24)
 FOXNOX_PWD_SECRET=$(openssl rand 48 | base64 | tr -d '\n=' | tr '+/' '-_')
+MSUSER_TOKEN_SECRET=$(openssl rand 48 | base64 | tr -d '\n=' | tr '+/' '-_')
 GATELIN_DB_USER="gatelin_$(openssl rand -hex 4)"
 GATELIN_DB_PWD=$(openssl rand -base64 24)
 GATELIN_TOKEN_SECRET=$(openssl rand 48 | base64 | tr -d '\n=' | tr '+/' '-_')
@@ -29,6 +30,7 @@ sedi \
   -e "s|^FOXNOX_DB_USER=.*|FOXNOX_DB_USER=${FOXNOX_DB_USER}|" \
   -e "s|^FOXNOX_DB_PWD=.*|FOXNOX_DB_PWD=${FOXNOX_DB_PWD}|" \
   -e "s|^FOXNOX_PWD_SECRET=.*|FOXNOX_PWD_SECRET=${FOXNOX_PWD_SECRET}|" \
+  -e "s|^MSUSER_TOKEN_SECRET=.*|MSUSER_TOKEN_SECRET=${MSUSER_TOKEN_SECRET}|" \
   -e "s|^GATELIN_DB_USER=.*|GATELIN_DB_USER=${GATELIN_DB_USER}|" \
   -e "s|^GATELIN_DB_PWD=.*|GATELIN_DB_PWD=${GATELIN_DB_PWD}|" \
   -e "s|^GATELIN_TOKEN_SECRET=.*|GATELIN_TOKEN_SECRET=${GATELIN_TOKEN_SECRET}|" \
@@ -61,6 +63,7 @@ echo "  POSTGRES_ROOT_PWD    = ${POSTGRES_ROOT_PWD}"
 echo "  FOXNOX_DB_USER       = ${FOXNOX_DB_USER}"
 echo "  FOXNOX_DB_PWD        = ${FOXNOX_DB_PWD}"
 echo "  FOXNOX_PWD_SECRET    = ${FOXNOX_PWD_SECRET}"
+echo "  MSUSER_TOKEN_SECRET  = ${MSUSER_TOKEN_SECRET}"
 echo "  GATELIN_DB_USER      = ${GATELIN_DB_USER}"
 echo "  GATELIN_DB_PWD       = ${GATELIN_DB_PWD}"
 echo "  GATELIN_TOKEN_SECRET = ${GATELIN_TOKEN_SECRET}"

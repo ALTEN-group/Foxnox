@@ -1,6 +1,6 @@
 --
 -- Short-lived login challenges (mid-login steps, not email magic links).
--- Issued by POST /pwd/challenges after password OK; consumed by SSR pages.
+-- Issued by POST /foxnox/challenges after password OK; consumed by SSR pages.
 --
 
 INSERT INTO token_type (name, description, ttl, "maxAttempts")

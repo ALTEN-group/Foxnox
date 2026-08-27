@@ -1,11 +1,12 @@
 // @ts-check
-import { getPublicOrigin } from "./deep-link.js";
+
 import {
-  createWorkflowToken,
   consumeWorkflowToken,
+  createWorkflowToken,
   findValidWorkflowToken,
   TOKEN_TYPES,
 } from "../services/token.js";
+import { getPublicOrigin } from "./deep-link.js";
 
 /**
  * Browser URL that completes login after mid-login challenges

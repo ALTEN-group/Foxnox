@@ -13,18 +13,18 @@ Driven by the **Expired password challenge** token type: 15 minute lifetime, 3 a
 
 ## Checked Before 2FA
 
-Gatelin evaluates expiry **before** two-factor authentication. There is no point verifying a second factor for a credential the user is about to replace, and doing it in this order means a user with both an expired password and 2FA enabled sets their new password first, then verifies.
+The BFF evaluates expiry **before** two-factor authentication. There is no point verifying a second factor for a credential the user is about to replace, and doing it in this order means a user with both an expired password and 2FA enabled sets their new password first, then verifies.
 
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant G as Gatelin
+    participant G as BFF
     participant F as Foxnox
 
     B->>G: POST /gatelin/sessions { email, pwd }
-    G->>F: POST /pwd/compare
+    G->>F: POST /foxnox/compare
     F-->>G: 200 { pwdExpiry in the past }
-    G->>F: POST /pwd/challenges { kind: "expired-password" }
+    G->>F: POST /foxnox/challenges { kind: "expired-password" }
     F-->>G: 201 { url }
     G-->>B: 202 { challengeRequired, kind, url }
 
@@ -75,7 +75,7 @@ The user is then either sent on to 2FA verification or handed a login resume tic
 Expiry comes from the in-force policy, not from a per-user setting:
 
 ```
-PUT /api/pwd/policies/
+PUT /api/foxnox/policies/
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

@@ -1,12 +1,13 @@
-ARG NODE_VERSION
+ARG NODE_VERSION=24.15.0-alpine3.22
 FROM node:${NODE_VERSION}
 
-# install tzdata from default Alpine repos before replacing them
-RUN apk add --no-cache tzdata
-
-# change apk repos
-RUN rm /etc/apk/repositories
-RUN --mount=type=secret,id=apk_repository,target=/etc/apk/repositories,required=true apk update
+# Use an internal Alpine mirror when supplied; otherwise keep the image defaults.
+# Compose materialises an unset APK_REPOSITORY as an empty secret, so mounting it
+# straight onto /etc/apk/repositories would wipe the public repos: copy it instead,
+# and only when it carries content.
+RUN --mount=type=secret,id=apk_repository,target=/tmp/apk_repository \
+    if [ -s /tmp/apk_repository ]; then cp /tmp/apk_repository /etc/apk/repositories; fi \
+    && apk update && apk add --no-cache tzdata
 
 ARG TZ
 ENV TZ=${TZ}
@@ -18,15 +19,16 @@ ARG GID
 RUN deluser --remove-home node && addgroup -S usergroup -g ${GID} && adduser -G usergroup -S user -u ${UID}
 USER user
 
-ARG NPMRC_PATH
-RUN --mount=type=secret,id=npmrc,target=${NPMRC_PATH},required=true,uid=${UID}
+ARG NPMRC_PATH=/home/user/.npmrc
 
 WORKDIR /usr/src/app
 COPY --chown=user:usergroup --chmod=640 package*.json ./
 
-RUN npm i --loglevel=error --ignore-scripts --no-fund
+# Use a private npm registry when supplied; public npm works without the secret.
+RUN --mount=type=secret,id=npmrc,target=${NPMRC_PATH},uid=${UID} \
+    npm i --loglevel=error --ignore-scripts --no-fund
 
-ENV PATH /usr/src/app/node_modules/.bin:$PATH
+ENV PATH=/usr/src/app/node_modules/.bin:$PATH
 
 # Owned by root so the app user can read/execute but not modify it at runtime.
 COPY --chown=root:root --chmod=755 scripts/entrypoint.sh /docker-entrypoint.sh

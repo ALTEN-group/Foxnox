@@ -28,6 +28,7 @@ fi
 
 # Set defaults if not loaded
 APP_NAME=${APP_NAME:-foxnox}
+NODE_ENV=${NODE_ENV:-development}
 
 # Define the specific Foxnox service container name
 FOXNOX_CONTAINER="${APP_NAME}"
@@ -49,16 +50,8 @@ echo -e ""
 # =====================
 echo -e "${YELLOW}🖼️  Removing Foxnox image...${NC}"
 
-# Look for foxnox image (dwtechs/foxnox:tag)
-FOXNOX_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "(dwtechs/)?${APP_NAME}:" || true)
-
-if [[ -z "$FOXNOX_IMAGES" ]]; then
-  echo -e "${YELLOW}⚠${NC}  No Foxnox images found"
-else
-  echo "$FOXNOX_IMAGES" | while read -r IMAGE; do
-    docker rmi -f "$IMAGE" 2>/dev/null && echo -e "${GREEN}✓${NC} Removed image: $IMAGE" || echo -e "${RED}✗${NC} Failed to remove image: $IMAGE"
-  done
-fi
+FOXNOX_IMAGE="foxnox:${NODE_ENV}"
+docker rmi -f "$FOXNOX_IMAGE" 2>/dev/null && echo -e "${GREEN}✓${NC} Removed image: $FOXNOX_IMAGE" || echo -e "${YELLOW}⚠${NC}  Image $FOXNOX_IMAGE not found"
 
 echo -e ""
 

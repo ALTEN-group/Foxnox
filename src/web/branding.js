@@ -91,8 +91,7 @@ export function getBranding() {
     sanitizeHexColor(process.env.WEB_BRAND_BACKGROUND_COLOR) ||
     DEFAULTS.backgroundColor;
 
-  const name =
-    sanitizeText(process.env.WEB_BRAND_NAME, 80) || DEFAULTS.name;
+  const name = sanitizeText(process.env.WEB_BRAND_NAME, 80) || DEFAULTS.name;
   const tagline =
     sanitizeText(process.env.WEB_BRAND_TAGLINE, 160) || DEFAULTS.tagline;
   const mark =
@@ -100,8 +99,7 @@ export function getBranding() {
     name.charAt(0).toUpperCase() ||
     DEFAULTS.mark;
   const logoUrl = sanitizeUrl(process.env.WEB_BRAND_LOGO_URL);
-  const logoAlt =
-    sanitizeText(process.env.WEB_BRAND_LOGO_ALT, 120) || name;
+  const logoAlt = sanitizeText(process.env.WEB_BRAND_LOGO_ALT, 120) || name;
   const footerText = sanitizeText(process.env.WEB_BRAND_FOOTER_TEXT, 240);
   const footerUrl = sanitizeUrl(process.env.WEB_BRAND_FOOTER_URL);
 

@@ -9,11 +9,11 @@ import { AclService } from "@core/acl/acl.service";
 import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
-import { TRUSTED_DEVICE_COLUMNS } from "app/passwords/data-access/trusted-devices/trusted-device.conf";
+import { TRUSTED_DEVICE_COLUMNS } from "app/passwords/data-access/devices/device.conf";
 import {
   TrustedDevice,
   trustedDeviceFactory,
-} from "app/passwords/data-access/trusted-devices/trusted-device.model";
+} from "app/passwords/data-access/devices/device.model";
 
 const trustedDevicesEntity: AdminEntity = "trustedDevices";
 

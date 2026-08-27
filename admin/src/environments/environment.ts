@@ -2,7 +2,7 @@ import { Environment } from "../environments/environment.model";
 
 export const environment: Environment = {
   production: false,
-  apiRoot: "/api/",
+  foxnoxApi: "/api/foxnox",
   gatelinApi: "/api/gatelin/",
   apiUsers: "/api/users/",
   assets: "assets",

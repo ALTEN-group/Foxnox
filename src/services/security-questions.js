@@ -13,7 +13,11 @@ import { tokenSecret } from "./token-crypto.js";
  * @returns {"en"|"fr"}
  */
 function normalizeLang(lang) {
-  return String(lang || "en").toLowerCase().startsWith("fr") ? "fr" : "en";
+  return String(lang || "en")
+    .toLowerCase()
+    .startsWith("fr")
+    ? "fr"
+    : "en";
 }
 
 /**

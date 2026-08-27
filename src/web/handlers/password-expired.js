@@ -1,18 +1,19 @@
 // @ts-check
-import { buildViewContext } from "../context.js";
-import { isSuspiciousForm } from "../form-guards.js";
-import { buildLoginResumeUrl } from "../login-resume.js";
+
+import {
+  consumeLoginChallenge,
+  createLoginChallenge,
+  findValidLoginChallenge,
+} from "../../services/challenge.js";
 import {
   getPasswordFormPolicy,
   getPwdAuthState,
   passwordMeetsPolicy,
   rotatePassword,
 } from "../../services/pwd.js";
-import {
-  consumeLoginChallenge,
-  createLoginChallenge,
-  findValidLoginChallenge,
-} from "../../services/challenge.js";
+import { buildViewContext } from "../context.js";
+import { isSuspiciousForm } from "../form-guards.js";
+import { buildLoginResumeUrl } from "../login-resume.js";
 
 /**
  * Forced password change when pwd.pwdExpiry has passed.
@@ -130,7 +131,7 @@ export async function postPasswordExpired(req, res) {
     const resumeUrl = await buildLoginResumeUrl(valid.userId);
     return res.redirect(303, resumeUrl);
   } catch (err) {
-    // @ts-ignore
+    // @ts-expect-error
     if (err?.code === "WEAK_PASSWORD") {
       return res.status(400).render(
         "password/expired",

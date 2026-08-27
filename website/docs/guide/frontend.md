@@ -6,6 +6,8 @@ Most of Foxnox needs nothing from your frontend — the workflow pages are serve
 
 A login can return **202 Accepted**. The password was correct, but a mid-login step is required before a session exists. Code that treats any non-200 as a failure will leave every 2FA user unable to sign in.
 
+The example uses Gatelin's session endpoint; a custom BFF should return the same **202** body with a `url`.
+
 ```typescript
 const response = await fetch('/api/gatelin/sessions', {
   method: 'POST',
@@ -65,7 +67,7 @@ A **403** means the account is locked after repeated failures. Users have no way
 ```typescript
 if (response.status === 403) {
   showMessage('Account temporarily locked.');
-  showLink('Request an unlock', '/api/pwd/web/unlock');
+  showLink('Request an unlock', '/api/foxnox/web/unlock');
   return;
 }
 ```
@@ -76,11 +78,11 @@ These are plain links — full page navigations to Foxnox, not fetch calls:
 
 | Where | Link |
 |---|---|
-| Login page | `/api/pwd/web/recover` — forgotten password |
-| Login page | `/api/pwd/web/unlock` — locked account |
-| Account settings | `/api/pwd/web/2fa/setup` — enable 2FA |
-| Account settings | `/api/pwd/web/security-questions` — enroll recovery questions |
-| Account settings | `/api/pwd/web/trusted-devices` — review remembered devices |
+| Login page | `/api/foxnox/web/recover` — forgotten password |
+| Login page | `/api/foxnox/web/unlock` — locked account |
+| Account settings | `/api/foxnox/web/2fa/setup` — enable 2FA |
+| Account settings | `/api/foxnox/web/security-questions` — enroll recovery questions |
+| Account settings | `/api/foxnox/web/trusted-devices` — review remembered devices |
 
 Do not try to fetch these and render the HTML yourself. They set cookies, enforce CSRF, and redirect between states; they only work as real navigations.
 
@@ -92,17 +94,17 @@ Foxnox sets two cookies, and both are `HttpOnly` — your JavaScript cannot and 
 
 | Cookie | Path | Purpose |
 |---|---|---|
-| `trusted_device` | `/` | Lets Gatelin skip 2FA on a remembered browser. Scoped to the root so it reaches the login endpoint, not just the workflow pages. |
-| `foxnox_csrf` | `/pwd/web` | Double-submit CSRF protection for workflow forms. Handled entirely by the pages. |
+| `trusted_device` | `/` | Lets the BFF skip 2FA on a remembered browser. Scoped to the root so it reaches the login endpoint, not just the workflow pages. |
+| `foxnox_csrf` | `/foxnox/web` | Double-submit CSRF protection for workflow forms. Handled entirely by the pages. |
 
 Both gain the `Secure` flag when `COOKIE_SECURE=1` or `NODE_ENV=production`.
 
 ## Calling the Admin API
 
-The CRUD endpoints are ordinary authenticated JSON calls through Gatelin:
+The CRUD endpoints are ordinary authenticated JSON calls through the BFF:
 
 ```typescript
-const response = await fetch('/api/pwd/search', {
+const response = await fetch('/api/foxnox/search', {
   method: 'POST',
   credentials: 'include',
   headers: {
@@ -120,7 +122,7 @@ const response = await fetch('/api/pwd/search', {
 
 Every route is restricted to the Super admin and Admin roles, so these are admin-tool calls rather than something to expose to end users.
 
-If you are building admin screens, `GET /api/pwd/schema` returns the field definitions — types, limits, and which operations each field participates in — which lets forms stay in sync with the backend instead of duplicating its rules.
+If you are building admin screens, `GET /api/foxnox/schema` returns the field definitions — types, limits, and which operations each field participates in — which lets forms stay in sync with the backend instead of duplicating its rules.
 
 ## What Not to Build
 

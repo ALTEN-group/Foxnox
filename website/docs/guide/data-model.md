@@ -85,15 +85,18 @@ erDiagram
 
 ### pwd
 
-One row per user, and the single source of truth for whether a sign-in can proceed. Everything Gatelin needs — hash, expiry, lockout state, 2FA flag — is in this row, which is why a login needs exactly one call to Foxnox.
+One row per user, and the single source of truth for whether a sign-in can proceed. Everything the BFF needs — hash, expiry, lockout state, 2FA flag — is in this row, which is why a login needs exactly one call to Foxnox.
 
 `pwdHash` and `twoFactorSecret` are marked private: readable internally, never serialized into a response.
+
+`lastLoginAt` is optional integration metadata. Foxnox exposes it for reads and
+updates but does not stamp it automatically when `/foxnox/compare` succeeds.
 
 ### pwd_policy
 
 Password rules as data. Foxnox uses the first non-archived row (`getCache` orders by `id` ASC). There is no `active` column — archive unused policies so the one you want is the oldest remaining row. Character-class rules are read when a password is created or changed; lockout limits are read on each failed compare.
 
-Server-side generation (`POST /pwd/`) is initialized at process start from that row, so a restart is needed before newly generated passwords pick up generation-rule changes. User-chosen passwords in the workflows are validated against the current first non-archived policy without a restart.
+Server-side generation (`POST /foxnox/`) is initialized at process start from that row, so a restart is needed before newly generated passwords pick up generation-rule changes. User-chosen passwords in the workflows are validated against the current first non-archived policy without a restart.
 
 ### token_type
 
@@ -176,4 +179,4 @@ Every table follows the same three patterns, which is worth knowing because it e
 
 ## Migrations
 
-The schema is managed by Liquibase in `db/liquibase/foxnox/`, applied by the `ghcr.io/dwtechs/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).
+The schema is managed by Liquibase in `db/liquibase/foxnox/`, applied by the `ghcr.io/alten-group/foxnox-migration` container. Changesets are grouped by purpose — structure, triggers, and seed data — and the migration also creates the database and the application user on a fresh install. See [Deployment](./deployment#database-migration).

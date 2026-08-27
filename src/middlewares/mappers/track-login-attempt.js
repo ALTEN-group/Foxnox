@@ -1,6 +1,9 @@
 // @ts-check
 import { log } from "@dwtechs/winstan";
-import { recordFailedAttempt, resetFailedAttempts } from "../../services/pwd.js";
+import {
+  recordFailedAttempt,
+  resetFailedAttempts,
+} from "../../services/pwd.js";
 
 /**
  * Runs after a successful compare: clears the lockout counters and reflects
