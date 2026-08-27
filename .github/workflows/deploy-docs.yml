@@ -37,9 +37,6 @@ jobs:
 
       - name: Build
         working-directory: website
-        # Pages serves the site from https://alten-group.github.io/Foxnox/
-        env:
-          VITEPRESS_BASE: /Foxnox/
         run: npm run build
 
       - name: Setup Pages
