@@ -217,11 +217,11 @@ The public weekly workflow always runs `npm audit`, Biome, outdated, and TODO sc
 Copilot CLI, APM (`apm.yml` / `apm.lock.yaml`), and `audit-fix.yml` stay in this repository so the ALTEN maintainer pipeline is versioned with the product. Those steps run only on `ALTEN-group/Foxnox` when `COPILOT_GITHUB_TOKEN` is set; forks skip them. Configure that secret (and optional `COPILOT_AUDITS_MODEL`) on the canonical repo.
 
 Each release produces the API (with bundled admin) and migration images with the following tag variants (for example,
-release `v0.1.1`):
+release `v0.1.0-alpha.1`):
 
 | Tag | Example |
 |---|---|
-| Full semver | `0.1.1` |
+| Full semver | `0.1.0-alpha.1` |
 | Major.minor | `0.1` |
 | Major | `0` |
 | Floating | `latest` |
@@ -260,7 +260,7 @@ When `UPDATE=1`, the container runs the following steps in order:
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/alten-group/foxnox-migration:0.1.1
+  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

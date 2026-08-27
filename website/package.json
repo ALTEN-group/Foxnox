@@ -1,6 +1,6 @@
 {
   "name": "foxnox-docs",
-  "version": "0.1.1",
+  "version": "0.1.0-alpha.1",
   "private": true,
   "scripts": {
     "dev": "vitepress dev docs --host",

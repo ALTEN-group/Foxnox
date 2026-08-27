@@ -17,7 +17,7 @@ store email addresses or user profiles, and the production Compose stack does
 not start the development mock. Set `USER_SEARCH_URL` to a reachable search
 endpoint before starting the stack; Compose rejects an unset value.
 
-Use immutable release tags in production. The examples below use `0.1.1`;
+Use immutable release tags in production. The examples below use `0.1.0-alpha.1`;
 upgrade the API and migration images together when adopting a newer release.
 
 ## Architecture
@@ -87,7 +87,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   foxnox_migration:
-    image: ghcr.io/alten-group/foxnox-migration:0.1.1
+    image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
     container_name: my-project-foxnox-migration-local
     hostname: my-project-foxnox-migration-local
     depends_on:
@@ -112,7 +112,7 @@ services:
       - ./docker/foxnox/data:/liquibase/data
 
   foxnox:
-    image: ghcr.io/alten-group/foxnox:0.1.1
+    image: ghcr.io/alten-group/foxnox:0.1.0-alpha.1
     container_name: my-project-foxnox-local
     hostname: my-project-foxnox-local
     depends_on:
@@ -260,7 +260,7 @@ The `foxnox_migration` container is controlled by environment variables:
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/alten-group/foxnox-migration:0.1.1
+  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:
