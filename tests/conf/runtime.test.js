@@ -50,11 +50,24 @@ describe("runtime configuration", () => {
     expect(() => validateRuntimeEnv(validProductionEnv)).not.toThrow();
   });
 
-  it("should require the bundled production admin server configuration", () => {
+  it("should treat an unset admin port as a disabled admin server", () => {
+    const { ADMIN_PORT: _adminPort, ...env } = validProductionEnv;
+    expect(() => validateRuntimeEnv(env)).not.toThrow();
+    expect(() => validateRuntimeEnv({ ...env, ADMIN_PORT: "" })).not.toThrow();
     expect(() =>
-      validateRuntimeEnv({ ...validProductionEnv, ADMIN_PORT: "" }),
-    ).toThrow("ADMIN_PORT must be an integer between 1024 and 65535");
+      validateRuntimeEnv({ ...env, ADMIN_PORT: "  " }),
+    ).not.toThrow();
+  });
 
+  it("should reject an unusable admin port when one is supplied", () => {
+    for (const ADMIN_PORT of ["0", "80", "70000", "8080.5", "http"]) {
+      expect(() =>
+        validateRuntimeEnv({ ...validProductionEnv, ADMIN_PORT }),
+      ).toThrow("ADMIN_PORT must be an integer between 1024 and 65535");
+    }
+  });
+
+  it("should require a safe admin base path", () => {
     expect(() =>
       validateRuntimeEnv({
         ...validProductionEnv,

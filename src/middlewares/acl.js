@@ -1,9 +1,6 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
-
-const ALLOWED_OPS = new Set(["=", "!=", "<", ">", "<=", ">="]);
-const MAX_CONDITIONS = 50;
-const MAX_CONDITIONS_HEADER_BYTES = 16 * 1024;
+import { getConsumer, getAcl, stripUnallowedFields } from "@dwtechs/gatelin-express";
 
 /**
  * Enforces Gatelin's ACL headers at the Foxnox data boundary.
@@ -13,132 +10,88 @@ const MAX_CONDITIONS_HEADER_BYTES = 16 * 1024;
  * @returns {import("express").RequestHandler}
  */
 export function enforceAcl(ent, mode) {
-  return async function aclMiddleware(req, res, next) {
-    let acl;
-    try {
-      mapConsumer(req, res);
-      acl = parseAcl(req, ent);
-      if (mode === "insert" || mode === "existing")
-        filterWriteRows(req, acl.fields);
-      if (mode === "search") applySearchConditions(req, acl.conditions);
-      else if (mode === "insert") enforceInsertConditions(req, acl.conditions);
-      else if (mode === "existing")
-        await assertExistingRows(req, res, ent, acl.conditions);
-    } catch (err) {
-      return next(normalizeAclError(err));
-    }
-    next();
+  return function aclMiddleware(req, res, next) {
+    mapConsumer(req, res, (err) => {
+      if (err) return next(normalizeAclError(err));
+      getAcl(req, res, (err2) => {
+        if (err2) return next(normalizeAclError(err2));
+        let conditions;
+        try {
+          res.locals.acl = validateAcl(res.locals.acl, ent);
+          conditions = res.locals.acl.conditions;
+        } catch (err3) {
+          return next(normalizeAclError(err3));
+        }
+        // Strip disallowed fields first so insert conditions can inject their
+        // forced value onto fields that were just stripped out (same order as
+        // the previous inline implementation).
+        const enforceConditions = async () => {
+          try {
+            if (mode === "search") applySearchConditions(req, conditions);
+            else if (mode === "insert") enforceInsertConditions(req, conditions);
+            else if (mode === "existing")
+              await assertExistingRows(req, res, ent, conditions);
+          } catch (err4) {
+            return next(normalizeAclError(err4));
+          }
+          next();
+        };
+        if (mode === "insert" || mode === "existing")
+          stripUnallowedFields(req, res, enforceConditions);
+        else
+          enforceConditions();
+      });
+    });
   };
 }
 
 /**
- * Maps Gatelin's trusted identity headers to the shape antity-pgsql uses for
- * creator/updater audit columns. Header absence is allowed for internal flows.
+ * Maps Gatelin's trusted identity headers to res.locals.consumer via the shared
+ * @dwtechs/gatelin-express `getConsumer` middleware. Header absence is allowed
+ * for internal flows: the strict shared validator only runs when at least one
+ * consumer header is present.
+ * Exported for routes (e.g. preferences) that need consumer identity without
+ * the rest of the ACL fields/conditions pipeline.
  *
  * @param {import("express").Request} req
  * @param {import("express").Response} res
+ * @param {import("express").NextFunction} next
  */
-function mapConsumer(req, res) {
-  const rawId = req.headers["x-consumer-user-id"];
-  const rawName = req.headers["x-consumer-name"];
-  if (rawId === undefined && rawName === undefined) return;
-  if (Array.isArray(rawId) || Array.isArray(rawName))
-    throw forbidden("Invalid consumer headers");
-
-  const userId = Number(rawId);
-  const nickname = typeof rawName === "string" ? rawName.trim() : "";
-  if (!Number.isInteger(userId) || userId <= 0 || !nickname)
-    throw forbidden("Invalid consumer headers");
-
-  res.locals.consumer = { userId, nickname };
+export function mapConsumer(req, res, next) {
+  if (
+    req.headers["x-consumer-user-id"] === undefined &&
+    req.headers["x-consumer-name"] === undefined
+  )
+    return next();
+  getConsumer(req, res, (err) => next(err ? normalizeAclError(err) : undefined));
 }
 
 /**
- * @param {import("express").Request} req
+ * Checks the shared lib's raw ACL (field names / condition shape) against this
+ * entity's own properties: unknown or non-filterable fields are rejected, and
+ * condition values are normalized to each property's type.
+ *
+ * @param {{fields: Set<string>|null, conditions: Array<{field:string, op:string, value:unknown}>}} acl
  * @param {object} ent
  */
-function parseAcl(req, ent) {
+function validateAcl(acl, ent) {
   const properties = new Map(ent.properties.map((prop) => [prop.key, prop]));
-  const fields = parseFields(req.headers["x-acl-fields"], properties);
-  const conditions = parseConditions(
-    req.headers["x-acl-conditions"],
-    properties,
-  );
-  return { fields, conditions };
-}
-
-/**
- * @param {string|string[]|undefined} header
- * @param {Map<string, object>} properties
- * @returns {Set<string>|null}
- */
-function parseFields(header, properties) {
-  if (header === undefined) return null;
-  const raw = Array.isArray(header) ? header.join(",") : String(header);
-  const fields = new Set(
-    raw
-      .split(",")
-      .map((field) => field.trim())
-      .filter(Boolean),
-  );
-  for (const field of fields) {
-    if (!properties.has(field)) throw forbidden(`Unknown ACL field "${field}"`);
+  if (acl.fields) {
+    for (const field of acl.fields)
+      if (!properties.has(field)) throw forbidden(`Unknown ACL field "${field}"`);
   }
-  return fields;
-}
-
-/**
- * @param {string|string[]|undefined} header
- * @param {Map<string, object>} properties
- * @returns {Array<{field:string, op:string, value:unknown}>}
- */
-function parseConditions(header, properties) {
-  if (header === undefined) return [];
-  if (Array.isArray(header))
-    throw forbidden("Duplicate x-acl-conditions headers");
-  if (Buffer.byteLength(header) > MAX_CONDITIONS_HEADER_BYTES)
-    throw forbidden("ACL conditions header is too large");
-
-  let parsed;
-  try {
-    parsed = JSON.parse(header);
-  } catch {
-    throw forbidden("Invalid x-acl-conditions JSON");
-  }
-  if (!Array.isArray(parsed) || parsed.length > MAX_CONDITIONS)
-    throw forbidden("Invalid ACL conditions");
-
-  return parsed.map((condition) => {
-    if (!condition || typeof condition !== "object" || Array.isArray(condition))
-      throw forbidden("Invalid ACL condition");
-    const { field, op, value } = condition;
-    const property = properties.get(field);
-    if (
-      typeof field !== "string" ||
-      !property ||
-      !property.isFilterable ||
-      !ALLOWED_OPS.has(op) ||
-      value === null ||
-      typeof value === "object"
-    )
+  const conditions = acl.conditions.map((condition) => {
+    const property = properties.get(condition.field);
+    if (!property || !property.isFilterable)
       throw forbidden("Unsupported ACL condition");
-    return { field, op, value: normalizeConditionValue(value, property.type) };
+    return {
+      ...condition,
+      value: normalizeConditionValue(condition.value, property.type),
+    };
   });
+  return { fields: acl.fields, conditions };
 }
 
-/**
- * @param {import("express").Request} req
- * @param {Set<string>|null} fields
- */
-function filterWriteRows(req, fields) {
-  if (fields === null || !Array.isArray(req.body?.rows)) return;
-  req.body.rows = req.body.rows.map((row) => {
-    if (!row || typeof row !== "object" || Array.isArray(row)) return row;
-    return Object.fromEntries(
-      Object.entries(row).filter(([key]) => key === "id" || fields.has(key)),
-    );
-  });
-}
 
 /**
  * @param {import("express").Request} req
@@ -309,6 +262,6 @@ function normalizeAclError(err) {
   if (err?.statusCode) return err;
   return {
     statusCode: err?.status ?? 500,
-    message: err?.message ?? "ACL enforcement failed",
+    message: err?.message ?? err?.msg ?? "ACL enforcement failed",
   };
 }

@@ -108,7 +108,7 @@ These are set on the **BFF**, not on Foxnox. The names below are [Gatelin](https
 
 | Variable | Default | Description |
 |---|---|---|
-| `ADMIN_PORT` | — | Dedicated internal port used by the bundled admin server. Unset disables that server outside production; production startup requires an integer between 1024 and 65535. Compose commonly supplies `8080`. |
+| `ADMIN_PORT` | — | Dedicated internal port used by the bundled admin server. Unset disables that server. When set it must be an integer between 1024 and 65535, checked at startup in production. Compose commonly supplies `8080`. |
 | `ADMIN_BASE_PATH` | `/foxnox` | Public path routed by Traefik to the bundled admin server. |
 | `ADMIN_SSO_TOKEN_KEY` | `sso_access_token` | localStorage key the admin UI stores the access token under. Injected at runtime (dev entrypoint + production `src/admin-server.js`), no rebuild required. Not app-prefixed by default because Foxnox and Gatelin admin share the same slot for cookie-based silent refresh when switching between the two apps — if you override it, set the same value on both. |
 

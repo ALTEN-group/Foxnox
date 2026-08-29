@@ -1,12 +1,12 @@
 --
--- Locked table-view templates used by the Foxnox admin.
--- Personal copies and the active selection remain owned by Gatelin.
+-- Locked table-view templates used by the Foxnox admin. Self-hosted: no longer
+-- registered into Gatelin's DB (see former db/liquibase/gatelin-data/12-preference.sql).
 --
 
-INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VALUES
+INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName") VALUES
 
 -- passwords
-((SELECT id FROM resource WHERE name = 'passwords'), 'Default', '[
+('passwords', 'Default', '[
   {"key":"id",               "isVisible":false},
   {"key":"userId",           "isVisible":true,  "defaultWidth":"80px"},
   {"key":"pwdHash",          "isVisible":false},
@@ -24,7 +24,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",         "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",       "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'passwords'), 'Compact', '[
+('passwords', 'Compact', '[
   {"key":"id",               "isVisible":false},
   {"key":"userId",           "isVisible":true,  "defaultWidth":"80px"},
   {"key":"pwdHash",          "isVisible":false},
@@ -42,7 +42,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",         "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",       "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'passwords'), 'Archives', '[
+('passwords', 'Archives', '[
   {"key":"id",               "isVisible":false},
   {"key":"userId",           "isVisible":true,  "defaultWidth":"80px"},
   {"key":"pwdHash",          "isVisible":false},
@@ -60,7 +60,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",         "isVisible":true,  "defaultWidth":"60px"},
   {"key":"archivedAt",       "isVisible":true}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'passwords'), 'Audit', '[
+('passwords', 'Audit', '[
   {"key":"id",               "isVisible":false},
   {"key":"userId",           "isVisible":true,  "defaultWidth":"80px"},
   {"key":"pwdHash",          "isVisible":false},
@@ -80,7 +80,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
 ]', -1, 'system'),
 
 -- policies
-((SELECT id FROM resource WHERE name = 'policies'), 'Default', '[
+('policies', 'Default', '[
   {"key":"id",          "isVisible":false},
   {"key":"name",        "isVisible":true},
   {"key":"description", "isVisible":true},
@@ -100,7 +100,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'policies'), 'Compact', '[
+('policies', 'Compact', '[
   {"key":"id",          "isVisible":false},
   {"key":"name",        "isVisible":true},
   {"key":"description", "isVisible":false},
@@ -120,7 +120,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'policies'), 'Archives', '[
+('policies', 'Archives', '[
   {"key":"id",          "isVisible":false},
   {"key":"name",        "isVisible":true},
   {"key":"description", "isVisible":true},
@@ -140,7 +140,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":true,  "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":true}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'policies'), 'Audit', '[
+('policies', 'Audit', '[
   {"key":"id",          "isVisible":false},
   {"key":"name",        "isVisible":true},
   {"key":"description", "isVisible":false},
@@ -162,7 +162,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
 ]', -1, 'system'),
 
 -- tokens
-((SELECT id FROM resource WHERE name = 'tokens'), 'Default', '[
+('tokens', 'Default', '[
   {"key":"id",          "isVisible":false},
   {"key":"typeId",      "isVisible":true},
   {"key":"userId",      "isVisible":true,  "defaultWidth":"80px"},
@@ -176,7 +176,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'tokens'), 'Compact', '[
+('tokens', 'Compact', '[
   {"key":"id",          "isVisible":false},
   {"key":"typeId",      "isVisible":true},
   {"key":"userId",      "isVisible":true,  "defaultWidth":"80px"},
@@ -190,7 +190,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'tokens'), 'Archives', '[
+('tokens', 'Archives', '[
   {"key":"id",          "isVisible":false},
   {"key":"typeId",      "isVisible":true},
   {"key":"userId",      "isVisible":true,  "defaultWidth":"80px"},
@@ -204,7 +204,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",    "isVisible":true,  "defaultWidth":"60px"},
   {"key":"archivedAt",  "isVisible":true}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'tokens'), 'Audit', '[
+('tokens', 'Audit', '[
   {"key":"id",          "isVisible":false},
   {"key":"typeId",      "isVisible":true},
   {"key":"userId",      "isVisible":true,  "defaultWidth":"80px"},
@@ -220,7 +220,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
 ]', -1, 'system'),
 
 -- trusted devices
-((SELECT id FROM resource WHERE name = 'trustedDevices'), 'Default', '[
+('trustedDevices', 'Default', '[
   {"key":"id",              "isVisible":false},
   {"key":"userId",          "isVisible":true,  "defaultWidth":"80px"},
   {"key":"deviceTokenHash", "isVisible":false},
@@ -236,7 +236,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",        "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",      "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'trustedDevices'), 'Compact', '[
+('trustedDevices', 'Compact', '[
   {"key":"id",              "isVisible":false},
   {"key":"userId",          "isVisible":true,  "defaultWidth":"80px"},
   {"key":"deviceTokenHash", "isVisible":false},
@@ -252,7 +252,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",        "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",      "isVisible":false}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'trustedDevices'), 'Archives', '[
+('trustedDevices', 'Archives', '[
   {"key":"id",              "isVisible":false},
   {"key":"userId",          "isVisible":true,  "defaultWidth":"80px"},
   {"key":"deviceTokenHash", "isVisible":false},
@@ -268,7 +268,7 @@ INSERT INTO preference ("resourceId", name, conf, "creatorId", "creatorName") VA
   {"key":"archived",        "isVisible":true,  "defaultWidth":"60px"},
   {"key":"archivedAt",      "isVisible":true}
 ]', -1, 'system'),
-((SELECT id FROM resource WHERE name = 'trustedDevices'), 'Audit', '[
+('trustedDevices', 'Audit', '[
   {"key":"id",              "isVisible":false},
   {"key":"userId",          "isVisible":true,  "defaultWidth":"80px"},
   {"key":"deviceTokenHash", "isVisible":false},

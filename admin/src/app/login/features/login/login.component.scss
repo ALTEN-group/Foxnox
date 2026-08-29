@@ -26,8 +26,18 @@
         display: block;
       }
 
-      .user-icon {
-        .p-avatar {
+      .login-fox {
+        display: block;
+        // Square, to match the shader's square drawing buffer.
+        width: 96px;
+        height: 96px;
+        margin: 0 auto;
+        // Round, like the avatar this replaces. Clip the canvas itself too:
+        // Safari ignores the wrapper's overflow on a WebGL child.
+        border-radius: 50%;
+        overflow: hidden;
+
+        canvas {
           border-radius: 50%;
         }
       }
