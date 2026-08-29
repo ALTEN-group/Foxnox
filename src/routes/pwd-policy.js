@@ -3,9 +3,11 @@ import express from "express";
 
 const router = express.Router();
 
-import ppEnt from "../entities/pwd-policy.js";
+import ppEnt, { DEFAULTS } from "../entities/pwd-policy.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
+import { dropNulls } from "../middlewares/mappers/drop-nulls.js";
+import { fillDefaults } from "../middlewares/mappers/fill-defaults.js";
 import schema from "../middlewares/schema.js";
 
 //Routes
@@ -18,9 +20,19 @@ router.get(
   history.get("pwd_policy"),
 );
 // Add password policies
-router.post("/", enforceAcl(ppEnt, "insert"), ppEnt.addArraySubstack);
+router.post(
+  "/",
+  enforceAcl(ppEnt, "insert"),
+  fillDefaults(DEFAULTS),
+  ppEnt.addArraySubstack,
+);
 // Update fields
-router.put("/", enforceAcl(ppEnt, "existing"), ppEnt.updateArraySubstack);
+router.put(
+  "/",
+  enforceAcl(ppEnt, "existing"),
+  dropNulls(ppEnt),
+  ppEnt.updateArraySubstack,
+);
 // Bulk archive
 router.post("/archive", enforceAcl(ppEnt, "existing"), ppEnt.archive);
 // Get entity schema

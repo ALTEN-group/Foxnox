@@ -1,5 +1,26 @@
 // @ts-check
 import { SQLEntity } from "@dwtechs/antity-pgsql";
+import { toDate } from "./normalizers.js";
+
+/**
+ * SQL `DEFAULT`s of the NOT NULL columns, mirrored from
+ * `db/liquibase/foxnox/versions/03-struct/02-pwd-policy-struct.sql`.
+ *
+ * They have to be restated here because antity always binds every INSERT column,
+ * which shadows the SQL default with NULL. `tests/entities/payloads.test.js`
+ * parses the struct file and fails if the two ever drift apart.
+ */
+export const DEFAULTS = Object.freeze({
+  length: 12,
+  number: true,
+  symbol: true,
+  lowerCase: true,
+  upperCase: true,
+  strict: true,
+  symbols: "!@#%*_-+=:?><./()",
+  maxFailedAttempts: 5,
+  lockoutMinutes: 15,
+});
 
 export default new SQLEntity("pwd_policy", [
   {
@@ -58,6 +79,13 @@ export default new SQLEntity("pwd_policy", [
     normalizer: null,
     validator: null,
   },
+  // `number`, `symbol`, `lowerCase`, `upperCase`, `strict`, `symbols`,
+  // `maxFailedAttempts` and `lockoutMinutes` are NOT NULL in `pwd_policy` (see
+  // 03-struct/02-pwd-policy-struct.sql). `requiredFor: ["POST"]` records that:
+  // it is the flag `dropNulls` reads to refuse a NULL on update, and the last
+  // guard should a column ever lose its entry in `DEFAULTS` above. Callers stay
+  // free to omit them — `fillDefaults` runs first on POST. They used to be
+  // `requiredFor: ["PUT"]`, which forbade patching a single column.
   {
     key: "number",
     type: "boolean",
@@ -65,7 +93,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -79,7 +107,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -93,7 +121,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -107,7 +135,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -121,7 +149,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -135,7 +163,7 @@ export default new SQLEntity("pwd_policy", [
     max: 50,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: ["PUT"],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -163,7 +191,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: [],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -177,7 +205,7 @@ export default new SQLEntity("pwd_policy", [
     max: null,
     isTypeChecked: true,
     isFilterable: true,
-    requiredFor: [],
+    requiredFor: ["POST"],
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
@@ -209,7 +237,7 @@ export default new SQLEntity("pwd_policy", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -223,7 +251,7 @@ export default new SQLEntity("pwd_policy", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -251,7 +279,7 @@ export default new SQLEntity("pwd_policy", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {

@@ -118,20 +118,21 @@
       },
       "pwdPolicy": {
         "type": "object",
-        "description": "Rules driving `@dwtechs/passken`'s random password generator. Only one row is `active: true` at a time.",
+        "description": "Rules driving `@dwtechs/passken`'s random password generator. The service reads the first non-archived row; there is no `active` column.",
         "properties": {
           "id": { "type": "integer", "format": "int32", "readOnly": true },
           "name": { "type": "string", "minLength": 1, "maxLength": 50 },
           "description": { "type": "string", "minLength": 0, "maxLength": 100, "nullable": true },
-          "length": { "type": "integer", "format": "int32", "minimum": 6, "maximum": 64, "description": "Minimum generated-password length" },
-          "number": { "type": "boolean", "description": "Include digits" },
-          "symbol": { "type": "boolean", "description": "Include symbols" },
-          "lowerCase": { "type": "boolean" },
-          "upperCase": { "type": "boolean" },
-          "strict": { "type": "boolean", "description": "At least one character from each enabled pool" },
-          "symbols": { "type": "string", "minLength": 0, "maxLength": 50, "description": "Symbol pool (defaults to the passken built-in when empty)" },
+          "length": { "type": "integer", "format": "int32", "minimum": 6, "maximum": 64, "default": 12, "description": "Minimum generated-password length" },
+          "number": { "type": "boolean", "default": true, "description": "Include digits" },
+          "symbol": { "type": "boolean", "default": true, "description": "Include symbols" },
+          "lowerCase": { "type": "boolean", "default": true },
+          "upperCase": { "type": "boolean", "default": true },
+          "strict": { "type": "boolean", "default": true, "description": "At least one character from each enabled pool" },
+          "symbols": { "type": "string", "minLength": 0, "maxLength": 50, "nullable": true, "default": "!@#%*_-+=:?><./()", "description": "Symbol pool. Omitted or `null` falls back to the column default." },
           "expiryDays": { "type": "integer", "format": "int32", "minimum": 0, "description": "How long a generated password stays valid; 0 = never expires" },
-          "active": { "type": "boolean" },
+          "maxFailedAttempts": { "type": "integer", "format": "int32", "minimum": 1, "default": 5, "description": "Failed logins before the account locks" },
+          "lockoutMinutes": { "type": "integer", "format": "int32", "minimum": 0, "default": 15, "description": "How long the account stays locked" },
           "archived": { "type": "boolean", "readOnly": true },
           "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
           "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
@@ -139,7 +140,7 @@
           "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
           "updaterName": { "type": "string", "readOnly": true, "nullable": true }
         },
-        "required": ["name", "length", "number", "symbol", "lowerCase", "upperCase", "strict", "active"]
+        "required": ["name"]
       },
       "userTrustedDevice": {
         "type": "object",
@@ -147,6 +148,7 @@
         "properties": {
           "id": { "type": "integer", "format": "int32", "readOnly": true },
           "userId": { "type": "integer", "format": "int32", "minimum": 1 },
+          "deviceTokenHash": { "type": "string", "minLength": 1, "maxLength": 255, "writeOnly": true, "description": "Hash of the raw device token, computed by the caller. Required on POST; INSERT-only and never returned." },
           "deviceName": { "type": "string", "minLength": 0, "maxLength": 100, "nullable": true, "example": "MacBook Pro (Chrome)" },
           "ipAddress": { "type": "string", "minLength": 0, "maxLength": 45, "nullable": true, "example": "192.168.1.24" },
           "userAgent": { "type": "string", "nullable": true },
@@ -159,7 +161,7 @@
           "updatedAt": { "type": "string", "format": "date-time", "nullable": true, "readOnly": true },
           "updaterName": { "type": "string", "readOnly": true, "nullable": true }
         },
-        "required": ["userId", "expiresAt"]
+        "required": ["userId", "deviceTokenHash", "expiresAt"]
       },
       "searchRequest": {
         "type": "object",
@@ -715,7 +717,7 @@
           "content": {
             "application/json": {
               "schema": { "$ref": "#/components/schemas/searchRequest" },
-              "example": { "filters": { "active": { "value": true, "matchMode": "=" } } }
+              "example": { "filters": { "archived": { "value": false, "matchMode": "=" } } }
             }
           }
         },
@@ -742,6 +744,7 @@
       "post": {
         "tags": ["Password Policy"],
         "summary": "Create password policies",
+        "description": "Only `name` is required. Every other NOT NULL column falls back to its SQL default when omitted or sent as `null`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -766,7 +769,8 @@
                     "strict": true,
                     "symbols": "!@#$%^&*",
                     "expiryDays": 365,
-                    "active": true
+                    "maxFailedAttempts": 5,
+                    "lockoutMinutes": 15
                   }
                 ]
               }
@@ -805,7 +809,7 @@
                   "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/pwdPolicy" } }
                 }
               },
-              "example": { "rows": [{ "id": 1, "length": 16, "strict": true, "active": true }] }
+              "example": { "rows": [{ "id": 1, "length": 16, "strict": true }] }
             }
           }
         },
@@ -933,6 +937,7 @@
                 "rows": [
                   {
                     "userId": 1,
+                    "deviceTokenHash": "9f2c1b0d7e4a…",
                     "deviceName": "MacBook Pro (Chrome)",
                     "ipAddress": "192.168.1.24",
                     "userAgent": "Mozilla/5.0 …",

@@ -1,5 +1,6 @@
 // @ts-check
 import { SQLEntity } from "@dwtechs/antity-pgsql";
+import { toDate } from "./normalizers.js";
 
 export default new SQLEntity("token", [
   {
@@ -17,6 +18,13 @@ export default new SQLEntity("token", [
     validator: null,
   },
   {
+    // `token.hash` is NOT NULL UNIQUE with a `gen_random_bytes` default, and the
+    // documented POST payload is `{ userId, typeId, expiresAt }` — the caller
+    // never supplies it. Listing it under `operations` put it in antity's INSERT
+    // column list bound to NULL, which shadowed the default and tripped the
+    // not-null constraint; with no operation the DB mints the value itself.
+    // Real workflow tokens are inserted by `services/token.js`, which stores the
+    // HMAC of a plaintext it can hand back to the caller.
     key: "hash",
     type: "string",
     min: 0,
@@ -24,7 +32,7 @@ export default new SQLEntity("token", [
     isTypeChecked: true,
     isFilterable: false,
     requiredFor: [],
-    operations: ["INSERT"],
+    operations: [],
     isPrivate: true,
     sanitizer: null,
     normalizer: null,
@@ -97,7 +105,7 @@ export default new SQLEntity("token", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -111,7 +119,7 @@ export default new SQLEntity("token", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -139,7 +147,7 @@ export default new SQLEntity("token", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -167,7 +175,7 @@ export default new SQLEntity("token", [
     operations: ["SELECT", "INSERT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -181,7 +189,7 @@ export default new SQLEntity("token", [
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
 ]);
