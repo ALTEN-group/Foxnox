@@ -93,6 +93,8 @@ for (const [file, privateProps] of [
       privateProps,
       properties: [],
     },
+    // Named export the pwd-policy router reads for `fillDefaults`.
+    DEFAULTS: {},
   }));
 }
 

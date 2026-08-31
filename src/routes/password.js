@@ -9,6 +9,7 @@ import pEnt from "../entities/pwd.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
 import { checkLockout } from "../middlewares/mappers/check-lockout.js";
+import { dropNulls } from "../middlewares/mappers/drop-nulls.js";
 import {
   clearLoginAttempts,
   trackFailedAttempt,
@@ -33,7 +34,12 @@ router.get("/:id/history", enforceAcl(pEnt, "existing"), history.get("pwd"));
 // Add pwds — server generates plaintext + hash for each { userId } row: passken-express
 router.post("/", enforceAcl(pEnt, "insert"), create, pEnt.addArraySubstack);
 // Update fields
-router.put("/", enforceAcl(pEnt, "existing"), pEnt.updateArraySubstack);
+router.put(
+  "/",
+  enforceAcl(pEnt, "existing"),
+  dropNulls(pEnt),
+  pEnt.updateArraySubstack,
+);
 // Bulk archive
 router.post("/archive", enforceAcl(pEnt, "existing"), pEnt.archive);
 // Get entity schema

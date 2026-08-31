@@ -6,6 +6,7 @@ const router = express.Router();
 import tdEnt from "../entities/user-device.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
+import { dropNulls } from "../middlewares/mappers/drop-nulls.js";
 import schema from "../middlewares/schema.js";
 
 //Routes
@@ -20,7 +21,12 @@ router.get(
 // Add trusted devices
 router.post("/", enforceAcl(tdEnt, "insert"), tdEnt.addArraySubstack);
 // Update fields
-router.put("/", enforceAcl(tdEnt, "existing"), tdEnt.updateArraySubstack);
+router.put(
+  "/",
+  enforceAcl(tdEnt, "existing"),
+  dropNulls(tdEnt),
+  tdEnt.updateArraySubstack,
+);
 // Bulk archive
 router.post("/archive", enforceAcl(tdEnt, "existing"), tdEnt.archive);
 // Get entity schema

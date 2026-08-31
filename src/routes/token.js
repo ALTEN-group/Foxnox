@@ -6,6 +6,7 @@ const router = express.Router();
 import tEnt from "../entities/token.js";
 import { enforceAcl } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
+import { dropNulls } from "../middlewares/mappers/drop-nulls.js";
 import schema from "../middlewares/schema.js";
 
 //Routes
@@ -16,7 +17,12 @@ router.get("/:id/history", enforceAcl(tEnt, "existing"), history.get("token"));
 // Add tokens
 router.post("/", enforceAcl(tEnt, "insert"), tEnt.addArraySubstack);
 // Update fields
-router.put("/", enforceAcl(tEnt, "existing"), tEnt.updateArraySubstack);
+router.put(
+  "/",
+  enforceAcl(tEnt, "existing"),
+  dropNulls(tEnt),
+  tEnt.updateArraySubstack,
+);
 // Bulk archive
 router.post("/archive", enforceAcl(tEnt, "existing"), tEnt.archive);
 // Get entity schema

@@ -127,6 +127,8 @@ for (const resource of RESOURCES) {
           },
         ],
       },
+      // Named export the pwd-policy router reads for `fillDefaults`.
+      DEFAULTS: {},
     }),
   );
 }

@@ -1,5 +1,6 @@
 // @ts-check
 import { SQLEntity } from "@dwtechs/antity-pgsql";
+import { toDate } from "./normalizers.js";
 
 export default new SQLEntity("pwd", [
   {
@@ -65,7 +66,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -79,7 +80,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -107,7 +108,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -121,7 +122,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -178,7 +179,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -192,7 +193,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
@@ -220,7 +221,7 @@ export default new SQLEntity("pwd", [
     operations: ["SELECT"],
     isPrivate: false,
     sanitizer: null,
-    normalizer: null,
+    normalizer: toDate,
     validator: null,
   },
   {
