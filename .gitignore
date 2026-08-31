@@ -10,11 +10,6 @@ docker/conf/.env.prod
 website/docs/.vitepress/cache
 website/docs/.vitepress/dist
 swagger/src/foxnox.openapi.json
-.github/instructions/
-.github/agents/
-.github/prompts/
-.agents/
-.cursor/
 
 # Local agent-package artifacts (not part of the public toolchain)
 apm_modules/
