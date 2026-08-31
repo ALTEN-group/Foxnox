@@ -77,9 +77,8 @@ export function provideAppConfig() {
         title: CONFIG.title,
         appKey: CONFIG.appKey,
         storageKeys: CONFIG.storageKeys,
-        // Foxnox entity CRUD is proxied at /api/foxnox/… (not /api/gatelin/…).
-        // Login/sessions stay on gatelinApi; preferences are rewritten in
-        // preferences.interceptor.ts onto /api/gatelin/preferences/….
+        // Foxnox entity CRUD, including table preferences, is proxied at
+        // /api/foxnox/… . Login/sessions stay on gatelinApi.
         apiPrefix: environment.foxnoxApi,
       },
     },

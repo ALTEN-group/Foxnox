@@ -221,9 +221,11 @@ describe("Foxnox Gatelin ACL enforcement", () => {
       headers: { "x-consumer-user-id": "42" },
     });
 
+    // getConsumer from @dwtechs/gatelin-express now reports the precise
+    // validation failure instead of a generic "Invalid consumer headers".
     expect(err).toMatchObject({
-      statusCode: 403,
-      message: "Invalid consumer headers",
+      statusCode: 400,
+      message: "Missing consumer nickname",
     });
   });
 });

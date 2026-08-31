@@ -32,6 +32,10 @@
     <comment></comment>
     <sqlFile path="versions/02-func/02-set-archived.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="02-func-03" author="lcluber">
+    <comment>Preference functions (limit, template fork/select, template protection)</comment>
+    <sqlFile path="versions/02-func/03-preference-func.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">
@@ -55,8 +59,16 @@
     <comment>Trusted device table structure for 2FA</comment>
     <sqlFile path="versions/03-struct/05-device-struct.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="03-struct-06" author="lcluber">
+    <comment>Self-hosted admin preference tables (preference, preference_selection)</comment>
+    <sqlFile path="versions/03-struct/06-preference-struct.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- views -->
+  <changeSet id="04-view-01" author="lcluber">
+    <comment>Merged preference templates + personal preferences view</comment>
+    <sqlFile path="versions/04-view/01-preference-view.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- triggers -->
   <changeSet id="05-trig-01" author="lcluber">
@@ -78,6 +90,10 @@
   <changeSet id="05-trig-07" author="lcluber">
     <comment>Trusted device history trigger</comment>
     <sqlFile path="versions/05-trig/07-device-trig.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="05-trig-08" author="lcluber">
+    <comment>Preference view INSTEAD OF trigger + base table guard triggers</comment>
+    <sqlFile path="versions/05-trig/08-preference-trig.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- data -->
@@ -108,6 +124,10 @@
   <changeSet id="06-data-07" author="lcluber">
     <comment>Login challenge token types (2FA / expired password / trusted device)</comment>
     <sqlFile path="versions/06-data/07-token-type-login-challenges.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-08" author="lcluber">
+    <comment>Admin table preference templates (self-hosted)</comment>
+    <sqlFile path="versions/06-data/08-preference-data.sql" splitStatements="false"/>
   </changeSet>
 
 </databaseChangeLog>

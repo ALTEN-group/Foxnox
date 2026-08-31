@@ -12,12 +12,23 @@ import { Vector3 } from "@lcluber/type6js";
 import { LOGIN_SHADER_FPS_CAP } from "app/login/utils/login-shader-fps";
 import { ShaderService } from "app/login/utils/shader.service";
 
+/**
+ * Square drawing buffer. Renderer otherwise leaves the canvas on its 1280x720
+ * default, and the fox is drawn around a centered square, so a 16:9 buffer
+ * scaled into the CSS box would squash the face.
+ */
+const BUFFER_SIZE = 256;
+
+/**
+ * Small WebGL canvas sitting on top of the login card, showing the shadergun
+ * fox face. Rendered with roostrjs like the animated login background.
+ */
 @Component({
-  selector: "adm-login-background",
-  templateUrl: "./login-background.component.html",
-  styleUrls: ["./login-background.component.scss"],
+  selector: "adm-login-fox",
+  templateUrl: "./login-fox.component.html",
+  styleUrls: ["./login-fox.component.scss"],
 })
-export class LoginBackgroundComponent implements OnInit, OnDestroy {
+export class LoginFoxComponent implements OnInit, OnDestroy {
   renderer!: Renderer;
   scene!: Scene;
   camera!: PerspectiveCamera;
@@ -32,7 +43,11 @@ export class LoginBackgroundComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.zone.runOutsideAngular(() => {
-      this.renderer = new Renderer("canvas");
+      this.renderer = new Renderer("foxCanvas");
+      this.renderer.canvas.width = BUFFER_SIZE;
+      this.renderer.canvas.height = BUFFER_SIZE;
+      this.renderer.setViewport(BUFFER_SIZE, BUFFER_SIZE);
+
       this.scene = new Scene(this.renderer.getContext()!);
       this.camera = new PerspectiveCamera(
         75,
@@ -46,7 +61,7 @@ export class LoginBackgroundComponent implements OnInit, OnDestroy {
       this.animation = new Player(this.render);
       this.animation.setScope(this);
       this.animation.capFPS(LOGIN_SHADER_FPS_CAP);
-      this.shaderService.load().then((response: boolean) => {
+      this.shaderService.loadFox().then((response: boolean) => {
         if (response) this.start();
       });
     });
@@ -58,8 +73,8 @@ export class LoginBackgroundComponent implements OnInit, OnDestroy {
 
   private start() {
     this.quad.addProgram(
-      this.shaderService.vertexShader,
-      this.shaderService.fragmentShader,
+      this.shaderService.foxVertexShader,
+      this.shaderService.foxFragmentShader,
       null as unknown as Material,
     );
     this.animation.start();
