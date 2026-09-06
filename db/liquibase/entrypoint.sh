@@ -50,15 +50,45 @@ function rollback(){
 
 function createUser()
 {
-  psql -h ${DB_HOST} -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = '${DB_USER}'" | grep -q 1 || psql -h ${DB_HOST} -d ${DB_NAME} -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PWD';"
-  psql -h ${DB_HOST} -d ${DB_NAME} -c "CREATE SCHEMA IF NOT EXISTS log; \
-                                      GRANT CONNECT ON DATABASE $DB_NAME TO $DB_USER; \
-                                      GRANT USAGE ON SCHEMA public TO $DB_USER; \
-                                      GRANT USAGE ON SCHEMA log TO $DB_USER; \
-                                      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $DB_USER; \
-                                      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA log TO $DB_USER; \
-                                      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
-                                      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA log TO $DB_USER;"
+  if [[ -z "${DB_JOB_USER}" || -z "${DB_JOB_PWD}" ]]; then
+    echo "DB_JOB_USER and DB_JOB_PWD are required (cron role that may hard-delete archived rows)." >&2
+    return 1
+  fi
+
+  psql -h ${DB_HOST} -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = '${DB_USER}'" | grep -q 1 || psql -h ${DB_HOST} -d ${DB_NAME} -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PWD}';"
+  psql -h ${DB_HOST} -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = '${DB_JOB_USER}'" | grep -q 1 || psql -h ${DB_HOST} -d ${DB_NAME} -c "CREATE USER ${DB_JOB_USER} WITH PASSWORD '${DB_JOB_PWD}';"
+
+  # App: DML except hard-delete of archivable rows (and log.history purge).
+  # Job: same plus DELETE on those rows. Preference deletes stay on the app.
+  # delete() is SECURITY DEFINER, so EXECUTE is what actually gates the helper.
+  psql -h ${DB_HOST} -d ${DB_NAME} -v ON_ERROR_STOP=1 <<EOF
+CREATE SCHEMA IF NOT EXISTS log;
+GRANT CONNECT ON DATABASE ${DB_NAME} TO ${DB_USER}, ${DB_JOB_USER};
+GRANT USAGE ON SCHEMA public TO ${DB_USER}, ${DB_JOB_USER};
+GRANT USAGE ON SCHEMA log TO ${DB_USER}, ${DB_JOB_USER};
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ${DB_USER}, ${DB_JOB_USER};
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA log TO ${DB_USER}, ${DB_JOB_USER};
+
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO ${DB_USER};
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA log TO ${DB_USER};
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${DB_JOB_USER};
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA log TO ${DB_JOB_USER};
+
+GRANT DELETE ON TABLE
+  preference, preference_selection, preferences
+TO ${DB_USER};
+
+REVOKE DELETE ON TABLE
+  pwd, pwd_policy, token, token_type, user_trusted_device,
+  security_question_category, security_question_category_trans,
+  security_question, security_question_trans, user_security_answer
+FROM ${DB_USER};
+REVOKE DELETE ON TABLE log.history FROM ${DB_USER};
+
+REVOKE EXECUTE ON FUNCTION delete(TEXT, TEXT, TIMESTAMPTZ) FROM PUBLIC, ${DB_USER};
+GRANT EXECUTE ON FUNCTION delete(TEXT, TEXT, TIMESTAMPTZ) TO ${DB_JOB_USER};
+EOF
+  return $?
 }
 
 function createDB(){
@@ -69,16 +99,18 @@ if [[ "$1" != "history" ]] && type "$1" > /dev/null 2>&1; then
   ## First argument is an actual OS command (except if the command is history as it is a liquibase command). Run it
   exec "$@"
 else
+  # Each step is guarded: a failed `update` used to fall through to createUser and
+  # exit 0, leaving a half-migrated schema that only surfaced at runtime.
   if [[ $UPDATE = 1 ]]; then
-      createDB
-      update
-      updateData
-      snapshot
-      createUser
+      createDB || exit $?
+      update || exit $?
+      updateData || exit $?
+      snapshot || exit $?
+      createUser || exit $?
   elif [[ $ROLLBACK -gt 1 ]]; then
-      rollback
-      snapshot
+      rollback || exit $?
+      snapshot || exit $?
   else 
-      diff
+      diff || exit $?
   fi
 fi

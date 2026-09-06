@@ -30,6 +30,7 @@ const {
   createLoginChallenge,
   findValidLoginChallenge,
   consumeLoginChallenge,
+  bumpLoginChallengeAttempts,
 } = await import("../src/services/challenge.js");
 
 describe("workflow token lifecycle", () => {
@@ -160,6 +161,21 @@ describe("login challenge lifecycle", () => {
     expect(found).toMatchObject({ id: minted.id, userId: 11 });
 
     await consumeLoginChallenge(minted.id);
+
+    expect(
+      await findValidLoginChallenge({
+        plaintext: minted.challenge,
+        kind: "2fa",
+      }),
+    ).toBeNull();
+  });
+
+  it("should reject a 2FA challenge after maxAttempts via bump", async () => {
+    const minted = await createLoginChallenge({ userId: 11, kind: "2fa" });
+
+    for (let i = 0; i < 5; i++) {
+      await bumpLoginChallengeAttempts(minted.id);
+    }
 
     expect(
       await findValidLoginChallenge({

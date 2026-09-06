@@ -128,7 +128,7 @@ export function createAuthDbMock() {
    */
   function pwdSelect(_offset, _limit, _orderBy, _order, filters) {
     return {
-      query: "__PWD_FIND_ID__",
+      query: "__PWD_SELECT__",
       args: [filters.userId?.value, filters.archived?.value],
     };
   }
@@ -147,7 +147,7 @@ export function createAuthDbMock() {
   async function execute(sql, params = []) {
     const q = String(sql).replace(/\s+/g, " ").trim();
 
-    if (sql === "__PWD_FIND_ID__") {
+    if (sql === "__PWD_SELECT__") {
       const userId = Number(params[0]);
       const archived = params[1];
       const row = pwds.find(
@@ -155,7 +155,7 @@ export function createAuthDbMock() {
           p.userId === userId &&
           (archived === undefined || p.archived === archived),
       );
-      return { rows: row ? [{ id: row.id }] : [], rowCount: row ? 1 : 0 };
+      return { rows: row ? [{ ...row }] : [], rowCount: row ? 1 : 0 };
     }
 
     if (sql === "__PWD_UPDATE__") {
@@ -167,38 +167,6 @@ export function createAuthDbMock() {
         row[k] = v;
       }
       return { rows: [], rowCount: 1 };
-    }
-
-    // getPwdAuthState
-    if (
-      q.includes('SELECT id, "userId", "twoFactorEnabled"') &&
-      q.includes("FROM pwd")
-    ) {
-      const userId = Number(params[0]);
-      const row = pwds.find((p) => p.userId === userId && !p.archived);
-      return {
-        rows: row
-          ? [
-              {
-                id: row.id,
-                userId: row.userId,
-                twoFactorEnabled: row.twoFactorEnabled,
-                pwdExpiry: row.pwdExpiry,
-                lockedUntil: row.lockedUntil,
-                failedAttempts: row.failedAttempts,
-              },
-            ]
-          : [],
-      };
-    }
-
-    // getTwoFactorSecret
-    if (q.includes('SELECT "twoFactorSecret"') && q.includes("FROM pwd")) {
-      const userId = Number(params[0]);
-      const row = pwds.find((p) => p.userId === userId && !p.archived);
-      return {
-        rows: row ? [{ twoFactorSecret: row.twoFactorSecret }] : [],
-      };
     }
 
     // disableTwoFactor
@@ -347,6 +315,17 @@ export function createAuthDbMock() {
       return { rows };
     }
 
+    // hasEnrolledSecurityAnswers
+    if (
+      q.includes("SELECT 1") &&
+      q.includes("FROM user_security_answer") &&
+      q.includes("LIMIT 1")
+    ) {
+      const userId = Number(params[0]);
+      const found = answers.some((a) => a.userId === userId && !a.archived);
+      return { rows: found ? [{ "?column?": 1 }] : [] };
+    }
+
     // listEnrolledSecurityQuestions
     if (
       q.includes("FROM user_security_answer a") &&
@@ -413,20 +392,14 @@ export function createAuthDbMock() {
       return { rows: [], rowCount: 1 };
     }
 
-    // verifySecurityAnswers
+    // verifySecurityAnswers — every non-archived enrolled row for the user
     if (
       q.includes('SELECT "questionId", "answerHash"') &&
       q.includes("FROM user_security_answer")
     ) {
       const userId = Number(params[0]);
-      const ids = /** @type {number[]} */ (params[1]);
       const rows = answers
-        .filter(
-          (a) =>
-            a.userId === userId &&
-            !a.archived &&
-            ids.includes(a.questionId),
-        )
+        .filter((a) => a.userId === userId && !a.archived)
         .map((a) => ({
           questionId: a.questionId,
           answerHash: a.answerHash,

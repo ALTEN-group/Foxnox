@@ -4,7 +4,7 @@ import express from "express";
 const router = express.Router();
 
 import ppEnt from "../entities/pwd-policy.js";
-import { enforceAcl } from "../middlewares/acl.js";
+import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
 
@@ -18,11 +18,11 @@ router.get(
   history.get("pwd_policy"),
 );
 // Add password policies
-router.post("/", enforceAcl(ppEnt, "insert"), ppEnt.addArraySubstack);
+router.post("/", requireConsumer, enforceAcl(ppEnt, "insert"), ppEnt.addArraySubstack);
 // Update fields
-router.put("/", enforceAcl(ppEnt, "existing"), ppEnt.updateArraySubstack);
+router.put("/", requireConsumer, enforceAcl(ppEnt, "existing"), ppEnt.updateArraySubstack);
 // Bulk archive
-router.post("/archive", enforceAcl(ppEnt, "existing"), ppEnt.archive);
+router.post("/archive", requireConsumer, enforceAcl(ppEnt, "existing"), ppEnt.archive);
 // Get entity schema
 router.get("/schema", enforceAcl(ppEnt, "output"), schema.get(ppEnt));
 

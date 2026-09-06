@@ -127,8 +127,10 @@
       "subtitle": "Choose questions only you can answer. They help recover your account if you lose access to 2FA.",
       "questionLabel": "Question",
       "answerLabel": "Answer",
+      "passwordLabel": "Current password",
       "submit": "Save questions",
       "errorIncomplete": "Select a question and provide an answer for each row.",
+      "errorPassword": "Enter your current password to replace existing answers.",
       "errorGeneric": "Something went wrong. Please try again."
     },
     "securityQuestionsDone": {

@@ -127,8 +127,10 @@
       "subtitle": "Choisissez des questions que vous seul pouvez répondre. Elles aident à récupérer le compte en cas de perte de la 2FA.",
       "questionLabel": "Question",
       "answerLabel": "Réponse",
+      "passwordLabel": "Mot de passe actuel",
       "submit": "Enregistrer",
       "errorIncomplete": "Sélectionnez une question et une réponse pour chaque ligne.",
+      "errorPassword": "Saisissez votre mot de passe actuel pour remplacer les réponses existantes.",
       "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
     },
     "securityQuestionsDone": {

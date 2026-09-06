@@ -26,6 +26,19 @@
     </fieldset>
     {{/each}}
 
+    {{#if form.replacing}}
+    <div class="form-group">
+      <label for="password">{{page.passwordLabel}}</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        autocomplete="current-password"
+        required
+      >
+    </div>
+    {{/if}}
+
     {{#if error}}
     <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
     {{/if}}

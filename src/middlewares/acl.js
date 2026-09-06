@@ -1,5 +1,6 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
+import { isArray, isObject, isValidInteger } from "@dwtechs/checkard";
 import { getConsumer, getAcl, stripUnallowedFields } from "@dwtechs/gatelin-express";
 
 /**
@@ -64,6 +65,28 @@ export function mapConsumer(req, res, next) {
   )
     return next();
   getConsumer(req, res, (err) => next(err ? normalizeAclError(err) : undefined));
+}
+
+/**
+ * Guards mutating routes on history-tracked tables. antity-pgsql only writes
+ * creatorId/creatorName when a consumer is present, and log_history rejects rows
+ * without them, so a header-less write would fail deep in the database with an
+ * opaque error instead of at the boundary.
+ *
+ * @param {import("express").Request} req
+ * @param {import("express").Response} _res
+ * @param {import("express").NextFunction} next
+ */
+export function requireConsumer(req, _res, next) {
+  if (
+    req.headers["x-consumer-user-id"] === undefined &&
+    req.headers["x-consumer-name"] === undefined
+  )
+    return next({
+      statusCode: 401,
+      message: "Missing consumer headers on a tracked write",
+    });
+  return next();
 }
 
 /**
@@ -152,7 +175,7 @@ function enforceInsertConditions(req, conditions) {
 async function assertExistingRows(req, res, ent, conditions) {
   if (!conditions.length) return;
   const ids = getTargetIds(req);
-  if (!ids.length) return;
+  if (!ids.length) throw forbidden("Missing row id for ACL enforcement");
 
   const filters = conditionsToFilters(conditions);
   filters.id = { value: ids, matchMode: "in" };
@@ -163,8 +186,9 @@ async function assertExistingRows(req, res, ent, conditions) {
     throw forbidden("One or more rows violate ACL conditions");
 
   // Prevent a permitted update from moving a row outside its ACL partition.
-  if (Array.isArray(req.body?.rows)) {
+  if (isArray(req.body?.rows)) {
     for (const row of req.body.rows) {
+      if (!isObject(row)) continue;
       for (const condition of conditions) {
         if (
           condition.field in row &&
@@ -180,14 +204,21 @@ async function assertExistingRows(req, res, ent, conditions) {
  * @param {import("express").Request} req
  */
 function getTargetIds(req) {
-  const ids = [];
-  if (req.params?.id !== undefined) ids.push(Number(req.params.id));
-  if (Array.isArray(req.body?.rows)) {
+  const raw = [];
+  if (req.params?.id !== undefined) raw.push(req.params.id);
+  if (isArray(req.body?.rows)) {
     for (const row of req.body.rows) {
-      if (row?.id !== undefined) ids.push(Number(row.id));
+      // Archive accepts bare ids; update/history send `{ id }`. Match both.
+      raw.push(isObject(row) ? row.id : row);
     }
   }
-  return [...new Set(ids.filter((id) => Number.isInteger(id) && id > 0))];
+  const ids = [];
+  for (const value of raw) {
+    if (!isValidInteger(value, 1, undefined, false))
+      throw forbidden("Invalid row id for ACL enforcement");
+    ids.push(Number(value));
+  }
+  return [...new Set(ids)];
 }
 
 /**

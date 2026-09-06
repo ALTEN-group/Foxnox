@@ -12,15 +12,15 @@
   </changeSet>
   <changeSet id="01-hist-02" author="lcluber">
     <comment></comment>
-    <sqlFile path="versions/01-hist/02-log.sql" splitStatements="false"/>
+    <sqlFile path="versions/01-hist/02-trig.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="01-hist-03" author="lcluber">
     <comment></comment>
-    <sqlFile path="versions/01-hist/03-del.sql" splitStatements="false"/>
+    <sqlFile path="versions/01-hist/03-log.sql" splitStatements="false"/>
   </changeSet>
-  <changeSet id="01-hist-04" author="lcluber">
-    <comment>Functional index on log.history record id for fast entity history lookups</comment>
-    <sqlFile path="versions/01-hist/04-index.sql" splitStatements="false"/>
+  <changeSet id="01-hist-05" author="lcluber">
+    <comment>Indexes for entity history lookups and tstamp age-out</comment>
+    <sqlFile path="versions/01-hist/05-index.sql" splitStatements="false"/>
   </changeSet>
 
   <!-- functions -->
@@ -34,88 +34,88 @@
   </changeSet>
   <changeSet id="02-func-03" author="lcluber">
     <comment>Preference functions (limit, template fork/select, template protection)</comment>
-    <sqlFile path="versions/02-func/03-preference-func.sql" splitStatements="false"/>
+    <sqlFile path="versions/02-func/03-preference.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">
     <comment>Password table structure</comment>
-    <sqlFile path="versions/03-struct/01-pwd-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/01-pwd.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="03-struct-02" author="lcluber">
     <comment>Password policy table structure</comment>
-    <sqlFile path="versions/03-struct/02-pwd-policy-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/02-pwd-policy.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="03-struct-03" author="lcluber">
     <comment>Token tables structure</comment>
-    <sqlFile path="versions/03-struct/03-token-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/03-token.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="03-struct-04" author="lcluber">
     <comment>Security question tables structure</comment>
-    <sqlFile path="versions/03-struct/04-question-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/04-question.sql" splitStatements="false"/>
   </changeSet>
   
   <changeSet id="03-struct-05" author="lcluber">
     <comment>Trusted device table structure for 2FA</comment>
-    <sqlFile path="versions/03-struct/05-device-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/05-device.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="03-struct-06" author="lcluber">
     <comment>Self-hosted admin preference tables (preference, preference_selection)</comment>
-    <sqlFile path="versions/03-struct/06-preference-struct.sql" splitStatements="false"/>
+    <sqlFile path="versions/03-struct/06-preference.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- views -->
   <changeSet id="04-view-01" author="lcluber">
     <comment>Merged preference templates + personal preferences view</comment>
-    <sqlFile path="versions/04-view/01-preference-view.sql" splitStatements="false"/>
+    <sqlFile path="versions/04-view/01-preference.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- triggers -->
   <changeSet id="05-trig-01" author="lcluber">
     <comment>Password history trigger</comment>
-    <sqlFile path="versions/05-trig/01-pwd-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/01-pwd.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="05-trig-02" author="lcluber">
     <comment>Password policy history trigger</comment>
-    <sqlFile path="versions/05-trig/02-pwd-policy-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/02-pwd-policy.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="05-trig-03" author="lcluber">
     <comment>Security question history triggers</comment>
-    <sqlFile path="versions/05-trig/03-question-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/03-question.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="05-trig-06" author="lcluber">
     <comment>Token history triggers</comment>
-    <sqlFile path="versions/05-trig/06-token-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/06-token.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="05-trig-07" author="lcluber">
     <comment>Trusted device history trigger</comment>
-    <sqlFile path="versions/05-trig/07-device-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/07-device.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="05-trig-08" author="lcluber">
     <comment>Preference view INSTEAD OF trigger + base table guard triggers</comment>
-    <sqlFile path="versions/05-trig/08-preference-trig.sql" splitStatements="false"/>
+    <sqlFile path="versions/05-trig/08-preference.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- data -->
   <changeSet id="06-data-01" author="lcluber">
     <comment>Password policy seed data</comment>
-    <sqlFile path="versions/06-data/01-pwd-policy-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/01-pwd-policy.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-02" author="lcluber">
     <comment>Token types seed data</comment>
-    <sqlFile path="versions/06-data/02-token-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/02-token.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-03" author="lcluber">
     <comment>Security question seed data</comment>
-    <sqlFile path="versions/06-data/03-question-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/03-question.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-04" author="lcluber">
     <comment>Trusted device seed data</comment>
-    <sqlFile path="versions/06-data/04-device-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/04-device.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-05" author="lcluber">
     <comment>Mock token rows for admin UI (per mock user × token type)</comment>
-    <sqlFile path="versions/06-data/05-token-row-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/05-token-row.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-06" author="lcluber">
     <comment>Account unlock token type for web unlock workflow</comment>
@@ -127,7 +127,7 @@
   </changeSet>
   <changeSet id="06-data-08" author="lcluber">
     <comment>Admin table preference templates (self-hosted)</comment>
-    <sqlFile path="versions/06-data/08-preference-data.sql" splitStatements="false"/>
+    <sqlFile path="versions/06-data/08-preference.sql" splitStatements="false"/>
   </changeSet>
 
 </databaseChangeLog>

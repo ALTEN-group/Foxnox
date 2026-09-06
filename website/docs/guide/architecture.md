@@ -159,7 +159,7 @@ Four endpoints are called by the BFF rather than by browsers, each configured on
 |---|---|
 | `POST /foxnox/compare` | Every login, to verify the password (also returns **403** when the account is locked) |
 | `POST /foxnox/devices/verify` | Before minting a 2FA challenge, to check the device cookie |
-| `POST /foxnox/challenges` | When a mid-login step is required |
+| `POST /foxnox/challenges` | When a mid-login step is required (internal; after compare; `2fa` or `expired-password` only) |
 | `POST /foxnox/login-tickets/redeem` | When the frontend resumes after a challenge |
 
 See [Login Challenges](./api-challenges).

@@ -5,6 +5,8 @@ import { validateRuntimeEnv } from "../../src/conf/runtime.js";
 
 const validProductionEnv = {
   NODE_ENV: "production",
+  DB_JOB_USER: "foxnox_job",
+  DB_JOB_PWD: "job-secret",
   PWD_SECRET: "a".repeat(32),
   USER_SEARCH_URL: "https://users.example.com/users/search",
   ADMIN_PORT: "8080",
@@ -13,7 +15,22 @@ const validProductionEnv = {
 
 describe("runtime configuration", () => {
   it("should skip production requirements outside production", () => {
-    expect(() => validateRuntimeEnv({ NODE_ENV: "development" })).not.toThrow();
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: "development",
+        DB_JOB_USER: "foxnox_job",
+        DB_JOB_PWD: "job-secret",
+      }),
+    ).not.toThrow();
+  });
+
+  it("should require job database credentials in every environment", () => {
+    expect(() => validateRuntimeEnv({ NODE_ENV: "development" })).toThrow(
+      "DB_JOB_USER is missing",
+    );
+    expect(() =>
+      validateRuntimeEnv({ NODE_ENV: "development", DB_JOB_USER: "foxnox_job" }),
+    ).toThrow("DB_JOB_PWD is missing");
   });
 
   it("should require a sufficiently long production password secret", () => {

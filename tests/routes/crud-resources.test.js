@@ -13,6 +13,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
 
+/** Tracked writes are rejected without a consumer, so every write request carries one. */
+const CONSUMER_HEADERS = {
+  "x-consumer-user-id": "1",
+  "x-consumer-name": "tester",
+};
+
 /** @typedef {{ name: string, mount: string, entityFile: string, historyTable: string, privateProps: string[] }} Resource */
 
 /** @type {Resource[]} */
@@ -170,6 +176,7 @@ jest.unstable_mockModule("@dwtechs/passken-express", () => ({
 jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   CHALLENGE_KINDS: {},
   isChallengeKind: () => false,
+  isHttpMintableChallengeKind: () => false,
   getChallengeSpec: jest.fn(),
   createLoginChallenge: jest.fn(),
   findValidLoginChallenge: jest.fn(),
@@ -241,10 +248,19 @@ describe.each(RESOURCES)("POST $mount (add) ($name)", ({ name, mount }) => {
   it("routes to addArraySubstack", async () => {
     const res = await request(app)
       .post(`${mount}/`)
+      .set(CONSUMER_HEADERS)
       .send({ rows: [{ id: 9, entity: name }] });
     expect(res.status).toBe(200);
     expect(res.body.rows[0].entity).toBe(name);
     expect(entityAdds[name]).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a write with no consumer headers", async () => {
+    const res = await request(app)
+      .post(`${mount}/`)
+      .send({ rows: [{ id: 9, entity: name }] });
+    expect(res.status).toBe(401);
+    expect(entityAdds[name]).not.toHaveBeenCalled();
   });
 });
 
@@ -256,6 +272,7 @@ describe.each(RESOURCES)("PUT $mount (update) ($name)", ({ name, mount }) => {
   it("routes to updateArraySubstack", async () => {
     const res = await request(app)
       .put(`${mount}/`)
+      .set(CONSUMER_HEADERS)
       .send({ rows: [{ id: 1, entity: name }] });
     expect(res.status).toBe(200);
     expect(entityUpdates[name]).toHaveBeenCalledTimes(1);
@@ -270,6 +287,7 @@ describe.each(RESOURCES)("POST $mount/archive ($name)", ({ name, mount }) => {
   it("routes to archive", async () => {
     const res = await request(app)
       .post(`${mount}/archive`)
+      .set(CONSUMER_HEADERS)
       .send({ rows: [{ id: 1 }] });
     expect(res.status).toBe(200);
     expect(entityArchives[name]).toHaveBeenCalledTimes(1);
@@ -311,6 +329,7 @@ describe("Gatelin ACL header wiring", () => {
 
     const res = await request(app)
       .put("/foxnox/policies")
+      .set(CONSUMER_HEADERS)
       .set("x-acl-fields", "")
       .send({ rows: [{ id: 1, entity: "policies" }] });
 

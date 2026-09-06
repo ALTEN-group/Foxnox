@@ -156,6 +156,83 @@ describe("Foxnox Gatelin ACL enforcement", () => {
     });
   });
 
+  it("should reject malformed row ids instead of skipping the ownership check", async () => {
+    const { err } = await run("existing", {
+      headers: {
+        "x-acl-conditions": JSON.stringify([
+          { field: "userId", op: "=", value: 7 },
+        ]),
+      },
+      body: { rows: [{ id: 2, name: "owned" }, { id: "9abc" }] },
+      rows: [{ id: 2 }],
+    });
+
+    expect(err).toMatchObject({
+      statusCode: 403,
+      message: "Invalid row id for ACL enforcement",
+    });
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("should fail closed when ACL conditions are present but no row ids are supplied", async () => {
+    const { err } = await run("existing", {
+      headers: {
+        "x-acl-conditions": JSON.stringify([
+          { field: "userId", op: "=", value: 7 },
+        ]),
+      },
+      body: { rows: [] },
+    });
+
+    expect(err).toMatchObject({
+      statusCode: 403,
+      message: "Missing row id for ACL enforcement",
+    });
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("should preflight bare archive ids against ACL conditions", async () => {
+    const { err } = await run("existing", {
+      headers: {
+        "x-acl-conditions": JSON.stringify([
+          { field: "userId", op: "=", value: 7 },
+        ]),
+      },
+      body: { rows: [2, 3] },
+      rows: [{ id: 2 }, { id: 3 }],
+    });
+
+    expect(err).toBeUndefined();
+    expect(select).toHaveBeenCalledWith(
+      0,
+      null,
+      null,
+      null,
+      {
+        userId: [{ value: 7, matchMode: "=", operator: "AND" }],
+        id: { value: [2, 3], matchMode: "in" },
+      },
+      "AND",
+    );
+  });
+
+  it("should reject a mixed archive batch that includes an unowned bare id", async () => {
+    const { err } = await run("existing", {
+      headers: {
+        "x-acl-conditions": JSON.stringify([
+          { field: "userId", op: "=", value: 7 },
+        ]),
+      },
+      body: { rows: [{ id: 2 }, 99] },
+      rows: [{ id: 2 }],
+    });
+
+    expect(err).toMatchObject({
+      statusCode: 403,
+      message: "One or more rows violate ACL conditions",
+    });
+  });
+
   it("rejects updates that move a row outside its ACL partition", async () => {
     const { err } = await run("existing", {
       headers: {

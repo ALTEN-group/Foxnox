@@ -51,5 +51,9 @@
     <comment>Allowed browser Origins for the admin UI (CORS whitelist)</comment>
     <sqlFile path="10-cors.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-12" author="lcluber">
+    <comment>Un-proxy login challenge mint: internal BFF only, not an admin Gatelin route</comment>
+    <sqlFile path="11-unproxy-challenges.sql"/>
+  </changeSet>
 
 </databaseChangeLog>

@@ -1,6 +1,6 @@
 // @ts-check
 import { isValidInteger } from "@dwtechs/checkard";
-import { isChallengeKind } from "../../services/challenge.js";
+import { isHttpMintableChallengeKind } from "../../services/challenge.js";
 
 /**
  * Validate and normalize the login-challenge creation payload.
@@ -19,10 +19,10 @@ export function checkChallengeBody(req, _res, next) {
       message: "userId must be a positive integer",
     });
   }
-  if (!isChallengeKind(kind)) {
+  if (!isHttpMintableChallengeKind(kind)) {
     return next({
       statusCode: 400,
-      message: 'kind must be "2fa", "expired-password", or "trusted-device"',
+      message: 'kind must be "2fa" or "expired-password"',
     });
   }
 

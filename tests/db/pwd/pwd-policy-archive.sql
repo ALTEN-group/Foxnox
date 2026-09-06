@@ -20,6 +20,14 @@ BEGIN
   )
   RETURNING id INTO policy_id;
 
+  -- set_archived only touches archived/archivedAt, so the caller has to stamp the
+  -- updater first or the history trigger rejects the UPDATE it performs.
+  UPDATE pwd_policy
+  SET "updaterId" = 9002,
+      "updaterName" = 'db-test-archive',
+      "updatedAt" = NOW()
+  WHERE id = policy_id;
+
   PERFORM set_archived('pwd_policy', policy_id, true, false);
 
   IF NOT EXISTS (

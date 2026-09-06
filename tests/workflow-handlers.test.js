@@ -20,6 +20,7 @@ const bumpWorkflowTokenAttempts = jest.fn(async () => {});
 
 const findValidLoginChallenge = jest.fn();
 const consumeLoginChallenge = jest.fn(async () => {});
+const bumpLoginChallengeAttempts = jest.fn(async () => {});
 const createLoginChallenge = jest.fn(async () => ({
   id: 99,
   kind: "trusted-device",
@@ -33,6 +34,7 @@ const createLoginChallenge = jest.fn(async () => ({
 const rotatePassword = jest.fn(async () => {});
 const unlockAccount = jest.fn(async () => {});
 const passwordMeetsPolicy = jest.fn(async () => true);
+const verifyCurrentPassword = jest.fn(async () => true);
 const getPasswordFormPolicy = jest.fn(async () => ({
   minLength: 8,
   maxLength: 64,
@@ -47,12 +49,14 @@ const listEnrolledSecurityQuestions = jest.fn(async () => [
   { id: 1, label: "Q1" },
   { id: 2, label: "Q2" },
 ]);
+const hasEnrolledSecurityAnswers = jest.fn(async () => false);
 const getSecurityQuestionsByIds = jest.fn(async (ids) =>
   ids.map((id) => ({ id: Number(id), label: `Q${id}` })),
 );
 const emptyQuestionSlots = jest.fn((n = 3) =>
   Array.from({ length: n }, (_, i) => ({ slot: i + 1 })),
 );
+const saveSecurityAnswers = jest.fn(async () => {});
 
 jest.unstable_mockModule("../src/web/issue-notification.js", () => ({
   issueWorkflowNotification,
@@ -77,9 +81,11 @@ jest.unstable_mockModule("../src/services/token.js", () => ({
 jest.unstable_mockModule("../src/services/challenge.js", () => ({
   CHALLENGE_KINDS: {},
   isChallengeKind: jest.fn(),
+  isHttpMintableChallengeKind: jest.fn(),
   getChallengeSpec: jest.fn(),
   findValidLoginChallenge,
   consumeLoginChallenge,
+  bumpLoginChallengeAttempts,
   createLoginChallenge,
 }));
 
@@ -100,14 +106,16 @@ jest.unstable_mockModule("../src/services/pwd.js", () => ({
   getTwoFactorSecret: jest.fn(async () => "JBSWY3DPEHPK3PXP"),
   enableTwoFactor: jest.fn(async () => {}),
   disableTwoFactor: jest.fn(async () => {}),
+  verifyCurrentPassword,
 }));
 
 jest.unstable_mockModule("../src/services/security-questions.js", () => ({
   listSecurityQuestionCatalog,
   listEnrolledSecurityQuestions,
+  hasEnrolledSecurityAnswers,
   getSecurityQuestionsByIds,
   emptyQuestionSlots,
-  saveSecurityAnswers: jest.fn(async () => {}),
+  saveSecurityAnswers,
   verifySecurityAnswers: jest.fn(async () => true),
   hashSecurityAnswer: jest.fn(async () => "hash"),
 }));
@@ -194,6 +202,8 @@ beforeEach(() => {
   findValidWorkflowToken.mockResolvedValue(validToken);
   findValidLoginChallenge.mockResolvedValue(validToken);
   passwordMeetsPolicy.mockResolvedValue(true);
+  verifyCurrentPassword.mockResolvedValue(true);
+  hasEnrolledSecurityAnswers.mockResolvedValue(false);
   getPasswordFormPolicy.mockResolvedValue({ minLength: 8, maxLength: 64 });
   listEnrolledSecurityQuestions.mockResolvedValue([
     { id: 1, label: "Q1" },
@@ -381,6 +391,7 @@ describe("2FA", () => {
     });
     expect(res.status).toBe(303);
     expect(consumeLoginChallenge).toHaveBeenCalledWith(10);
+    expect(bumpLoginChallengeAttempts).not.toHaveBeenCalled();
     expect(createLoginChallenge).toHaveBeenCalledWith({
       userId: 55,
       kind: "trusted-device",
@@ -393,6 +404,7 @@ describe("2FA", () => {
     totp.verifyTotpCode.mockReturnValueOnce(false);
     const res = await post("/2fa/verify", { challenge: "ch", code: "000000" });
     expect(res.status).toBe(400);
+    expect(bumpLoginChallengeAttempts).toHaveBeenCalledWith(10);
     expect(consumeLoginChallenge).not.toHaveBeenCalled();
   });
 
@@ -505,5 +517,54 @@ describe("security questions", () => {
       { "x-consumer-user-id": "55" },
     );
     expect(res.status).toBe(200);
+    expect(saveSecurityAnswers).toHaveBeenCalled();
+    expect(verifyCurrentPassword).not.toHaveBeenCalled();
+  });
+
+  it("should reject replacing enrolled answers without the current password", async () => {
+    hasEnrolledSecurityAnswers.mockResolvedValue(true);
+    const res = await post(
+      "/security-questions",
+      {
+        questionIds: ["1", "2", "3"],
+        answers: ["a", "b", "c"],
+      },
+      { "x-consumer-user-id": "55" },
+    );
+    expect(res.status).toBe(400);
+    expect(saveSecurityAnswers).not.toHaveBeenCalled();
+  });
+
+  it("should reject replacing enrolled answers when the current password is wrong", async () => {
+    hasEnrolledSecurityAnswers.mockResolvedValue(true);
+    verifyCurrentPassword.mockResolvedValue(false);
+    const res = await post(
+      "/security-questions",
+      {
+        questionIds: ["1", "2", "3"],
+        answers: ["a", "b", "c"],
+        password: "WrongPass1!",
+      },
+      { "x-consumer-user-id": "55" },
+    );
+    expect(res.status).toBe(400);
+    expect(saveSecurityAnswers).not.toHaveBeenCalled();
+  });
+
+  it("should replace enrolled answers when the current password matches", async () => {
+    hasEnrolledSecurityAnswers.mockResolvedValue(true);
+    verifyCurrentPassword.mockResolvedValue(true);
+    const res = await post(
+      "/security-questions",
+      {
+        questionIds: ["1", "2", "3"],
+        answers: ["a", "b", "c"],
+        password: "CurrentPass1!",
+      },
+      { "x-consumer-user-id": "55" },
+    );
+    expect(res.status).toBe(200);
+    expect(verifyCurrentPassword).toHaveBeenCalledWith(55, "CurrentPass1!");
+    expect(saveSecurityAnswers).toHaveBeenCalled();
   });
 });

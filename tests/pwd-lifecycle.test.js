@@ -43,6 +43,7 @@ const {
   getTwoFactorSecret,
   enableTwoFactor,
   disableTwoFactor,
+  verifyCurrentPassword,
 } = await import("../src/services/pwd.js");
 
 const STRONG = "Abcdef1!xyZZ";
@@ -188,6 +189,15 @@ describe("auth state and 2FA", () => {
     await disableTwoFactor(5);
     expect(await getTwoFactorSecret(5)).toBeNull();
     expect(db.pwds[0].twoFactorEnabled).toBe(false);
+  });
+
+  it("should accept the current password and reject a wrong one", async () => {
+    db.seedPwd({ userId: 7, pwdHash: "pending" });
+    await rotatePassword(7, STRONG);
+    expect(await verifyCurrentPassword(7, STRONG)).toBe(true);
+    expect(await verifyCurrentPassword(7, "WrongPass1!")).toBe(false);
+    expect(await verifyCurrentPassword(7, "")).toBe(false);
+    expect(await verifyCurrentPassword(404, STRONG)).toBe(false);
   });
 
   it("2FA helpers reject missing pwd rows", async () => {

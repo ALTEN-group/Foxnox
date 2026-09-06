@@ -9,6 +9,19 @@ const MIN_PWD_SECRET_LENGTH = 32;
  * @returns {void}
  */
 export function validateRuntimeEnv(env = process.env) {
+  const jobUser = env.DB_JOB_USER?.trim() ?? "";
+  const jobPwd = env.DB_JOB_PWD?.trim() ?? "";
+  if (!jobUser) {
+    throw new Error(
+      "DB_JOB_USER is missing — PostgreSQL role used by archive/history cron jobs",
+    );
+  }
+  if (!jobPwd) {
+    throw new Error(
+      "DB_JOB_PWD is missing — password for the cron PostgreSQL role",
+    );
+  }
+
   if (env.NODE_ENV !== "production") return;
 
   const pwdSecret =

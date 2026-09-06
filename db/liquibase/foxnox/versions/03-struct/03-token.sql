@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS token_type (
   ttl INT DEFAULT 30,
   "maxAttempts" INT DEFAULT 3,
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT
 );
@@ -26,15 +26,18 @@ CREATE TABLE IF NOT EXISTS token (
   "userId" INT NOT NULL,
   attempts INT DEFAULT 0,
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT,
-  "expiresAt" TIMESTAMP NULL, -- Will be set based on token type
-  "verifiedAt" TIMESTAMP NULL,
+  -- Set from token_type.ttl by the app, as a UTC instant. TIMESTAMPTZ is required:
+  -- a naive TIMESTAMP drops the offset, so every TTL shorter than the local UTC
+  -- offset would be in the past the moment the row is written.
+  "expiresAt" TIMESTAMPTZ NULL,
+  "verifiedAt" TIMESTAMPTZ NULL,
   CONSTRAINT fk_token_type
     FOREIGN KEY ("typeId") REFERENCES token_type (id)
     ON DELETE RESTRICT

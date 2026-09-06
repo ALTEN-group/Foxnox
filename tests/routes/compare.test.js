@@ -99,6 +99,7 @@ for (const [file, privateProps] of [
 jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   CHALLENGE_KINDS: {},
   isChallengeKind: () => false,
+  isHttpMintableChallengeKind: () => false,
   getChallengeSpec: jest.fn(),
   createLoginChallenge: jest.fn(),
   findValidLoginChallenge: jest.fn(),
@@ -120,13 +121,25 @@ jest.unstable_mockModule("../../src/web/login-resume.js", () => ({
   getLoginResumeBaseUrl: jest.fn(),
 }));
 
+jest.unstable_mockModule("../../src/services/pwd.js", () => ({
+  recordFailedAttempt: jest.fn(async () => {}),
+  resetFailedAttempts: jest.fn(async () => {}),
+}));
+
 const { createJsonApiApp } = await import("../helpers/json-api-app.js");
+const {
+  clearChallengeMints,
+  consumeChallengeMint,
+} = await import("../../src/services/challenge-grant.js");
+const { clearCompareLocks } = await import("../../src/services/compare-lock.js");
 const app = await createJsonApiApp();
 
 describe("POST /foxnox/compare", () => {
   beforeEach(() => {
     get.mockClear();
     compare.mockClear().mockImplementation((_req, _res, next) => next());
+    clearChallengeMints();
+    clearCompareLocks();
   });
 
   it("rejects invalid payloads before loading a pwd row", async () => {
@@ -159,6 +172,7 @@ describe("POST /foxnox/compare", () => {
     expect(get.mock.calls[0][0].body.filters).toEqual({
       userId: { value: 42, matchMode: "=" },
     });
+    expect(consumeChallengeMint(42)).toBe(true);
   });
 
   it("forwards compare failures", async () => {
@@ -171,6 +185,7 @@ describe("POST /foxnox/compare", () => {
       .send({ userId: 42, pwd: "wrong" });
 
     expect(res.status).toBe(401);
+    expect(consumeChallengeMint(42)).toBe(false);
   });
 
   it("rejects with 403 and skips compare when the account is still locked", async () => {
@@ -219,5 +234,26 @@ describe("POST /foxnox/compare", () => {
 
     expect(res.status).toBe(200);
     expect(compare).toHaveBeenCalledTimes(1);
+  });
+
+  it("should run compares for the same user one at a time", async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    compare.mockImplementation(async (_req, _res, next) => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 40));
+      inFlight -= 1;
+      next();
+    });
+
+    const [a, b] = await Promise.all([
+      request(app).post("/foxnox/compare").send({ userId: 42, pwd: "one" }),
+      request(app).post("/foxnox/compare").send({ userId: 42, pwd: "two" }),
+    ]);
+
+    expect(a.status).toBe(200);
+    expect(b.status).toBe(200);
+    expect(maxInFlight).toBe(1);
   });
 });

@@ -35,4 +35,6 @@ Prompt for security questions **at the same time** the user enables 2FA. A user 
 
 ## Re-enrolling
 
-Submitting the form again replaces the stored answers. There is no separate edit flow, and no need for one: the page always starts from empty slots, so re-enrollment is the same three-question form.
+Submitting the form again replaces the stored answers. There is no separate edit flow: the page always starts from empty slots. Because those answers can later disable 2FA, **replacing an existing set requires the current password**. First-time enrollment does not.
+
+A user who has forgotten both their answers and their password cannot self-serve — an administrator has to disable 2FA, as described in [Lost 2FA recovery](./workflow-account-recover#no-questions-enrolled).

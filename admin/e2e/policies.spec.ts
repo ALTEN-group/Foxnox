@@ -13,11 +13,22 @@ test.describe("Password policies CRUD", () => {
     );
 
     await page.locator("#table-toolbar button .pi-plus").click();
-    const createDialog = page.getByRole("dialog", { name: "Create - Policy" });
+    const createDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Create - Policy" }),
+    });
     await expect(createDialog).toBeVisible();
 
     await createDialog.getByRole("textbox").first().fill(name);
-    await createDialog.getByRole("textbox").nth(2).fill("!");
+
+    // "Allowed symbols" stays disabled until "Requires a symbol" is checked,
+    // and the backend rejects a null symbols pool.
+    await createDialog.getByRole("checkbox").nth(1).click();
+    const symbolsInput = createDialog.getByRole("textbox").nth(2);
+    await expect(symbolsInput).toBeEnabled();
+    await symbolsInput.fill("!");
+    // The dialog model is fed by a 300ms-debounced valueChanges stream: submitting
+    // sooner posts the previous value.
+    await page.waitForTimeout(500);
 
     const createResponsePromise = page.waitForResponse(
       (response) =>
@@ -37,9 +48,11 @@ test.describe("Password policies CRUD", () => {
     await expect(nameCell).toBeVisible({ timeout: 15_000 });
     await nameCell.click();
 
-    const editDialog = page.getByRole("dialog");
+    const editDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Edit - Policy" }),
+    });
     await editDialog.getByRole("button", { name: "Archive" }).click();
-    const confirm = page.getByRole("alertdialog").filter({
+    const confirm = page.getByRole("dialog").filter({
       hasText: /archive this view/i,
     });
     await expect(confirm).toBeVisible();
@@ -56,9 +69,16 @@ test.describe("Password policies CRUD", () => {
       `Archive failed with HTTP ${archiveResponse.status()} at ${archiveResponse.url()} for ${archiveResponse.request().postData()}: ${await archiveResponse.text()}`,
     ).toBeTruthy();
 
+    // Archived rows stay listed (greyed out), so reopen the row instead:
+    // an archived policy no longer offers the "Archive" action.
     await page.getByRole("button", { name: "Refresh data" }).click();
-    await expect(page.getByRole("cell", { name })).toHaveCount(0, {
-      timeout: 15_000,
-    });
+    const archivedCell = page.getByRole("cell", { name });
+    await expect(archivedCell).toBeVisible({ timeout: 15_000 });
+    await archivedCell.click();
+
+    await expect(editDialog).toBeVisible();
+    await expect(editDialog.getByRole("button", { name: "Archive" })).toHaveCount(
+      0,
+    );
   });
 });

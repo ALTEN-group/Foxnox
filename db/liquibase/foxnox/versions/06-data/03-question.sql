@@ -1,10 +1,10 @@
 -- Insert default categories
-INSERT INTO security_question_category (id, name) VALUES
-(1, 'personal'),
-(2, 'family'),
-(3, 'work'),
-(4, 'favorites'),
-(5, 'education')
+INSERT INTO security_question_category (id, name, "creatorId", "creatorName") VALUES
+(1, 'personal', -1, 'system'),
+(2, 'family', -1, 'system'),
+(3, 'work', -1, 'system'),
+(4, 'favorites', -1, 'system'),
+(5, 'education', -1, 'system')
 ;
 
 -- Insert translations for categories
@@ -48,22 +48,22 @@ INSERT INTO security_question_category_trans ("categoryId", lang, trans) VALUES
 
 
 -- Insert default security questions
-INSERT INTO security_question (id, question, "categoryId", active) VALUES
-(1, 'First pet name', 1, TRUE),
-(2, 'Mother maiden name', 2, TRUE),
-(3, 'First school name', 5, TRUE),
-(4, 'City of birth', 1, TRUE),
-(5, 'Childhood nickname', 1, TRUE),
-(6, 'Favorite childhood friend name', 1, TRUE),
-(7, 'Street lived on in third grade', 1, TRUE),
-(8, 'Childhood phone number including area code', 1, TRUE),
-(9, 'First stuffed animal name', 1, TRUE),
-(10, 'Father birth date', 2, TRUE),
-(11, 'First car model', 1, TRUE),
-(12, 'First job company name', 3, TRUE),
-(13, 'Favorite childhood food', 4, TRUE),
-(14, 'First concert attended', 4, TRUE),
-(15, 'Favorite childhood book', 4, TRUE)
+INSERT INTO security_question (id, question, "categoryId", active, "creatorId", "creatorName") VALUES
+(1, 'First pet name', 1, TRUE, -1, 'system'),
+(2, 'Mother maiden name', 2, TRUE, -1, 'system'),
+(3, 'First school name', 5, TRUE, -1, 'system'),
+(4, 'City of birth', 1, TRUE, -1, 'system'),
+(5, 'Childhood nickname', 1, TRUE, -1, 'system'),
+(6, 'Favorite childhood friend name', 1, TRUE, -1, 'system'),
+(7, 'Street lived on in third grade', 1, TRUE, -1, 'system'),
+(8, 'Childhood phone number including area code', 1, TRUE, -1, 'system'),
+(9, 'First stuffed animal name', 1, TRUE, -1, 'system'),
+(10, 'Father birth date', 2, TRUE, -1, 'system'),
+(11, 'First car model', 1, TRUE, -1, 'system'),
+(12, 'First job company name', 3, TRUE, -1, 'system'),
+(13, 'Favorite childhood food', 4, TRUE, -1, 'system'),
+(14, 'First concert attended', 4, TRUE, -1, 'system'),
+(15, 'Favorite childhood book', 4, TRUE, -1, 'system')
 ;
 
 -- Insert security question translations

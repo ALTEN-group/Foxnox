@@ -73,7 +73,9 @@ export default withMermaid(defineConfig({
         ],
       },
     ],
-    socialLinks: [],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/ALTEN-group/Foxnox' },
+    ],
     footer: {
       message: 'Published and maintained by ALTEN',
     },

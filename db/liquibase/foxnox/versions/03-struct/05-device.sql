@@ -6,14 +6,15 @@ CREATE TABLE IF NOT EXISTS user_trusted_device (
   "deviceName" VARCHAR(100) NULL,
   "ipAddress" VARCHAR(45) NULL,
   "userAgent" TEXT NULL,
-  "expiresAt" TIMESTAMP NOT NULL,
-  "lastUsedAt" TIMESTAMP DEFAULT NOW(),
+  -- Written by the app as a UTC instant, matched against NOW(); see 03-token.sql.
+  "expiresAt" TIMESTAMPTZ NOT NULL,
+  "lastUsedAt" TIMESTAMPTZ DEFAULT NOW(),
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT
 );

@@ -1,6 +1,7 @@
 // @ts-check
 import { buildDeepLink } from "../web/deep-link.js";
 import {
+  bumpWorkflowTokenAttempts,
   consumeWorkflowToken,
   createWorkflowToken,
   findValidWorkflowToken,
@@ -37,6 +38,20 @@ export const CHALLENGE_KINDS = Object.freeze({
  */
 export function isChallengeKind(kind) {
   return Object.hasOwn(CHALLENGE_KINDS, kind);
+}
+
+/** Kinds the BFF may mint over HTTP after compare. Trusted-device is in-process only. */
+export const HTTP_MINTABLE_CHALLENGE_KINDS = Object.freeze([
+  "2fa",
+  "expired-password",
+]);
+
+/**
+ * @param {string} kind
+ * @returns {kind is "2fa" | "expired-password"}
+ */
+export function isHttpMintableChallengeKind(kind) {
+  return kind === "2fa" || kind === "expired-password";
 }
 
 /**
@@ -101,4 +116,13 @@ export async function findValidLoginChallenge({ plaintext, kind }) {
  */
 export async function consumeLoginChallenge(challengeId) {
   await consumeWorkflowToken(challengeId);
+}
+
+/**
+ * Count a failed mid-login check (wrong TOTP, etc.) against the token type cap.
+ * @param {number} challengeId
+ * @returns {Promise<void>}
+ */
+export async function bumpLoginChallengeAttempts(challengeId) {
+  await bumpWorkflowTokenAttempts(challengeId);
 }

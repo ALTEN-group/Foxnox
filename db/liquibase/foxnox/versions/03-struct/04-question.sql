@@ -3,11 +3,11 @@ CREATE TABLE IF NOT EXISTS security_question_category (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'personal', 'family', 'education', 'work'
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT
 );
@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS security_question (
   "categoryId" INT NOT NULL,
   active BOOLEAN DEFAULT FALSE,
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT,
   CONSTRAINT fk_security_question_category
@@ -68,11 +68,11 @@ CREATE TABLE IF NOT EXISTS user_security_answer (
   "answerHash" VARCHAR(255) NOT NULL, -- bcrypt hash of the answer
   UNIQUE ("userId", "questionId"), -- One answer per question per user
   archived BOOLEAN DEFAULT FALSE,
-  "archivedAt" TIMESTAMP,
-  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "archivedAt" TIMESTAMPTZ,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "creatorId" INT,
   "creatorName" TEXT,
-  "updatedAt" TIMESTAMP NULL,
+  "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT,
   CONSTRAINT fk_user_security_answer_question

@@ -36,7 +36,8 @@ export const policyFactory = (): Policy => ({
   lowerCase: false,
   upperCase: false,
   strict: false,
-  symbols: "",
+  // pwd_policy.symbols is NOT NULL: an empty value is serialized as null and rejected.
+  symbols: "!@#%*_-+=:?><./()",
   expiryDays: 0,
   maxFailedAttempts: 5,
   lockoutMinutes: 15,

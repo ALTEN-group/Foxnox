@@ -7,10 +7,10 @@ CREATE TABLE preference (
   "resourceName"  VARCHAR(20) NOT NULL CHECK ("resourceName" IN ('passwords', 'policies', 'tokens', 'trustedDevices')),
   name            VARCHAR(60) NOT NULL,
   conf            JSONB       NOT NULL,
-  "createdAt"     TIMESTAMP   DEFAULT NOW(),
+  "createdAt"     TIMESTAMPTZ DEFAULT NOW(),
   "creatorId"     INT,
   "creatorName"   TEXT,
-  "updatedAt"     TIMESTAMP   NULL,
+  "updatedAt"     TIMESTAMPTZ NULL,
   "updaterId"     INT,
   "updaterName"   TEXT
 );

@@ -4,7 +4,7 @@ import express from "express";
 const router = express.Router();
 
 import tdEnt from "../entities/user-device.js";
-import { enforceAcl } from "../middlewares/acl.js";
+import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
 import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
 
@@ -18,11 +18,11 @@ router.get(
   history.get("user_trusted_device"),
 );
 // Add trusted devices
-router.post("/", enforceAcl(tdEnt, "insert"), tdEnt.addArraySubstack);
+router.post("/", requireConsumer, enforceAcl(tdEnt, "insert"), tdEnt.addArraySubstack);
 // Update fields
-router.put("/", enforceAcl(tdEnt, "existing"), tdEnt.updateArraySubstack);
+router.put("/", requireConsumer, enforceAcl(tdEnt, "existing"), tdEnt.updateArraySubstack);
 // Bulk archive
-router.post("/archive", enforceAcl(tdEnt, "existing"), tdEnt.archive);
+router.post("/archive", requireConsumer, enforceAcl(tdEnt, "existing"), tdEnt.archive);
 // Get entity schema
 router.get("/schema", enforceAcl(tdEnt, "output"), schema.get(tdEnt));
 

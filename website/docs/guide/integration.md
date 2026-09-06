@@ -19,7 +19,7 @@ Only the first is mandatory; the other three are what the mid-login challenges n
 
 | Endpoint | Used for |
 |---|---|
-| `POST /foxnox/challenges` | Minting a 2FA / expired-password / trusted-device challenge |
+| `POST /foxnox/challenges` | Minting a 2FA or expired-password challenge after compare |
 | `POST /foxnox/devices/verify` | Checking the `trusted_device` cookie to skip 2FA |
 | `POST /foxnox/login-tickets/redeem` | Redeeming the one-shot ticket that finishes a session |
 
@@ -71,11 +71,12 @@ The seed registers:
 | `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/compare`), all `protected` |
 | `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
 | `05`–`08` | The `foxnox/web` resource and every account workflow page route |
-| `09-route-challenges.sql` | The `foxnox/challenges` resource and the challenge-minting route |
+| `09-route-challenges.sql` | Historically registered `foxnox/challenges` as a proxied admin route |
+| `11-unproxy-challenges.sql` | Removes that proxy: minting is internal `PWD_CHALLENGES_URL` only |
 | `10-cors.sql` | Allowed origins |
 | `11`–`13` | Admin table-preference resources (`passwords`, `policies`, `tokens`, `trustedDevices`), default column layouts, and Gatelin preference scopes |
 
-`POST /foxnox/devices/verify` and `POST /foxnox/login-tickets/redeem` are not proxied CRUD routes. The BFF calls them on the internal network (Gatelin uses `PWD_TRUSTED_DEVICES_URL` and `PWD_LOGIN_TICKET_URL`).
+`POST /foxnox/challenges`, `POST /foxnox/devices/verify`, and `POST /foxnox/login-tickets/redeem` are not proxied CRUD routes. The BFF calls them on the internal network (Gatelin uses `PWD_CHALLENGES_URL`, `PWD_TRUSTED_DEVICES_URL`, and `PWD_LOGIN_TICKET_URL`).
 
 ### Protected vs. public routes
 
@@ -84,7 +85,6 @@ This distinction is the heart of the integration, and it is easy to get wrong. A
 | Route group | Protected | Why |
 |---|---|---|
 | All JSON CRUD (`/foxnox/…`) | ✅ | Administrative data; only admins should read or write it |
-| `/foxnox/challenges` | ✅ | Only the BFF mints challenges |
 | `/foxnox/web/recover`, `/foxnox/web/unlock` | ⬜ | The user has forgotten their password — by definition they cannot be signed in |
 | `/foxnox/web/2fa/verify`, `/foxnox/web/password/expired`, `/foxnox/web/trusted-devices/prompt` | ⬜ | Mid-login: the password was accepted but no session exists yet. Access is gated by the challenge token in the URL, not by a session. |
 | `/foxnox/web/account-recover` | ⬜ | The user cannot produce a 2FA code, so they cannot sign in |
