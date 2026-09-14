@@ -81,6 +81,19 @@ export const ROUTES: Routes = [
     },
   },
   {
+    path: AppPaths.BRANDING,
+    loadComponent: () =>
+      import("./passwords/features/branding/branding.component").then(
+        (m) => m.BrandingComponent,
+      ),
+    title: "Branding",
+    canActivate: [aclGuard()],
+    data: {
+      breadcrumb: $localize`:@@Admin_BrandingNav:Branding`,
+      functionality: AppPaths.BRANDING,
+    },
+  },
+  {
     path: AppPaths.UNAUTHORIZED,
     loadComponent: () =>
       import("./core/pages/unauthorized/unauthorized.component").then(

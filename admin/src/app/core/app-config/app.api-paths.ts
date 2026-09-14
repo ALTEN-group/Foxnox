@@ -11,4 +11,5 @@ export const ENTITY_API_PATHS: Record<AdminEntity, string> = {
   policies: "/policies",
   tokens: "/tokens",
   trustedDevices: "/devices",
+  branding: "/branding",
 };

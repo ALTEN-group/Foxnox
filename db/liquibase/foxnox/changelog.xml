@@ -63,6 +63,10 @@
     <comment>Self-hosted admin preference tables (preference, preference_selection)</comment>
     <sqlFile path="versions/03-struct/06-preference.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="03-struct-07" author="lcluber">
+    <comment>Branding table structure (workflow pages + email look and feel)</comment>
+    <sqlFile path="versions/03-struct/07-branding.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- views -->
   <changeSet id="04-view-01" author="lcluber">
@@ -95,6 +99,10 @@
     <comment>Preference view INSTEAD OF trigger + base table guard triggers</comment>
     <sqlFile path="versions/05-trig/08-preference.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="05-trig-09" author="lcluber">
+    <comment>Branding history trigger</comment>
+    <sqlFile path="versions/05-trig/09-branding.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- data -->
   <changeSet id="06-data-01" author="lcluber">
@@ -112,6 +120,10 @@
   <changeSet id="06-data-04" author="lcluber">
     <comment>Trusted device seed data</comment>
     <sqlFile path="versions/06-data/04-device.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="06-data-09" author="lcluber">
+    <comment>Default branding row</comment>
+    <sqlFile path="versions/06-data/09-branding.sql" splitStatements="false"/>
   </changeSet>
   <changeSet id="06-data-05" author="lcluber">
     <comment>Mock token rows for admin UI (per mock user × token type)</comment>

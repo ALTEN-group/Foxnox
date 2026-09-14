@@ -15,6 +15,7 @@ import ppEnt from "./entities/pwd-policy.js";
 import pEnt from "./entities/preference.js";
 import tEnt from "./entities/token.js";
 import tdEnt from "./entities/user-device.js";
+import bEnt from "./entities/branding.js";
 // middlewares
 import { send } from "./middlewares/res/send.js";
 import { sendPwd } from "./middlewares/res/send-pwd.js";
@@ -27,6 +28,7 @@ import pwdPolicy from "./routes/pwd-policy.js";
 import token from "./routes/token.js";
 import trustedDeviceVerify from "./routes/device-verify.js";
 import trustedDevice from "./routes/user-device.js";
+import branding from "./routes/branding.js";
 
 const s = "/foxnox/";
 
@@ -58,6 +60,7 @@ app.use(WEB_MOUNT, webRoutes);
 // (`deleteProps` on undefined rows) instead of reaching the real router.
 app.use(`${s}tokens`, token, send(tEnt));
 app.use(`${s}policies`, pwdPolicy, send(ppEnt));
+app.use(`${s}branding`, branding, send(bEnt));
 // `devices` rather than `trusted-devices`: Gatelin's `resource.name` is
 // varchar(20) and doubles as the literal URL segment, so `foxnox/trusted-devices`
 // (22) cannot be registered there.

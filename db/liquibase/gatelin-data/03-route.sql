@@ -12,6 +12,8 @@
 --   97=updatePolicies   98=archivePolicies  99=getPolicySchema
 --   100=searchDevices   101=getDeviceHistory 102=addDevices
 --   103=updateDevices   104=archiveDevices  105=getDeviceSchema
+--   106=searchBranding  107=getBrandingHistory 108=addBranding
+--   109=updateBranding  110=archiveBranding 111=getBrandingSchema
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
@@ -47,5 +49,13 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '',                    'addDevices',       'Add trusted devices',                           true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '',                    'updateDevices',     'Update trusted devices',                        true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/archive',            'archiveDevices',    'Archive trusted devices',                       true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/schema',             'getDeviceSchema',  'Get trusted device entity schema',              true, false, ARRAY[2],  ARRAY[1], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/schema',             'getDeviceSchema',  'Get trusted device entity schema',              true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+
+  -- branding (/foxnox/branding)
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/search',             'searchBranding',   'Search branding',                               true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/history', 'getBrandingHistory', 'Manage branding history',                     true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'addBranding',      'Add branding',                                   true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'updateBranding',   'Update branding',                                true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/archive',            'archiveBranding',  'Archive branding',                               true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/schema',             'getBrandingSchema', 'Get branding entity schema',                   true, false, ARRAY[2],  ARRAY[1], -1, 'system')
 ;

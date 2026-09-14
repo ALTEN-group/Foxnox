@@ -18,9 +18,9 @@
   --accent-hover: var(--brand-primary-hover, #1858c3);
   --danger: #b42318;
   --danger-bg: #fef3f2;
-  --radius: 12px;
+  --radius: var(--brand-radius, 12px);
   --shadow: 0 10px 30px rgba(26, 29, 33, 0.06);
-  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font: var(--brand-font, "Segoe UI", system-ui, -apple-system, sans-serif);
 }
 
 html {
