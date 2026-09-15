@@ -173,6 +173,8 @@ describe("TOTP helpers", () => {
     );
     // Wrong code must fail; we do not assert a live code (clock-dependent).
     expect(verifyTotpCode(secret, "000000")).toBe(false);
+    // Dev mock code passes in non-production
+    expect(verifyTotpCode(secret, "123456")).toBe(true);
   });
 });
 

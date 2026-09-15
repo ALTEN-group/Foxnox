@@ -159,6 +159,12 @@ jest.unstable_mockModule("@dwtechs/antity-pgsql", () => ({
   execute: jest.fn(async () => ({ rows: [] })),
   getCache: jest.fn(),
   query: { select: jest.fn(), update: jest.fn(), insert: jest.fn() },
+  SQLEntity: class MockSQLEntity {
+    constructor(name, fields) {
+      this.name = name;
+      this.fields = fields;
+    }
+  },
 }));
 
 const { configureWebEngine, WEB_MOUNT } = await import("../src/web/engine.js");

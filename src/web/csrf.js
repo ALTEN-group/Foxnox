@@ -4,7 +4,6 @@ import {
   randomTokenPlaintext,
   safeEqualToken,
 } from "../services/token-crypto.js";
-import { WEB_MOUNT } from "./engine.js";
 
 /** Cookie + form field name for workflow HTML CSRF (double-submit). */
 export const CSRF_COOKIE = "foxnox_csrf";
@@ -78,7 +77,7 @@ export function verifyCsrfToken(token) {
 export function setCsrfCookie(res, token) {
   const parts = [
     `${CSRF_COOKIE}=${encodeURIComponent(token)}`,
-    "Path=" + WEB_MOUNT,
+    "Path=/",
     "HttpOnly",
     "SameSite=Lax",
     `Max-Age=${Math.floor(CSRF_TTL_MS / 1000)}`,
@@ -136,7 +135,12 @@ export function csrfProtection(req, res, next) {
   }
 
   if (!isValidCsrf(req)) {
-    return res.status(403).end();
+    return res
+      .status(403)
+      .type("html")
+      .send(
+        "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Session Expired</title><style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f4f6f8}.card{background:#fff;padding:2rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);max-width:400px;text-align:center}a{color:#1f6feb}</style></head><body><div class=\"card\"><h2>Session Expired</h2><p>Your verification session or form token has expired or is invalid.</p><p><a href=\"javascript:history.back()\">Go back</a> to try again.</p></div></body></html>",
+      );
   }
   return next();
 }
