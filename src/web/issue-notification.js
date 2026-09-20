@@ -7,9 +7,10 @@ import { buildDeepLink } from "./deep-link.js";
 
 /**
  * Shared orchestration: resolve user → create token → deep link → notify.
- * Always returns without throwing for "user not found" so callers can keep
- * enumeration-safe UX. Transport/DB errors are logged and swallowed the same
- * way so the UI still shows the generic "check your email" page.
+ *
+ * Returns immediately so request handlers can render the same "check your
+ * email" page whether or not the address exists. Lookup, token insert, and
+ * SMTP run in the background; awaiting them would leak existence via latency.
  *
  * @param {{
  *   email: string,
@@ -20,7 +21,22 @@ import { buildDeepLink } from "./deep-link.js";
  * }} params
  * @returns {Promise<{ issued: boolean }>}
  */
-export async function issueWorkflowNotification({
+export async function issueWorkflowNotification(params) {
+  void deliverWorkflowNotification(params);
+  return { issued: true };
+}
+
+/**
+ * @param {{
+ *   email: string,
+ *   typeName: string,
+ *   path: string,
+ *   template: string,
+ *   lang?: string,
+ * }} params
+ * @returns {Promise<{ issued: boolean }>}
+ */
+async function deliverWorkflowNotification({
   email,
   typeName,
   path,

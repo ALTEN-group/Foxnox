@@ -29,6 +29,8 @@ jest.unstable_mockModule("../../src/services/challenge.js", () => ({
   }),
   isChallengeKind: (kind) =>
     ["2fa", "expired-password", "trusted-device"].includes(kind),
+  isHttpMintableChallengeKind: (kind) =>
+    ["2fa", "expired-password"].includes(kind),
   getChallengeSpec: jest.fn(),
   createLoginChallenge,
   findValidLoginChallenge: jest.fn(),
@@ -52,6 +54,9 @@ jest.unstable_mockModule("../../src/web/login-resume.js", () => ({
 
 const { checkChallengeBody } = await import(
   "../../src/middlewares/validators/check-challenge.js"
+);
+const { grantChallengeMint, clearChallengeMints } = await import(
+  "../../src/services/challenge-grant.js"
 );
 const { checkCompareBody } = await import(
   "../../src/middlewares/validators/check-compare.js"
@@ -80,6 +85,7 @@ const app = buildApp();
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearChallengeMints();
   createLoginChallenge.mockResolvedValue({
     kind: "2fa",
     challenge: "chal-abc",
@@ -93,6 +99,7 @@ beforeEach(() => {
 
 describe("POST /foxnox/challenges", () => {
   it("mints a challenge for a valid kind", async () => {
+    grantChallengeMint(12);
     const res = await request(app)
       .post("/foxnox/challenges")
       .send({ userId: 12, kind: "2fa" });
@@ -106,6 +113,23 @@ describe("POST /foxnox/challenges", () => {
       userId: 12,
       kind: "2fa",
     });
+  });
+
+  it("rejects trusted-device on the HTTP mint API", async () => {
+    grantChallengeMint(1);
+    const res = await request(app)
+      .post("/foxnox/challenges")
+      .send({ userId: 1, kind: "trusted-device" });
+    expect(res.status).toBe(400);
+    expect(createLoginChallenge).not.toHaveBeenCalled();
+  });
+
+  it("rejects minting without a recent successful compare", async () => {
+    const res = await request(app)
+      .post("/foxnox/challenges")
+      .send({ userId: 12, kind: "2fa" });
+    expect(res.status).toBe(403);
+    expect(createLoginChallenge).not.toHaveBeenCalled();
   });
 
   it("rejects invalid payloads", async () => {
@@ -172,10 +196,18 @@ describe("request validators", () => {
   it("checkChallengeBody normalizes valid input", async () => {
     const { err, body } = await run(checkChallengeBody, {
       userId: "5",
-      kind: " trusted-device ",
+      kind: " expired-password ",
     });
     expect(err).toBeUndefined();
-    expect(body).toEqual({ userId: 5, kind: "trusted-device" });
+    expect(body).toEqual({ userId: 5, kind: "expired-password" });
+  });
+
+  it("checkChallengeBody rejects trusted-device", async () => {
+    const { err } = await run(checkChallengeBody, {
+      userId: 5,
+      kind: "trusted-device",
+    });
+    expect(err).toMatchObject({ statusCode: 400 });
   });
 
   it("checkCompareBody builds userId filters", async () => {

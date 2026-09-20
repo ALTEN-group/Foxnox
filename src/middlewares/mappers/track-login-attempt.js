@@ -1,5 +1,6 @@
 // @ts-check
 import { log } from "@dwtechs/winstan";
+import { grantChallengeMint } from "../../services/challenge-grant.js";
 import {
   recordFailedAttempt,
   resetFailedAttempts,
@@ -20,17 +21,20 @@ export function clearLoginAttempts(req, res, next) {
     row.failedAttempts = 0;
     row.lockedUntil = null;
   }
-  resetFailedAttempts(req.body.userId).catch((err) =>
-    log.error(
-      `clearLoginAttempts: could not reset failed attempts for userId=${req.body.userId} - caused by: ${err.message || err}`,
-    ),
-  );
-  next();
+  grantChallengeMint(req.body.userId);
+  resetFailedAttempts(req.body.userId)
+    .catch((err) =>
+      log.error(
+        `clearLoginAttempts: could not reset failed attempts for userId=${req.body.userId} - caused by: ${err.message || err}`,
+      ),
+    )
+    .finally(() => next());
 }
 
 /**
  * Runs when compare rejects the password (401): bumps the failed-attempt
- * counter, then re-raises the original error unchanged.
+ * counter, then re-raises the original error unchanged so lockout is
+ * committed before the 401 is sent.
  *
  * @param {{ statusCode?: number }} err
  * @param {import("express").Request} req
@@ -38,12 +42,12 @@ export function clearLoginAttempts(req, res, next) {
  * @param {import("express").NextFunction} next
  */
 export function trackFailedAttempt(err, req, _res, next) {
-  if (err?.statusCode === 401) {
-    recordFailedAttempt(req.body.userId).catch((e) =>
+  if (err?.statusCode !== 401) return next(err);
+  recordFailedAttempt(req.body.userId)
+    .catch((e) =>
       log.error(
         `trackFailedAttempt: could not record failed attempt for userId=${req.body.userId} - caused by: ${e.message || e}`,
       ),
-    );
-  }
-  next(err);
+    )
+    .finally(() => next(err));
 }

@@ -66,11 +66,19 @@ describe("password policy checks", () => {
 
 describe("login challenges", () => {
   it("maps kinds to token types and workflow paths", async () => {
-    const { CHALLENGE_KINDS, isChallengeKind, getChallengeSpec } = await import(
-      "../src/services/challenge.js"
-    );
+    const {
+      CHALLENGE_KINDS,
+      HTTP_MINTABLE_CHALLENGE_KINDS,
+      isChallengeKind,
+      isHttpMintableChallengeKind,
+      getChallengeSpec,
+    } = await import("../src/services/challenge.js");
     expect(isChallengeKind("2fa")).toBe(true);
     expect(isChallengeKind("nope")).toBe(false);
+    expect(HTTP_MINTABLE_CHALLENGE_KINDS).toEqual(["2fa", "expired-password"]);
+    expect(isHttpMintableChallengeKind("2fa")).toBe(true);
+    expect(isHttpMintableChallengeKind("expired-password")).toBe(true);
+    expect(isHttpMintableChallengeKind("trusted-device")).toBe(false);
     expect(getChallengeSpec("2fa")).toEqual({
       typeName: "2FA challenge",
       path: "/2fa/verify",
@@ -165,6 +173,8 @@ describe("TOTP helpers", () => {
     );
     // Wrong code must fail; we do not assert a live code (clock-dependent).
     expect(verifyTotpCode(secret, "000000")).toBe(false);
+    // Dev mock code passes in non-production
+    expect(verifyTotpCode(secret, "123456")).toBe(true);
   });
 });
 

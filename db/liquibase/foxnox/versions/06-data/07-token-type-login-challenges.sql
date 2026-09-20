@@ -3,26 +3,26 @@
 -- Issued by POST /foxnox/challenges after password OK; consumed by SSR pages.
 --
 
-INSERT INTO token_type (name, description, ttl, "maxAttempts")
-SELECT '2FA challenge', 'Pending login step: verify TOTP before session is issued', 10, 5
+INSERT INTO token_type (name, description, ttl, "maxAttempts", "creatorId", "creatorName")
+SELECT '2FA challenge', 'Pending login step: verify TOTP before session is issued', 10, 5, -1, 'system'
 WHERE NOT EXISTS (
   SELECT 1 FROM token_type WHERE name = '2FA challenge'
 );
 
-INSERT INTO token_type (name, description, ttl, "maxAttempts")
-SELECT 'Expired password challenge', 'Pending login step: force password change after pwdExpiry', 15, 3
+INSERT INTO token_type (name, description, ttl, "maxAttempts", "creatorId", "creatorName")
+SELECT 'Expired password challenge', 'Pending login step: force password change after pwdExpiry', 15, 3, -1, 'system'
 WHERE NOT EXISTS (
   SELECT 1 FROM token_type WHERE name = 'Expired password challenge'
 );
 
-INSERT INTO token_type (name, description, ttl, "maxAttempts")
-SELECT 'Trusted device challenge', 'Pending login step: optional remember-this-device consent', 10, 3
+INSERT INTO token_type (name, description, ttl, "maxAttempts", "creatorId", "creatorName")
+SELECT 'Trusted device challenge', 'Pending login step: optional remember-this-device consent', 10, 3, -1, 'system'
 WHERE NOT EXISTS (
   SELECT 1 FROM token_type WHERE name = 'Trusted device challenge'
 );
 
-INSERT INTO token_type (name, description, ttl, "maxAttempts")
-SELECT 'Login resume', 'One-shot ticket to finish Gatelin session after mid-login challenges', 10, 1
+INSERT INTO token_type (name, description, ttl, "maxAttempts", "creatorId", "creatorName")
+SELECT 'Login resume', 'One-shot ticket to finish Gatelin session after mid-login challenges', 10, 1, -1, 'system'
 WHERE NOT EXISTS (
   SELECT 1 FROM token_type WHERE name = 'Login resume'
 );

@@ -9,6 +9,19 @@ const MIN_PWD_SECRET_LENGTH = 32;
  * @returns {void}
  */
 export function validateRuntimeEnv(env = process.env) {
+  const jobUser = env.DB_JOB_USER?.trim() ?? "";
+  const jobPwd = env.DB_JOB_PWD?.trim() ?? "";
+  if (!jobUser) {
+    throw new Error(
+      "DB_JOB_USER is missing — PostgreSQL role used by archive/history cron jobs",
+    );
+  }
+  if (!jobPwd) {
+    throw new Error(
+      "DB_JOB_PWD is missing — password for the cron PostgreSQL role",
+    );
+  }
+
   if (env.NODE_ENV !== "production") return;
 
   const pwdSecret =
@@ -35,9 +48,14 @@ export function validateRuntimeEnv(env = process.env) {
     throw new Error("USER_SEARCH_URL must use http or https");
   }
 
-  const adminPort = Number(env.ADMIN_PORT);
-  if (!Number.isInteger(adminPort) || adminPort < 1024 || adminPort > 65535) {
-    throw new Error("ADMIN_PORT must be an integer between 1024 and 65535");
+  // Unset leaves the bundled admin server off (see startAdminServer), so only a
+  // supplied value has to be a usable port.
+  const rawAdminPort = env.ADMIN_PORT?.trim() ?? "";
+  if (rawAdminPort) {
+    const adminPort = Number(rawAdminPort);
+    if (!Number.isInteger(adminPort) || adminPort < 1024 || adminPort > 65535) {
+      throw new Error("ADMIN_PORT must be an integer between 1024 and 65535");
+    }
   }
 
   const adminBasePath = env.ADMIN_BASE_PATH?.trim() || "/foxnox";

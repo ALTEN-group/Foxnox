@@ -23,6 +23,7 @@ const {
   hashSecurityAnswer,
   saveSecurityAnswers,
   verifySecurityAnswers,
+  hasEnrolledSecurityAnswers,
 } = await import("../src/services/security-questions.js");
 
 describe("security questions", () => {
@@ -87,6 +88,8 @@ describe("security questions", () => {
       { id: 1, label: "Pet name?" },
       { id: 2, label: "City born?" },
     ]);
+    expect(await hasEnrolledSecurityAnswers(10)).toBe(true);
+    expect(await hasEnrolledSecurityAnswers(999)).toBe(false);
 
     expect(
       await verifySecurityAnswers(10, [
@@ -110,6 +113,16 @@ describe("security questions", () => {
       ]),
     ).toBe(false);
     expect(await verifySecurityAnswers(10, [])).toBe(false);
+
+    expect(
+      await verifySecurityAnswers(10, [{ questionId: 1, answer: "Fluffy" }]),
+    ).toBe(false);
+    expect(
+      await verifySecurityAnswers(10, [
+        { questionId: 1, answer: "Fluffy" },
+        { questionId: 1, answer: "Fluffy" },
+      ]),
+    ).toBe(false);
   });
 
   it("replaces prior answers on re-enroll", async () => {

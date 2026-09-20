@@ -10,8 +10,8 @@ hero:
       text: Get Started
       link: /guide/overview
     - theme: alt
-      text: Deploy with Docker
-      link: /guide/deployment
+      text: Enterprise Support
+      link: https://www.alten.com/
 
 features:
   - icon: 🔑

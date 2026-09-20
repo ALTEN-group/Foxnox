@@ -87,7 +87,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   foxnox_migration:
-    image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
+    image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.2
     container_name: my-project-foxnox-migration-local
     hostname: my-project-foxnox-migration-local
     depends_on:
@@ -112,7 +112,7 @@ services:
       - ./docker/foxnox/data:/liquibase/data
 
   foxnox:
-    image: ghcr.io/alten-group/foxnox:0.1.0-alpha.1
+    image: ghcr.io/alten-group/foxnox:0.1.0-alpha.2
     container_name: my-project-foxnox-local
     hostname: my-project-foxnox-local
     depends_on:
@@ -260,7 +260,7 @@ The `foxnox_migration` container is controlled by environment variables:
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
+  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.2
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

@@ -16,6 +16,8 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
  *   97=updatePolicies   98=archivePolicies  99=getPolicySchema
  *   100=searchDevices   101=getDeviceHistory 102=addDevices
  *   103=updateDevices   104=archiveDevices  105=getDeviceSchema
+ *   106=searchBranding  107=getBrandingHistory 108=addBranding
+ *   109=updateBranding  110=archiveBranding 111=getBrandingSchema
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
@@ -45,5 +47,12 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
     // create intentionally omitted: deviceTokenHash is INSERT-only server-side, never settable from the admin UI
     update: 103, // updateDevices
     archive: 104, // archiveDevices
+  },
+  branding: {
+    get: 106, // searchBranding
+    getHistory: 107, // getBrandingHistory
+    create: 108, // addBranding
+    update: 109, // updateBranding
+    archive: 110, // archiveBranding
   },
 };

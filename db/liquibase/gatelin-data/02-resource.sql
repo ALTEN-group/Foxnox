@@ -12,5 +12,6 @@ INSERT INTO resources ("serviceId", name, core, "creatorId", "creatorName") VALU
   ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox',          false, -1, 'system'),
   ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox/tokens',   false, -1, 'system'),
   ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox/policies', false, -1, 'system'),
-  ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox/devices',  false, -1, 'system')
+  ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox/devices',  false, -1, 'system'),
+  ((SELECT id FROM service WHERE name = 'foxnox'), 'foxnox/branding', false, -1, 'system')
 ON CONFLICT DO NOTHING;

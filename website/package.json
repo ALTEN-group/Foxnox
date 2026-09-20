@@ -1,6 +1,6 @@
 {
   "name": "foxnox-docs",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "private": true,
   "scripts": {
     "dev": "vitepress dev docs --host",
@@ -22,6 +22,8 @@
     "vitepress": "1.6.3"
   },
   "dependencies": {
+    "@lcluber/frameratjs": "1.1.0",
+    "@lcluber/roostrjs": "0.6.0",
     "mermaid": "11.15.0",
     "vitepress-plugin-mermaid": "2.0.17"
   }

@@ -69,7 +69,13 @@ The important detail is the last three steps. Completing a challenge does not cr
 
 ## Mint a Challenge
 
-Called by the BFF after a successful password check. Also useful directly for testing.
+Called by the BFF after a successful password check, over the **internal**
+`PWD_CHALLENGES_URL`. It is not a Gatelin-proxied admin route: a signed-in
+admin must not be able to mint a challenge for an arbitrary `userId`.
+
+Foxnox only accepts the mint when that `userId` just passed `POST /foxnox/compare`
+(grant lasts five minutes and is single-use). `trusted-device` cannot be minted
+here — the 2FA workflow page creates that challenge in-process after a valid TOTP.
 
 ```
 POST /foxnox/challenges
@@ -82,10 +88,9 @@ Content-Type: application/json
 ```
 
 Foxnox does not inspect an `Authorization` header on this internal endpoint; it
-relies on network isolation. Gatelin's public proxy route is protected and
-requires the caller's authenticated session.
+relies on network isolation, the compare grant, and the kind allow-list.
 
-`kind` must be one of `2fa`, `expired-password`, or `trusted-device`.
+`kind` must be `2fa` or `expired-password`.
 
 **Response (201 Created):**
 

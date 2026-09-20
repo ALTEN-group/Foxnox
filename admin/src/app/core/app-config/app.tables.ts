@@ -68,4 +68,17 @@ export const TABLES: Record<AdminEntity, TableInfo> = {
     excelExportMode: "local",
     additionalReadonlyProperties: {},
   },
+  branding: {
+    label: $localize`:@@TableLabels_Branding:Branding`,
+    title: $localize`:@@TableLabels_Branding:Branding`,
+    entityId: "branding",
+    editionDialogSize: "m",
+    filterLevel: "advanced",
+    isPreferencesModeEnabled: true,
+    shouldSyncIdWithUrl: true,
+    shouldSyncPageWithUrl: true,
+    isExcelExportEnabled: true,
+    excelExportMode: "local",
+    additionalReadonlyProperties: {},
+  },
 } as const;

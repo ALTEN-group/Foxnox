@@ -61,9 +61,9 @@ Operational paths (local Docker base `http://localhost:8100`):
 | Trusted devices | `/api/foxnox/web/trusted-devices/prompt?challenge=…`, `/api/foxnox/web/trusted-devices` |
 | Expired password | `/api/foxnox/web/password/expired?challenge=…` |
 | Unlock | `/api/foxnox/web/unlock`, `/api/foxnox/web/unlock/confirm?token=…` |
-| Mint login challenge (API) | `POST /api/foxnox/challenges` `{ userId, kind }` |
+| Mint login challenge (internal API) | `POST /foxnox/challenges` `{ userId, kind }` after compare (`2fa` or `expired-password`) |
 
-Requires Gatelin `gatelin-data` changesets 05–10. Run Liquibase so login challenge token types exist.
+Requires Gatelin `gatelin-data` changesets 05–12. Run Liquibase so login challenge token types exist. `POST /foxnox/challenges` is not a Gatelin-proxied admin route.
 
 ### Start / Restart
 

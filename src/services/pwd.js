@@ -1,6 +1,6 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
-import { encrypt } from "@dwtechs/hashitaka";
+import { compare, encrypt } from "@dwtechs/hashitaka";
 import { isValidPassword } from "@dwtechs/passken";
 import { init as initPasskenGenerator } from "@dwtechs/passken-express";
 import { log } from "@dwtechs/winstan";
@@ -156,15 +156,23 @@ export async function passwordMeetsPolicy(plaintext, policy) {
 
 /**
  * @param {number} userId
- * @returns {Promise<number|null>} pwd row id
+ * @returns {Promise<object|null>}
  */
-async function findActivePwdId(userId) {
+async function findActivePwd(userId) {
   const { query, args } = pEnt.query.select(0, 1, "id", "ASC", {
     userId: { value: userId, matchMode: "equals" },
     archived: { value: false, matchMode: "equals" },
   });
   const res = await execute(query, args, null);
-  const id = res.rows?.[0]?.id;
+  return res.rows?.[0] ?? null;
+}
+
+/**
+ * @param {number} userId
+ * @returns {Promise<number|null>} pwd row id
+ */
+async function findActivePwdId(userId) {
+  const id = (await findActivePwd(userId))?.id;
   return id == null ? null : Number(id);
 }
 
@@ -331,16 +339,7 @@ export async function unlockAccount(userId) {
  * }|null>}
  */
 export async function getPwdAuthState(userId) {
-  const res = await execute(
-    `SELECT id, "userId", "twoFactorEnabled", "pwdExpiry", "lockedUntil", "failedAttempts"
-     FROM pwd
-     WHERE "userId" = $1 AND archived IS NOT TRUE
-     ORDER BY id ASC
-     LIMIT 1`,
-    [userId],
-    null,
-  );
-  const row = res.rows?.[0];
+  const row = await findActivePwd(userId);
   if (!row) return null;
   return {
     id: Number(row.id),
@@ -357,17 +356,23 @@ export async function getPwdAuthState(userId) {
  * @returns {Promise<string|null>}
  */
 export async function getTwoFactorSecret(userId) {
-  const res = await execute(
-    `SELECT "twoFactorSecret"
-     FROM pwd
-     WHERE "userId" = $1 AND archived IS NOT TRUE
-     ORDER BY id ASC
-     LIMIT 1`,
-    [userId],
-    null,
-  );
-  const secret = res.rows?.[0]?.twoFactorSecret;
+  const secret = (await findActivePwd(userId))?.twoFactorSecret;
   return secret ? String(secret) : null;
+}
+
+/**
+ * Step-up check: the submitted password matches the user's current hash.
+ *
+ * @param {number} userId
+ * @param {string} plaintext
+ * @returns {Promise<boolean>}
+ */
+export async function verifyCurrentPassword(userId, plaintext) {
+  const candidate = String(plaintext ?? "");
+  if (!candidate) return false;
+  const stored = (await findActivePwd(userId))?.pwdHash;
+  if (!stored) return false;
+  return await compare(candidate, String(stored), tokenSecret());
 }
 
 /**

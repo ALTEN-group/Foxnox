@@ -1,7 +1,9 @@
 // @ts-check
 
+import { verifyCurrentPassword } from "../../services/pwd.js";
 import {
   emptyQuestionSlots,
+  hasEnrolledSecurityAnswers,
   listSecurityQuestionCatalog,
   saveSecurityAnswers,
 } from "../../services/security-questions.js";
@@ -11,8 +13,23 @@ import { isSuspiciousForm } from "../form-guards.js";
 
 /**
  * Enroll security questions for later account-recovery challenges.
- * Requires Gatelin session (`x-consumer-user-id`).
+ * Requires Gatelin session (`x-consumer-user-id`). Replacing an existing set
+ * also requires the current password.
  */
+
+/**
+ * @param {number|null} userId
+ * @param {string} [lang]
+ */
+async function setupForm(userId, lang = "en") {
+  const catalog = userId ? await listSecurityQuestionCatalog(lang) : [];
+  const replacing = userId ? await hasEnrolledSecurityAnswers(userId) : false;
+  return {
+    slots: emptyQuestionSlots(3),
+    catalog,
+    replacing,
+  };
+}
 
 /** @type {import('express').RequestHandler} */
 export async function getSecurityQuestionsSetup(req, res) {
@@ -21,22 +38,17 @@ export async function getSecurityQuestionsSetup(req, res) {
     return res.status(401).render(
       "security-questions/setup",
       buildViewContext(req, "securityQuestionsSetup", {
-        form: { slots: emptyQuestionSlots(3), catalog: [] },
+        form: await setupForm(null),
         error: buildViewContext(req, "securityQuestionsSetup").page
           .errorIncomplete,
       }),
     );
   }
 
-  const lang = resolveLang(req);
-  const catalog = await listSecurityQuestionCatalog(lang);
   res.render(
     "security-questions/setup",
     buildViewContext(req, "securityQuestionsSetup", {
-      form: {
-        slots: emptyQuestionSlots(3),
-        catalog,
-      },
+      form: await setupForm(userId, resolveLang(req)),
     }),
   );
 }
@@ -46,7 +58,6 @@ export async function postSecurityQuestionsSetup(req, res) {
   const page = "securityQuestionsSetup";
   const ctxPage = buildViewContext(req, page).page;
   const lang = resolveLang(req);
-  const catalog = await listSecurityQuestionCatalog(lang);
   const userId = getConsumerUserId(req);
 
   if (isSuspiciousForm(req)) return res.status(204).end();
@@ -55,18 +66,19 @@ export async function postSecurityQuestionsSetup(req, res) {
     return res.status(401).render(
       "security-questions/setup",
       buildViewContext(req, page, {
-        form: { slots: emptyQuestionSlots(3), catalog },
+        form: await setupForm(null, lang),
         error: ctxPage.errorIncomplete,
       }),
     );
   }
 
+  const form = await setupForm(userId, lang);
   const questionIds = [].concat(req.body?.questionIds ?? []);
   const answers = []
     .concat(req.body?.answers ?? [])
     .map((a) => String(a).trim());
   const uniqueIds = new Set(questionIds.filter(Boolean).map(String));
-  const allowed = new Set(catalog.map((q) => String(q.id)));
+  const allowed = new Set(form.catalog.map((q) => String(q.id)));
   const allKnown = questionIds.every((id) => allowed.has(String(id)));
 
   if (
@@ -79,13 +91,23 @@ export async function postSecurityQuestionsSetup(req, res) {
     return res.status(400).render(
       "security-questions/setup",
       buildViewContext(req, page, {
-        form: {
-          slots: emptyQuestionSlots(3),
-          catalog,
-        },
+        form,
         error: ctxPage.errorIncomplete,
       }),
     );
+  }
+
+  if (form.replacing) {
+    const password = String(req.body?.password ?? "");
+    if (!password || !(await verifyCurrentPassword(userId, password))) {
+      return res.status(400).render(
+        "security-questions/setup",
+        buildViewContext(req, page, {
+          form,
+          error: ctxPage.errorPassword,
+        }),
+      );
+    }
   }
 
   try {
@@ -100,8 +122,8 @@ export async function postSecurityQuestionsSetup(req, res) {
     return res.status(500).render(
       "security-questions/setup",
       buildViewContext(req, page, {
-        form: { slots: emptyQuestionSlots(3), catalog },
-        error: ctxPage.errorIncomplete,
+        form,
+        error: ctxPage.errorGeneric,
       }),
     );
   }

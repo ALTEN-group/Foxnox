@@ -13,6 +13,8 @@ export class ShaderService {
   private vertexLight = "";
   private fragment = "";
   private fragmentLight = "";
+  private foxVertex = "";
+  private foxFragment = "";
 
   public async load(): Promise<boolean> {
     return firstValueFrom(
@@ -41,6 +43,26 @@ export class ShaderService {
       .catch(() => false);
   }
 
+  /** Loaded independently so a failure does not block the animated background. */
+  public async loadFox(): Promise<boolean> {
+    return firstValueFrom(
+      forkJoin({
+        vertex: this.http.get(`${this.folder}fox-face_vert-ready.glsl`, {
+          responseType: "text",
+        }),
+        fragment: this.http.get(`${this.folder}fox-face_frag-ready.glsl`, {
+          responseType: "text",
+        }),
+      }),
+    )
+      .then((response) => {
+        this.foxVertex = response.vertex;
+        this.foxFragment = response.fragment;
+        return true;
+      })
+      .catch(() => false);
+  }
+
   public get vertexShader(): string {
     return this.vertex;
   }
@@ -55,5 +77,13 @@ export class ShaderService {
 
   public get fragmentLightShader(): string {
     return this.fragmentLight;
+  }
+
+  public get foxVertexShader(): string {
+    return this.foxVertex;
+  }
+
+  public get foxFragmentShader(): string {
+    return this.foxFragment;
   }
 }

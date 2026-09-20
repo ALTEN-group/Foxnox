@@ -10,10 +10,11 @@ import { validateRuntimeEnv } from "./conf/runtime.js";
 import { startDeleteArchivedEntitiesJob } from "./jobs/delete-archived-entities.js";
 import { startDeleteOldHistoryJob } from "./jobs/delete-old-history.js";
 import { initPwdGeneration } from "./services/pwd.js";
+import { loadBrandingFromDb } from "./web/branding.js";
 
 Promise.resolve()
   .then(validateRuntimeEnv)
-  .then(() => Promise.all([initPwdGeneration()]))
+  .then(() => Promise.all([initPwdGeneration(), loadBrandingFromDb()]))
   .then(() => {
     const adminServer = startAdminServer();
     if (adminServer) {

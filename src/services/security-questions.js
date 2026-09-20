@@ -1,5 +1,6 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
+import { isArray, isValidInteger } from "@dwtechs/checkard";
 import { compare, encrypt } from "@dwtechs/hashitaka";
 import { log } from "@dwtechs/winstan";
 import { tokenSecret } from "./token-crypto.js";
@@ -118,6 +119,23 @@ export async function listEnrolledSecurityQuestions(userId, lang = "en") {
 }
 
 /**
+ * @param {number} userId
+ * @returns {Promise<boolean>}
+ */
+export async function hasEnrolledSecurityAnswers(userId) {
+  const res = await execute(
+    `SELECT 1
+     FROM user_security_answer
+     WHERE "userId" = $1
+       AND archived IS NOT TRUE
+     LIMIT 1`,
+    [userId],
+    null,
+  );
+  return (res.rows?.length ?? 0) > 0;
+}
+
+/**
  * @param {number} [count]
  * @returns {{ slot: number }[]}
  */
@@ -175,29 +193,41 @@ export async function saveSecurityAnswers(userId, pairs) {
 }
 
 /**
+ * True only when `pairs` is exactly the user's enrolled set and every answer
+ * matches. A subset (even with correct answers) must not succeed.
+ *
  * @param {number} userId
  * @param {Array<{ questionId: number, answer: string }>} pairs
  * @returns {Promise<boolean>}
  */
 export async function verifySecurityAnswers(userId, pairs) {
-  if (!pairs.length) return false;
-  const ids = pairs.map((p) => p.questionId);
+  if (!isArray(pairs, ">", 0)) return false;
+
+  const submittedIds = pairs.map((p) => Number(p.questionId));
+  if (
+    submittedIds.some((id) => !isValidInteger(id, 1, undefined, true)) ||
+    new Set(submittedIds).size !== submittedIds.length
+  )
+    return false;
+
   const res = await execute(
     `SELECT "questionId", "answerHash"
      FROM user_security_answer
      WHERE "userId" = $1
-       AND "questionId" = ANY($2::int[])
        AND archived IS NOT TRUE`,
-    [userId, ids],
+    [userId],
     null,
   );
   const byId = new Map(
     (res.rows ?? []).map((r) => [Number(r.questionId), String(r.answerHash)]),
   );
-  if (byId.size !== pairs.length) return false;
+  if (byId.size === 0 || byId.size !== submittedIds.length) return false;
+  for (const id of submittedIds) {
+    if (!byId.has(id)) return false;
+  }
 
   for (const pair of pairs) {
-    const stored = byId.get(pair.questionId);
+    const stored = byId.get(Number(pair.questionId));
     if (!stored) return false;
     const normalized = String(pair.answer || "")
       .trim()

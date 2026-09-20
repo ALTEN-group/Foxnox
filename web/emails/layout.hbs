@@ -13,7 +13,11 @@
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;">
           <tr>
             <td style="padding:24px 28px 8px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;">
+              {{#if brand.hasLogo}}
+              <img src="{{brand.logoUrl}}" alt="{{brand.logoAlt}}" height="32" style="display:block;height:32px;width:auto;max-width:200px;">
+              {{else}}
               <span style="display:inline-block;font-size:20px;font-weight:700;color:{{brand.primaryColor}};">{{brand.name}}</span>
+              {{/if}}
               {{#if brand.tagline}}
               <div style="margin-top:4px;font-size:13px;color:{{brand.secondaryColor}};">{{brand.tagline}}</div>
               {{/if}}

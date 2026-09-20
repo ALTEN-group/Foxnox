@@ -52,16 +52,8 @@
     <sqlFile path="10-cors.sql"/>
   </changeSet>
   <changeSet id="foxnox-data-12" author="lcluber">
-    <comment>Foxnox admin preference resources</comment>
-    <sqlFile path="11-preference-resource.sql"/>
-  </changeSet>
-  <changeSet id="foxnox-data-13" author="lcluber">
-    <comment>Foxnox admin table preference templates</comment>
-    <sqlFile path="12-preference.sql"/>
-  </changeSet>
-  <changeSet id="foxnox-data-14" author="lcluber">
-    <comment>Foxnox admin preference scopes</comment>
-    <sqlFile path="13-preference-scope.sql"/>
+    <comment>Un-proxy login challenge mint: internal BFF only, not an admin Gatelin route</comment>
+    <sqlFile path="11-unproxy-challenges.sql"/>
   </changeSet>
 
 </databaseChangeLog>

@@ -1,59 +1,46 @@
 // @ts-check
 
-import { execute } from "@dwtechs/antity-pgsql";
 import { log } from "@dwtechs/winstan";
-import pEnt from "../entities/pwd.js";
-import ppEnt from "../entities/pwd-policy.js";
-import tEnt from "../entities/token.js";
-import tdEnt from "../entities/user-device.js";
+import { makeDeleteArchived } from "../utils/delete-archived.js";
 import { scheduleDailyAt } from "./scheduler.js";
+
+const ARCHIVE_RETENTION_MONTHS = 2;
 
 /**
  * Cron job to delete archived entities from the database.
- * All entities must be archived for at least 2 months before deletion.
- * Runs once daily at 2:00 AM.
+ * All entities must be archived for at least ARCHIVE_RETENTION_MONTHS before deletion.
+ * Runs once daily at 2:00 AM UTC as the job DB role via `delete()`.
  *
  * Deletes archived records from: pwds, tokens, password policies, and trusted devices.
- *
- * Cron schedule format: "second minute hour day month weekday"
- * Current schedule: "0 0 2 * * *" means every day at 2:00 AM
- *
- * @example
- * // Start the cron job
- * startDeleteArchivedEntitiesJob();
  */
-function deleteArchived(entity, date) {
-  const q = entity.query.deleteArchive();
-  return execute(q, [date], null).then((r) => r.rowCount || 0);
-}
 export function startDeleteArchivedEntitiesJob() {
   scheduleDailyAt(2, async () => {
     try {
-      // Calculate date for 2 months ago
-      const twoMonthsAgo = new Date();
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - ARCHIVE_RETENTION_MONTHS);
 
       log.info(
-        "Starting scheduled deletion of archived entities (archived > 2 months)...",
+        `Starting scheduled deletion of archived entities (archived > ${ARCHIVE_RETENTION_MONTHS} months)...`,
       );
 
-      // Define all entities to process
       const entities = [
-        { name: "pwds", entity: pEnt },
-        { name: "tokens", entity: tEnt },
-        { name: "password policies", entity: ppEnt },
-        { name: "trusted devices", entity: tdEnt },
+        { name: "pwds", deleteArchived: makeDeleteArchived("pwd") },
+        { name: "tokens", deleteArchived: makeDeleteArchived("token") },
+        {
+          name: "password policies",
+          deleteArchived: makeDeleteArchived("pwd_policy"),
+        },
+        {
+          name: "trusted devices",
+          deleteArchived: makeDeleteArchived("user_trusted_device"),
+        },
       ];
 
       let totalDeleted = 0;
 
-      // Process all entities concurrently
       const results = await Promise.allSettled(
         entities.map((entity) =>
-          deleteArchived(entity.entity, twoMonthsAgo).then((count) => ({
-            entity,
-            count,
-          })),
+          entity.deleteArchived(cutoff).then((count) => ({ entity, count })),
         ),
       );
 
@@ -82,6 +69,6 @@ export function startDeleteArchivedEntitiesJob() {
   });
 
   log.info(
-    "Delete archived entities job initialized (runs daily at 2:00 AM UTC, deletes entities archived > 2 months)",
+    `Delete archived entities job initialized (runs daily at 2:00 AM UTC, deletes entities archived > ${ARCHIVE_RETENTION_MONTHS} months)`,
   );
 }

@@ -38,4 +38,13 @@ export const SIDENAV: MenuItem[] = [
       functionality: "trustedDevices",
     },
   },
+  {
+    id: "branding",
+    label: $localize`:@@Admin_BrandingNav:Branding`,
+    routerLink: `/${AppPaths.BRANDING}`,
+    icon: "pi pi-palette",
+    data: {
+      functionality: "branding",
+    },
+  },
 ];

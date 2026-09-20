@@ -120,7 +120,14 @@ RESPONSE=$(docker exec -i "$FOXNOX_HOST" node -e '
       port: process.env.PORT || 3000,
       path: "/foxnox/",
       method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) },
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        // Tracked writes are rejected without a consumer, since that is what
+        // stamps the audit columns the history trigger requires.
+        "x-consumer-user-id": "1",
+        "x-consumer-name": "seed-script",
+      },
     }, (res) => {
       let out = "";
       res.on("data", (c) => out += c);

@@ -24,12 +24,12 @@ import { SnackbarService } from "@core/utils/snackbar/snackbar.service";
 import { LoginBackgroundComponent } from "app/login/ui/login-background/login-background.component";
 import { SharedModule } from "@openng/optimus-ui/api";
 import { AutoFocusModule } from "@openng/optimus-ui/autofocus";
-import { AvatarModule } from "@openng/optimus-ui/avatar";
 import { ButtonModule } from "@openng/optimus-ui/button";
 import { CardModule } from "@openng/optimus-ui/card";
 import { InputGroupModule } from "@openng/optimus-ui/inputgroup";
 import { InputGroupAddonModule } from "@openng/optimus-ui/inputgroupaddon";
 import { InputTextModule } from "@openng/optimus-ui/inputtext";
+import { LoginFoxComponent } from "app/login/ui/login-fox/login-fox.component";
 
 @Component({
   selector: "app-login",
@@ -45,7 +45,7 @@ import { InputTextModule } from "@openng/optimus-ui/inputtext";
     CardModule,
     AutoFocusModule,
     LoginBackgroundComponent,
-    AvatarModule,
+    LoginFoxComponent,
     InputGroupAddonModule,
     InputGroupModule,
     ThemeToggleButtonComponent,

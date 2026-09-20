@@ -1,6 +1,6 @@
 {
   "name": "foxnox",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Password management service",
   "main": "src/server.js",
   "type": "module",
@@ -27,8 +27,9 @@
   "homepage": "https://github.com/ALTEN-group/Foxnox#readme",
   "dependencies": {
     "@dwtechs/antity-pgsql": "0.23.0",
-    "@dwtechs/checkard": "3.6.1",
+    "@dwtechs/checkard": "3.7.0",
     "@dwtechs/errandler-express": "0.1.1",
+    "@dwtechs/gatelin-express": "0.3.0",
     "@dwtechs/hashitaka": "0.5.0",
     "@dwtechs/healix-express": "0.2.0",
     "@dwtechs/passken": "0.6.2",

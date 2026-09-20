@@ -1,0 +1,27 @@
+
+CREATE TABLE IF NOT EXISTS pwd_policy (
+  id SERIAL PRIMARY KEY,
+  name varchar(50) NOT NULL,
+  description varchar(100) NULL,
+  length INT DEFAULT 12 NOT NULL,
+  number BOOLEAN DEFAULT TRUE NOT NULL,
+  symbol BOOLEAN DEFAULT TRUE NOT NULL,
+  "lowerCase" BOOLEAN DEFAULT TRUE NOT NULL,
+  "upperCase" BOOLEAN DEFAULT TRUE NOT NULL,
+  "strict" BOOLEAN DEFAULT TRUE NOT NULL,
+  symbols varchar(50) DEFAULT '!@#%*_-+=:?><./()' NOT NULL,
+  "expiryDays" INT DEFAULT 90,
+  "maxFailedAttempts" INT DEFAULT 5 NOT NULL,
+  "lockoutMinutes" INT DEFAULT 15 NOT NULL,
+  archived BOOLEAN DEFAULT FALSE,  
+  "archivedAt" TIMESTAMPTZ DEFAULT NULL,  
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+  "creatorId" INT,
+  "creatorName" TEXT,
+  "updatedAt" TIMESTAMPTZ NULL,
+  "updaterId" INT,
+  "updaterName" TEXT,
+  CHECK (length > 5),
+  CHECK ("maxFailedAttempts" > 0),
+  CHECK (number = TRUE OR symbol = TRUE OR "lowerCase" = TRUE OR "upperCase" = TRUE)
+);

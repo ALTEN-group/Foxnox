@@ -8,8 +8,10 @@ Variables for the `foxnox` container.
 |---|---|
 | `DB_HOST` | Hostname of the PostgreSQL container |
 | `DB_NAME` | Database name (default: `foxnox`) |
-| `DB_USER` | Database user for Foxnox |
+| `DB_USER` | Database user for Foxnox request handling |
 | `DB_PWD` | Database password for Foxnox |
+| `DB_JOB_USER` | Database user for archive/history cron jobs (may `DELETE` archived rows) |
+| `DB_JOB_PWD` | Password for the cron database user |
 | `PWD_SECRET` | Secret used by `@dwtechs/hashitaka`: salted PBKDF2 for password hashes and security-question answers, HMAC for workflow tokens and trusted-device cookies. Production startup requires at least 32 characters. `FOXNOX_PWD_SECRET` is accepted as an alias. **Rotating it invalidates every stored password hash, every outstanding token, and every remembered device**, so treat it as permanent for the life of the database. |
 | `USER_SEARCH_URL` | Search endpoint of your external user-management service. Email-driven workflows call it to resolve an email address to a `userId`. Foxnox validates it at startup when `NODE_ENV=production`; production Compose also rejects an unset value. |
 
@@ -85,6 +87,8 @@ These apply to the `foxnox-migration` container (for example,
 | `DB_NAME` | ✅ | Database name to create and migrate |
 | `DB_USER` | ✅ | Application database user to create |
 | `DB_PWD` | ✅ | Password for the application database user |
+| `DB_JOB_USER` | ✅ | Cron database user (may `DELETE` archived catalog rows) |
+| `DB_JOB_PWD` | ✅ | Password for the cron database user |
 | `UPDATE` | ✅ | Set to `1` to run the full migration |
 | `ROLLBACK` | ⬜ | Number of changesets to roll back (used instead of `UPDATE`) |
 | `SNAPSHOT` | ⬜ | Path to the reference snapshot file |
@@ -108,7 +112,7 @@ These are set on the **BFF**, not on Foxnox. The names below are [Gatelin](https
 
 | Variable | Default | Description |
 |---|---|---|
-| `ADMIN_PORT` | — | Dedicated internal port used by the bundled admin server. Unset disables that server outside production; production startup requires an integer between 1024 and 65535. Compose commonly supplies `8080`. |
+| `ADMIN_PORT` | — | Dedicated internal port used by the bundled admin server. Unset disables that server. When set it must be an integer between 1024 and 65535, checked at startup in production. Compose commonly supplies `8080`. |
 | `ADMIN_BASE_PATH` | `/foxnox` | Public path routed by Traefik to the bundled admin server. |
 | `ADMIN_SSO_TOKEN_KEY` | `sso_access_token` | localStorage key the admin UI stores the access token under. Injected at runtime (dev entrypoint + production `src/admin-server.js`), no rebuild required. Not app-prefixed by default because Foxnox and Gatelin admin share the same slot for cookie-based silent refresh when switching between the two apps — if you override it, set the same value on both. |
 

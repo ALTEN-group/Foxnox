@@ -9,6 +9,7 @@ import {
   Scene,
 } from "@lcluber/roostrjs";
 import { Vector3 } from "@lcluber/type6js";
+import { LOGIN_SHADER_FPS_CAP } from "app/login/utils/login-shader-fps";
 import { ShaderService } from "app/login/utils/shader.service";
 
 @Component({
@@ -44,7 +45,7 @@ export class LoginBackgroundComponent implements OnInit, OnDestroy {
       this.scene.addMesh(this.quad);
       this.animation = new Player(this.render);
       this.animation.setScope(this);
-      this.animation.capFPS(14);
+      this.animation.capFPS(LOGIN_SHADER_FPS_CAP);
       this.shaderService.load().then((response: boolean) => {
         if (response) this.start();
       });

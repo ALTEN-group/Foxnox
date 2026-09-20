@@ -1,6 +1,7 @@
 // @ts-check
 
 import {
+  bumpLoginChallengeAttempts,
   consumeLoginChallenge,
   createLoginChallenge,
   findValidLoginChallenge,
@@ -67,6 +68,12 @@ export async function postTwofaVerify(req, res) {
 
   const secret = await getTwoFactorSecret(valid.userId);
   if (!secret || !verifyTotpCode(secret, code)) {
+    await bumpLoginChallengeAttempts(valid.id);
+    if (valid.attempts + 1 >= valid.maxAttempts) {
+      return res
+        .status(400)
+        .render("twofa/invalid", buildViewContext(req, "twofaInvalid"));
+    }
     return res.status(400).render(
       "twofa/verify",
       buildViewContext(req, page, {
