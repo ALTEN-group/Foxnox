@@ -8,6 +8,12 @@ import {
   postAccountRecoverRequest,
 } from "./handlers/account-recover.js";
 import {
+  getTrustedDevicePrompt,
+  getTrustedDevicesManage,
+  postTrustedDevicePrompt,
+  postTrustedDevicesManage,
+} from "./handlers/devices.js";
+import {
   getPasswordExpired,
   postPasswordExpired,
 } from "./handlers/password-expired.js";
@@ -21,12 +27,6 @@ import {
   getSecurityQuestionsSetup,
   postSecurityQuestionsSetup,
 } from "./handlers/security-questions.js";
-import {
-  getTrustedDevicePrompt,
-  getTrustedDevicesManage,
-  postTrustedDevicePrompt,
-  postTrustedDevicesManage,
-} from "./handlers/devices.js";
 import {
   getTwofaSetup,
   getTwofaVerify,

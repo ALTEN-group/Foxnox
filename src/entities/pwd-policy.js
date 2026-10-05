@@ -15,6 +15,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "name",
@@ -29,6 +30,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "description",
@@ -43,6 +45,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "length",
@@ -57,6 +60,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "number",
@@ -71,6 +75,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "symbol",
@@ -85,6 +90,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "lowerCase",
@@ -99,6 +105,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "upperCase",
@@ -113,6 +120,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "strict",
@@ -127,6 +135,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "symbols",
@@ -141,6 +150,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "expiryDays",
@@ -155,6 +165,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "maxFailedAttempts",
@@ -169,6 +180,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "lockoutMinutes",
@@ -183,6 +195,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archived",
@@ -197,6 +210,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archivedAt",
@@ -211,6 +225,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "createdAt",
@@ -225,6 +240,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "creatorName",
@@ -239,6 +255,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updatedAt",
@@ -253,6 +270,7 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updaterName",
@@ -267,5 +285,6 @@ export default new SQLEntity("pwd_policy", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

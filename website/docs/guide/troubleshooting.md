@@ -81,7 +81,7 @@ If `twoFactorEnabled` is false, no 2FA challenge will ever be raised — the use
 The user's `lockedUntil` is still in the future after too many failed attempts (see the in-force policy's `maxFailedAttempts` and `lockoutMinutes`). They can clear it themselves through `/api/foxnox/web/unlock`, which emails an unlock link. To clear it immediately as an administrator, update the row:
 
 ```
-PUT /api/foxnox/
+PUT /api/foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

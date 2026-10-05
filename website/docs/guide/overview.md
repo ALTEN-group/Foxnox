@@ -44,9 +44,9 @@ Every user with a password has exactly one **`pwd` row**. It is the heart of the
 
 Because a single row answers "can this user log in right now?", the BFF only needs one call to Foxnox to find out. See [Passwords](./api-passwords).
 
-The row also has an optional `lastLoginAt` metadata field, but Foxnox does not
-update it during password comparison. A BFF or administrator must write it
-explicitly if the deployment uses it.
+The row also records `lastLoginAt`. Foxnox automatically stamps this field with
+the current timestamp on every successful sign-in (direct password comparison or
+redeemed login-resume ticket).
 
 ### Tokens
 

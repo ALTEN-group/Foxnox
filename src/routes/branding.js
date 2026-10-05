@@ -14,9 +14,9 @@ import { loadBrandingFromDb } from "../web/branding.js";
  * and emails pick up the change without a restart.
  * @type {import('express').RequestHandler}
  */
-async function invalidateBrandingCache(req, res, next) {
+async function invalidateBrandingCache(_req, _res, next) {
   await loadBrandingFromDb();
-  next();
+  return next();
 }
 
 //Routes

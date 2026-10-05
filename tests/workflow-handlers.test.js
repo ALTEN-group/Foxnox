@@ -107,6 +107,7 @@ jest.unstable_mockModule("../src/services/pwd.js", () => ({
   enableTwoFactor: jest.fn(async () => {}),
   disableTwoFactor: jest.fn(async () => {}),
   verifyCurrentPassword,
+  recordLastLogin: jest.fn(async () => {}),
 }));
 
 jest.unstable_mockModule("../src/services/security-questions.js", () => ({

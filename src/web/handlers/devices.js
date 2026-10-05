@@ -53,10 +53,7 @@ export async function getTrustedDevicePrompt(req, res) {
   if (!challenge) {
     return res
       .status(400)
-      .render(
-        "devices/invalid",
-        buildViewContext(req, "trustedDeviceInvalid"),
-      );
+      .render("devices/invalid", buildViewContext(req, "trustedDeviceInvalid"));
   }
 
   const valid = await findValidLoginChallenge({
@@ -66,10 +63,7 @@ export async function getTrustedDevicePrompt(req, res) {
   if (!valid) {
     return res
       .status(400)
-      .render(
-        "devices/invalid",
-        buildViewContext(req, "trustedDeviceInvalid"),
-      );
+      .render("devices/invalid", buildViewContext(req, "trustedDeviceInvalid"));
   }
 
   res.render(
@@ -92,10 +86,7 @@ export async function postTrustedDevicePrompt(req, res) {
   if (!valid) {
     return res
       .status(400)
-      .render(
-        "devices/invalid",
-        buildViewContext(req, "trustedDeviceInvalid"),
-      );
+      .render("devices/invalid", buildViewContext(req, "trustedDeviceInvalid"));
   }
 
   const trust = String(req.body?.trust ?? "no");
@@ -123,10 +114,7 @@ export async function postTrustedDevicePrompt(req, res) {
   } catch {
     return res
       .status(500)
-      .render(
-        "devices/invalid",
-        buildViewContext(req, "trustedDeviceInvalid"),
-      );
+      .render("devices/invalid", buildViewContext(req, "trustedDeviceInvalid"));
   }
 }
 

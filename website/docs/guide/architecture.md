@@ -16,23 +16,23 @@ Client Request
 [/foxnox/web] - Account workflow pages (Handlebars SSR)
     │     express.urlencoded → csrfProtection → page handler
     ↓
-[JSON routers] - Most specific mount first
+[JSON routers]
     ├── /foxnox/tokens            → token CRUD          → send(tEnt)
     ├── /foxnox/policies          → policy CRUD         → send(ppEnt)
     ├── /foxnox/devices/verify    → device check
     ├── /foxnox/devices           → device CRUD         → send(tdEnt)
     ├── /foxnox/challenges        → mint login challenge
     ├── /foxnox/login-tickets     → redeem resume ticket
-    └── /foxnox/                  → password CRUD + compare → sendPwd
+    ├── /foxnox/pwd               → password CRUD + compare → sendPwd
+    └── /foxnox/preferences       → admin table-view preferences → send(pEnt)
     ↓
 [errorHandler]
 ```
 
-Two details of this ordering are load-bearing.
+One detail of this ordering is load-bearing.
 
 **Health is registered before the timer and every router**, so a liveness probe never depends on anything else working. `/foxnox/health` is dependency-free; `/foxnox/health/ready` additionally runs `SELECT 1` against Postgres so an instance that lost its database leaves rotation instead of failing requests.
 
-**The catch-all `/foxnox/` router is mounted last.** Express matches `app.use` middleware in registration order, so if the password router came first it would swallow paths like `/foxnox/policies/search` before the real router ever saw them.
 
 ## Response Middlewares
 
@@ -98,7 +98,7 @@ See [How Workflows Work](./workflows#form-protections).
 ```
 
 Foxnox has **no public API route**. Every request should reach it through a BFF,
-which keeps `/foxnox/compare` off the open internet. [Gatelin](https://gatelin.fr)
+which keeps `/foxnox/pwd/compare` off the open internet. [Gatelin](https://gatelin.fr)
 is the example used in these docs; another BFF that authenticates callers,
 issues sessions, and proxies `/foxnox` and `/foxnox/web` is equally valid. This
 boundary depends on network trust: only the BFF and controlled operator
@@ -125,7 +125,7 @@ sequenceDiagram
 
     B->>G: POST /api/gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
-    G->>F: POST /foxnox/compare { userId, pwd }
+    G->>F: POST /foxnox/pwd/compare { userId, pwd }
 
     alt lockedUntil in the future
         F-->>G: 403 Account locked
@@ -157,7 +157,7 @@ Four endpoints are called by the BFF rather than by browsers, each configured on
 
 | Endpoint | Called when |
 |---|---|
-| `POST /foxnox/compare` | Every login, to verify the password (also returns **403** when the account is locked) |
+| `POST /foxnox/pwd/compare` | Every login, to verify the password (also returns **403** when the account is locked) |
 | `POST /foxnox/devices/verify` | Before minting a 2FA challenge, to check the device cookie |
 | `POST /foxnox/challenges` | When a mid-login step is required (internal; after compare; `2fa` or `expired-password` only) |
 | `POST /foxnox/login-tickets/redeem` | When the frontend resumes after a challenge |

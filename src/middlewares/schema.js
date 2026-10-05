@@ -12,7 +12,7 @@ function get(entity) {
     const rows = entity.properties
       .filter((p) => !p.isPrivate)
       .map(
-        ({ key, type, min, max, operations, requiredFor, isFilterable }) => ({
+        ({
           key,
           type,
           min,
@@ -20,6 +20,16 @@ function get(entity) {
           operations,
           requiredFor,
           isFilterable,
+          readOnly,
+        }) => ({
+          key,
+          type,
+          min,
+          max,
+          operations,
+          requiredFor,
+          isFilterable,
+          readOnly,
         }),
       );
     res.locals.rows = rows;

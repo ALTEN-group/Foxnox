@@ -11,7 +11,7 @@ public prefix.
 The one endpoint the BFF calls on every login. Lockout is checked first: if `lockedUntil` is still in the future, Foxnox returns **403** without comparing the password. Otherwise it verifies the plaintext against the stored hash and, on success, returns the public `pwd` row so the caller can decide whether anything else stands in the way of a session.
 
 ```
-POST /foxnox/compare
+POST /foxnox/pwd/compare
 Content-Type: application/json
 
 {
@@ -42,8 +42,8 @@ Content-Type: application/json
 
 The returned row never contains `pwdHash` or `twoFactorSecret` — both are marked private and stripped before serialization, even though the service reads them internally.
 
-`lastLoginAt` is returned and can be written as metadata, but Foxnox does not
-set it automatically when a password comparison succeeds.
+`lastLoginAt` is automatically stamped with the current timestamp whenever
+password comparison succeeds or a login-resume ticket is redeemed.
 
 **Response (401 Unauthorized):** the password does not match. Foxnox increments `failedAttempts` and, once the in-force policy's `maxFailedAttempts` is reached, sets `lockedUntil`.
 
@@ -54,7 +54,7 @@ This response is deliberately more than a yes/no. `twoFactorEnabled`, `pwdExpiry
 ## Search Passwords
 
 ```
-POST /foxnox/search
+POST /foxnox/pwd/search
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -87,7 +87,7 @@ Every field marked filterable can appear in `filters`, which makes this the endp
 Note what is **not** in the request body: a password. You send user IDs, and Foxnox generates a policy-compliant plaintext and hashes it server-side. This keeps plaintext out of your logs and request traces.
 
 ```
-POST /foxnox/
+POST /foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -117,7 +117,7 @@ Generation follows the in-force [password policy](./api-policies) — length, ch
 ## Update Passwords
 
 ```
-PUT /foxnox/
+PUT /foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -142,7 +142,7 @@ Authorization: Bearer <access_token>
 | `pwdExpiry` | When the password must be changed; a past date triggers the expired-password challenge on next login |
 | `failedAttempts` | Failed attempt counter |
 | `lockedUntil` | Lock expiry; set to `null` to unlock immediately |
-| `lastLoginAt` | Optional login timestamp maintained by the BFF or an administrator; password comparison does not update it |
+| `lastLoginAt` | Timestamp of the last successful login, automatically updated on authentication |
 | `twoFactorEnabled` | Turn 2FA on or off |
 
 Clearing `lockedUntil` is how an administrator unlocks an account without waiting for the lock to lapse or sending an unlock email.
@@ -152,7 +152,7 @@ Clearing `lockedUntil` is how an administrator unlocks an account without waitin
 ## Get Password History
 
 ```
-GET /foxnox/:id/history
+GET /foxnox/pwd/:id/history
 Authorization: Bearer <access_token>
 ```
 
@@ -161,7 +161,7 @@ Returns the audit trail for one row, built from database triggers that record ev
 ## Archive Passwords
 
 ```
-POST /foxnox/archive
+POST /foxnox/pwd/archive
 Content-Type: application/json
 Authorization: Bearer <access_token>
 
@@ -178,7 +178,7 @@ Authorization: Bearer <access_token>
 ## Get Entity Schema
 
 ```
-GET /foxnox/schema
+GET /foxnox/pwd/schema
 Authorization: Bearer <access_token>
 ```
 

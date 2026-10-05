@@ -15,6 +15,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "userId",
@@ -29,6 +30,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "resourceName",
@@ -43,6 +45,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "name",
@@ -57,6 +60,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "conf",
@@ -71,6 +75,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: JSON.stringify,
     validator: null,
+    readOnly: false,
   },
   {
     key: "locked",
@@ -85,6 +90,7 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "isActive",
@@ -99,5 +105,6 @@ export default new SQLEntity("preferences", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

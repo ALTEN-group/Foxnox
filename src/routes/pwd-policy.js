@@ -18,11 +18,26 @@ router.get(
   history.get("pwd_policy"),
 );
 // Add password policies
-router.post("/", requireConsumer, enforceAcl(ppEnt, "insert"), ppEnt.addArraySubstack);
+router.post(
+  "/",
+  requireConsumer,
+  enforceAcl(ppEnt, "insert"),
+  ppEnt.addArraySubstack,
+);
 // Update fields
-router.put("/", requireConsumer, enforceAcl(ppEnt, "existing"), ppEnt.updateArraySubstack);
+router.put(
+  "/",
+  requireConsumer,
+  enforceAcl(ppEnt, "existing"),
+  ppEnt.updateArraySubstack,
+);
 // Bulk archive
-router.post("/archive", requireConsumer, enforceAcl(ppEnt, "existing"), ppEnt.archive);
+router.post(
+  "/archive",
+  requireConsumer,
+  enforceAcl(ppEnt, "existing"),
+  ppEnt.archive,
+);
 // Get entity schema
 router.get("/schema", enforceAcl(ppEnt, "output"), schema.get(ppEnt));
 

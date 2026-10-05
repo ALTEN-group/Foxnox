@@ -26,7 +26,7 @@ npm run test:coverage     # coverage under tests/coverage/
 
 | File | What it covers |
 |------|----------------|
-| `routes/compare.test.js` | `POST /foxnox/compare` contract: validation, passken compare, private field strip |
+| `routes/compare.test.js` | `POST /foxnox/pwd/compare` contract: validation, passken compare, private field strip |
 | `routes/gatelin-contract.test.js` | Challenges, trusted-device verify, login-ticket redeem, validators |
 | `middlewares/history.test.js` | Unit: `GET /:id/history` query, transaction grouping, 404-on-INSERT-only |
 | `middlewares/res/send.test.js` | Unit: `isPrivate` stripping, nested history `record`, `x-acl-fields` projection |

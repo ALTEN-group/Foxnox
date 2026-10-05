@@ -22,7 +22,7 @@ sequenceDiagram
     participant F as Foxnox
 
     B->>G: POST /gatelin/sessions { email, pwd }
-    G->>F: POST /foxnox/compare
+    G->>F: POST /foxnox/pwd/compare
     F-->>G: 200 { pwdExpiry in the past }
     G->>F: POST /foxnox/challenges { kind: "expired-password" }
     F-->>G: 201 { url }

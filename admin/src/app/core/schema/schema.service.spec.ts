@@ -19,7 +19,7 @@ describe("SchemaService", () => {
         SchemaService,
         {
           provide: APP_CONFIG,
-          useValue: { foxnoxApi: "/api/foxnox" },
+          useValue: { foxnoxApi: "/api/foxnox/" },
         },
       ],
     });
@@ -57,9 +57,9 @@ describe("SchemaService", () => {
     expect(rows).toEqual([]);
   });
 
-  it("does not add a double slash for the root password resource", () => {
+  it("builds the password schema URL under /pwd", () => {
     service.get("passwords").subscribe();
 
-    http.expectOne("/api/foxnox/schema").flush({ rows: [] });
+    http.expectOne("/api/foxnox/pwd/schema").flush({ rows: [] });
   });
 });

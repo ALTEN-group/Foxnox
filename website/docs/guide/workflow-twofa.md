@@ -25,7 +25,7 @@ sequenceDiagram
     participant F as Foxnox
 
     B->>G: POST /gatelin/sessions { email, pwd }
-    G->>F: POST /foxnox/compare
+    G->>F: POST /foxnox/pwd/compare
     F-->>G: 200 { twoFactorEnabled: true }
     G->>F: POST /foxnox/challenges { kind: "2fa" }
     F-->>G: 201 { url }
@@ -70,7 +70,7 @@ The verify page needs no link — it is only ever reached by redirect from a 202
 Two routes exist. A user who has lost their authenticator goes through [account recovery](./workflow-account-recover), which disables 2FA after they answer their security questions. An administrator can clear the flag directly:
 
 ```
-PUT /api/foxnox/
+PUT /api/foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

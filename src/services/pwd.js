@@ -63,7 +63,7 @@ export async function getActivePwdPolicy() {
 /**
  * Point passken's password generator at the active `pwd_policy` row.
  *
- * `POST /foxnox/` mints passwords through passken-express's `create`, which reads a
+ * `POST /foxnox/pwd` mints passwords through passken-express's `create`, which reads a
  * module-level option set that only `init()` populates. Without this call the
  * generator silently uses the library defaults — where `sym` is the one character
  * class defaulting to false — so generated passwords would carry no special
@@ -266,7 +266,7 @@ export async function recordFailedAttempt(userId) {
 }
 
 /**
- * Clear the failed-attempt counter after a correct password.
+ * Clear the failed-attempt counter after a correct password and update lastLoginAt.
  * @param {number} userId
  * @returns {Promise<void>}
  */
@@ -277,10 +277,31 @@ export async function resetFailedAttempts(userId) {
     `UPDATE pwd
      SET "failedAttempts" = 0,
          "lockedUntil" = NULL,
+         "lastLoginAt" = NOW(),
          "updatedAt" = NOW(),
          "updaterId" = -1,
          "updaterName" = 'system'
-     WHERE id = $1 AND ("failedAttempts" > 0 OR "lockedUntil" IS NOT NULL)`,
+     WHERE id = $1`,
+    [pwdId],
+    null,
+  );
+}
+
+/**
+ * Stamp lastLoginAt after a successful authentication event (e.g. ticket redeem).
+ * @param {number} userId
+ * @returns {Promise<void>}
+ */
+export async function recordLastLogin(userId) {
+  const pwdId = await findActivePwdId(userId);
+  if (pwdId == null) return;
+  await execute(
+    `UPDATE pwd
+     SET "lastLoginAt" = NOW(),
+         "updatedAt" = NOW(),
+         "updaterId" = -1,
+         "updaterName" = 'system'
+     WHERE id = $1`,
     [pwdId],
     null,
   );

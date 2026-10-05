@@ -1,7 +1,11 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
 import { isArray, isObject, isValidInteger } from "@dwtechs/checkard";
-import { getConsumer, getAcl, stripUnallowedFields } from "@dwtechs/gatelin-express";
+import {
+  getAcl,
+  getConsumer,
+  stripUnallowedFields,
+} from "@dwtechs/gatelin-express";
 
 /**
  * Enforces Gatelin's ACL headers at the Foxnox data boundary.
@@ -29,7 +33,8 @@ export function enforceAcl(ent, mode) {
         const enforceConditions = async () => {
           try {
             if (mode === "search") applySearchConditions(req, conditions);
-            else if (mode === "insert") enforceInsertConditions(req, conditions);
+            else if (mode === "insert")
+              enforceInsertConditions(req, conditions);
             else if (mode === "existing")
               await assertExistingRows(req, res, ent, conditions);
           } catch (err4) {
@@ -39,8 +44,7 @@ export function enforceAcl(ent, mode) {
         };
         if (mode === "insert" || mode === "existing")
           stripUnallowedFields(req, res, enforceConditions);
-        else
-          enforceConditions();
+        else enforceConditions();
       });
     });
   };
@@ -64,7 +68,9 @@ export function mapConsumer(req, res, next) {
     req.headers["x-consumer-name"] === undefined
   )
     return next();
-  getConsumer(req, res, (err) => next(err ? normalizeAclError(err) : undefined));
+  getConsumer(req, res, (err) =>
+    next(err ? normalizeAclError(err) : undefined),
+  );
 }
 
 /**
@@ -101,7 +107,8 @@ function validateAcl(acl, ent) {
   const properties = new Map(ent.properties.map((prop) => [prop.key, prop]));
   if (acl.fields) {
     for (const field of acl.fields)
-      if (!properties.has(field)) throw forbidden(`Unknown ACL field "${field}"`);
+      if (!properties.has(field))
+        throw forbidden(`Unknown ACL field "${field}"`);
   }
   const conditions = acl.conditions.map((condition) => {
     const property = properties.get(condition.field);
@@ -114,7 +121,6 @@ function validateAcl(acl, ent) {
   });
   return { fields: acl.fields, conditions };
 }
-
 
 /**
  * @param {import("express").Request} req

@@ -1,6 +1,6 @@
 # Account Unlock
 
-After too many failed sign-in attempts, a `pwd` row's `lockedUntil` is set and `POST /foxnox/compare` (and therefore login) is refused with **403** until it lapses. How many failures and how long the lock lasts come from the in-force policy's `maxFailedAttempts` and `lockoutMinutes` (defaults 5 and 15). This workflow lets the user clear the lock early instead of waiting.
+After too many failed sign-in attempts, a `pwd` row's `lockedUntil` is set and `POST /foxnox/pwd/compare` (and therefore login) is refused with **403** until it lapses. How many failures and how long the lock lasts come from the in-force policy's `maxFailedAttempts` and `lockoutMinutes` (defaults 5 and 15). This workflow lets the user clear the lock early instead of waiting.
 
 Driven by the **Account unlock** token type: 30 minute lifetime, 3 attempts.
 
@@ -54,7 +54,7 @@ The request page also tells the user they can simply wait for the lock to expire
 To clear a lock without involving the user, update the row directly:
 
 ```
-PUT /api/foxnox/
+PUT /api/foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

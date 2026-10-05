@@ -89,14 +89,15 @@ One row per user, and the single source of truth for whether a sign-in can proce
 
 `pwdHash` and `twoFactorSecret` are marked private: readable internally, never serialized into a response.
 
-`lastLoginAt` is optional integration metadata. Foxnox exposes it for reads and
-updates but does not stamp it automatically when `/foxnox/compare` succeeds.
+`lastLoginAt` tracks when the user last signed in. Foxnox automatically
+stamps it with the current timestamp on every successful password compare or
+redeemed login-resume ticket.
 
 ### pwd_policy
 
 Password rules as data. Foxnox uses the first non-archived row (`getCache` orders by `id` ASC). There is no `active` column — archive unused policies so the one you want is the oldest remaining row. Character-class rules are read when a password is created or changed; lockout limits are read on each failed compare.
 
-Server-side generation (`POST /foxnox/`) is initialized at process start from that row, so a restart is needed before newly generated passwords pick up generation-rule changes. User-chosen passwords in the workflows are validated against the current first non-archived policy without a restart.
+Server-side generation (`POST /foxnox/pwd`) is initialized at process start from that row, so a restart is needed before newly generated passwords pick up generation-rule changes. User-chosen passwords in the workflows are validated against the current first non-archived policy without a restart.
 
 ### token_type
 

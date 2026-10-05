@@ -17,7 +17,7 @@ store email addresses or user profiles, and the production Compose stack does
 not start the development mock. Set `USER_SEARCH_URL` to a reachable search
 endpoint before starting the stack; Compose rejects an unset value.
 
-Use immutable release tags in production. The examples below use `0.1.0-alpha.1`;
+Use immutable release tags in production. The examples below use `0.1.0-alpha.3`;
 upgrade the API and migration images together when adopting a newer release.
 
 ## Architecture
@@ -36,7 +36,7 @@ Browser / Client
       |                   +-- /foxnox/web/*  --> Foxnox workflow pages
 ```
 
-This matters for two reasons. First, nothing except the BFF can call `/foxnox/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the public prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
+This matters for two reasons. First, nothing except the BFF can call `/foxnox/pwd/compare`, so password checks cannot be brute-forced from outside. Second, every public URL in email links must be built with the public prefix — which is what `WEB_PUBLIC_ORIGIN` and `WEB_PUBLIC_BASE` are for.
 
 ## docker-compose.yml template
 
@@ -87,7 +87,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   foxnox_migration:
-    image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.2
+    image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.3
     container_name: my-project-foxnox-migration-local
     hostname: my-project-foxnox-migration-local
     depends_on:
@@ -112,7 +112,7 @@ services:
       - ./docker/foxnox/data:/liquibase/data
 
   foxnox:
-    image: ghcr.io/alten-group/foxnox:0.1.0-alpha.2
+    image: ghcr.io/alten-group/foxnox:0.1.0-alpha.3
     container_name: my-project-foxnox-local
     hostname: my-project-foxnox-local
     depends_on:
@@ -173,7 +173,7 @@ services:
     environment:
       TZ: Europe/Paris
       # Points Gatelin at the Foxnox password check and mid-login endpoints
-      PWD_CHECK_URL: http://my-project-foxnox-local:3000/foxnox/compare
+      PWD_CHECK_URL: http://my-project-foxnox-local:3000/foxnox/pwd/compare
       PWD_CHALLENGES_URL: http://my-project-foxnox-local:3000/foxnox/challenges
       PWD_TRUSTED_DEVICES_URL: http://my-project-foxnox-local:3000/foxnox/devices/verify
       PWD_LOGIN_TICKET_URL: http://my-project-foxnox-local:3000/foxnox/login-tickets/redeem
@@ -260,7 +260,7 @@ The `foxnox_migration` container is controlled by environment variables:
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.2
+  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.3
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

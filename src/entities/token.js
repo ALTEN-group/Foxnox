@@ -15,6 +15,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "hash",
@@ -29,6 +30,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "typeId",
@@ -43,6 +45,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "userId",
@@ -57,6 +60,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "attempts",
@@ -71,6 +75,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archived",
@@ -85,6 +90,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archivedAt",
@@ -99,6 +105,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "createdAt",
@@ -113,6 +120,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "creatorName",
@@ -127,6 +135,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updatedAt",
@@ -141,6 +150,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updaterName",
@@ -155,6 +165,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "expiresAt",
@@ -169,6 +180,7 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "verifiedAt",
@@ -183,5 +195,6 @@ export default new SQLEntity("token", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

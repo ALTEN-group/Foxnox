@@ -76,7 +76,7 @@ Colour values are sanitized to `#RGB` / `#RRGGBB` before being applied as CSS va
 ## Database migration service
 
 These apply to the `foxnox-migration` container (for example,
-`ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1`):
+`ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.3`):
 
 | Variable | Required | Description |
 |---|---|---|
@@ -101,7 +101,7 @@ These are set on the **BFF**, not on Foxnox. The names below are [Gatelin](https
 
 | Variable | Description |
 |---|---|
-| `PWD_CHECK_URL` | Must point at `http://<foxnox-host>:<port>/foxnox/compare`. |
+| `PWD_CHECK_URL` | Must point at `http://<foxnox-host>:<port>/foxnox/pwd/compare`. |
 | `PWD_CHALLENGES_URL` | `http://<foxnox-host>:<port>/foxnox/challenges` — Gatelin configures each integration endpoint separately rather than deriving it from the compare URL. |
 | `PWD_TRUSTED_DEVICES_URL` | `http://<foxnox-host>:<port>/foxnox/devices/verify` |
 | `PWD_LOGIN_TICKET_URL` | `http://<foxnox-host>:<port>/foxnox/login-tickets/redeem` |

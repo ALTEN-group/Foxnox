@@ -6,6 +6,7 @@ import {
   findValidWorkflowToken,
   TOKEN_TYPES,
 } from "../services/token.js";
+import { recordLastLogin } from "../services/pwd.js";
 import { getPublicOrigin } from "./deep-link.js";
 
 /**
@@ -48,5 +49,6 @@ export async function redeemLoginResumeTicket(plaintext) {
   });
   if (!valid) return null;
   await consumeWorkflowToken(valid.id);
+  await recordLastLogin(valid.userId);
   return { userId: valid.userId };
 }

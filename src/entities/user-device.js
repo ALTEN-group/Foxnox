@@ -15,6 +15,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "userId",
@@ -29,6 +30,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "deviceTokenHash",
@@ -43,6 +45,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "deviceName",
@@ -57,6 +60,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "ipAddress",
@@ -71,6 +75,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "userAgent",
@@ -85,6 +90,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "expiresAt",
@@ -99,6 +105,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "lastUsedAt",
@@ -113,6 +120,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archived",
@@ -127,6 +135,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archivedAt",
@@ -141,6 +150,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "createdAt",
@@ -155,6 +165,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "creatorName",
@@ -169,6 +180,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updatedAt",
@@ -183,6 +195,7 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updaterName",
@@ -197,5 +210,6 @@ export default new SQLEntity("user_trusted_device", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

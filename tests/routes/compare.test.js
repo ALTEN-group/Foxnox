@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * POST /foxnox/compare — Gatelin login contract: validate payload, load pwd row,
+ * POST /foxnox/pwd/compare — Gatelin login contract: validate payload, load pwd row,
  * run passken compare, strip private fields on the way out.
  */
 import { jest } from "@jest/globals";
@@ -124,6 +124,7 @@ jest.unstable_mockModule("../../src/web/login-resume.js", () => ({
 jest.unstable_mockModule("../../src/services/pwd.js", () => ({
   recordFailedAttempt: jest.fn(async () => {}),
   resetFailedAttempts: jest.fn(async () => {}),
+  recordLastLogin: jest.fn(async () => {}),
 }));
 
 const { createJsonApiApp } = await import("../helpers/json-api-app.js");
@@ -134,7 +135,7 @@ const {
 const { clearCompareLocks } = await import("../../src/services/compare-lock.js");
 const app = await createJsonApiApp();
 
-describe("POST /foxnox/compare", () => {
+describe("POST /foxnox/pwd/compare", () => {
   beforeEach(() => {
     get.mockClear();
     compare.mockClear().mockImplementation((_req, _res, next) => next());
@@ -144,7 +145,7 @@ describe("POST /foxnox/compare", () => {
 
   it("rejects invalid payloads before loading a pwd row", async () => {
     const res = await request(app)
-      .post("/foxnox/compare")
+      .post("/foxnox/pwd/compare")
       .send({ userId: 0, pwd: "x" });
     expect(res.status).toBe(400);
     expect(get).not.toHaveBeenCalled();
@@ -153,7 +154,7 @@ describe("POST /foxnox/compare", () => {
 
   it("returns the public pwd row and strips secrets", async () => {
     const res = await request(app)
-      .post("/foxnox/compare")
+      .post("/foxnox/pwd/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(200);
@@ -166,6 +167,7 @@ describe("POST /foxnox/compare", () => {
       twoFactorEnabled: true,
       failedAttempts: 0,
     });
+    expect(res.body.rows[0].lastLoginAt).toBeTruthy();
     expect(res.body.rows[0]).not.toHaveProperty("pwdHash");
     expect(res.body.rows[0]).not.toHaveProperty("twoFactorSecret");
     // checkCompareBody installs an internal userId filter for pEnt.get
@@ -181,7 +183,7 @@ describe("POST /foxnox/compare", () => {
     );
 
     const res = await request(app)
-      .post("/foxnox/compare")
+      .post("/foxnox/pwd/compare")
       .send({ userId: 42, pwd: "wrong" });
 
     expect(res.status).toBe(401);
@@ -205,7 +207,7 @@ describe("POST /foxnox/compare", () => {
     });
 
     const res = await request(app)
-      .post("/foxnox/compare")
+      .post("/foxnox/pwd/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(403);
@@ -229,7 +231,7 @@ describe("POST /foxnox/compare", () => {
     });
 
     const res = await request(app)
-      .post("/foxnox/compare")
+      .post("/foxnox/pwd/compare")
       .send({ userId: 42, pwd: "correct-horse" });
 
     expect(res.status).toBe(200);
@@ -248,8 +250,8 @@ describe("POST /foxnox/compare", () => {
     });
 
     const [a, b] = await Promise.all([
-      request(app).post("/foxnox/compare").send({ userId: 42, pwd: "one" }),
-      request(app).post("/foxnox/compare").send({ userId: 42, pwd: "two" }),
+      request(app).post("/foxnox/pwd/compare").send({ userId: 42, pwd: "one" }),
+      request(app).post("/foxnox/pwd/compare").send({ userId: 42, pwd: "two" }),
     ]);
 
     expect(a.status).toBe(200);

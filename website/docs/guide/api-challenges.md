@@ -33,7 +33,7 @@ sequenceDiagram
 
     B->>G: POST /gatelin/sessions { email, pwd }
     G->>U: resolve email → userId
-    G->>F: POST /foxnox/compare { userId, pwd }
+    G->>F: POST /foxnox/pwd/compare { userId, pwd }
     alt lockedUntil in the future
         F-->>G: 403 Account locked
         G-->>B: 403 Account locked
@@ -73,7 +73,7 @@ Called by the BFF after a successful password check, over the **internal**
 `PWD_CHALLENGES_URL`. It is not a Gatelin-proxied admin route: a signed-in
 admin must not be able to mint a challenge for an arbitrary `userId`.
 
-Foxnox only accepts the mint when that `userId` just passed `POST /foxnox/compare`
+Foxnox only accepts the mint when that `userId` just passed `POST /foxnox/pwd/compare`
 (grant lasts five minutes and is single-use). `trusted-device` cannot be minted
 here — the 2FA workflow page creates that challenge in-process after a valid TOTP.
 

@@ -184,6 +184,35 @@ export function createAuthDbMock() {
       return { rows: [], rowCount: row ? 1 : 0 };
     }
 
+    // resetFailedAttempts
+    if (
+      q.includes("UPDATE pwd") &&
+      q.includes('"failedAttempts" = 0') &&
+      q.includes('"lastLoginAt" = NOW()')
+    ) {
+      const id = Number(params[0]);
+      const row = pwds.find((p) => p.id === id);
+      if (row) {
+        row.failedAttempts = 0;
+        row.lockedUntil = null;
+        row.lastLoginAt = new Date();
+      }
+      return { rows: [], rowCount: row ? 1 : 0 };
+    }
+
+    // recordLastLogin
+    if (
+      q.includes("UPDATE pwd") &&
+      q.includes('"lastLoginAt" = NOW()')
+    ) {
+      const id = Number(params[0]);
+      const row = pwds.find((p) => p.id === id);
+      if (row) {
+        row.lastLoginAt = new Date();
+      }
+      return { rows: [], rowCount: row ? 1 : 0 };
+    }
+
     // createTrustedDevice
     if (q.includes("INSERT INTO user_trusted_device")) {
       const row = {

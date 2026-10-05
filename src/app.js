@@ -11,24 +11,24 @@ import webRoutes from "./web/routes.js";
 const app = express();
 app.disable("x-powered-by");
 
-import ppEnt from "./entities/pwd-policy.js";
+import bEnt from "./entities/branding.js";
 import pEnt from "./entities/preference.js";
+import ppEnt from "./entities/pwd-policy.js";
 import tEnt from "./entities/token.js";
 import tdEnt from "./entities/user-device.js";
-import bEnt from "./entities/branding.js";
 // middlewares
 import { send } from "./middlewares/res/send.js";
 import { sendPwd } from "./middlewares/res/send-pwd.js";
+import branding from "./routes/branding.js";
 import challenge from "./routes/challenge.js";
+import trustedDeviceVerify from "./routes/device-verify.js";
 import loginTicket from "./routes/login-ticket.js";
 // Routes
 import login from "./routes/password.js";
 import preference from "./routes/preference.js";
 import pwdPolicy from "./routes/pwd-policy.js";
 import token from "./routes/token.js";
-import trustedDeviceVerify from "./routes/device-verify.js";
 import trustedDevice from "./routes/user-device.js";
-import branding from "./routes/branding.js";
 
 const s = "/foxnox/";
 
@@ -53,11 +53,7 @@ app.use(
 );
 app.use(WEB_MOUNT, webRoutes);
 
-// Routes — mount the more specific `/foxnox/<resource>` routers BEFORE the
-// catch-all `/foxnox/` password router. Express runs `app.use` middleware in
-// registration order; if `/foxnox/` comes first, unmatched paths like
-// `/foxnox/policies/search` fall through its `sendPwd` terminal and crash
-// (`deleteProps` on undefined rows) instead of reaching the real router.
+// Routes — every resource router is mounted at its own `/foxnox/<resource>` path.
 app.use(`${s}tokens`, token, send(tEnt));
 app.use(`${s}policies`, pwdPolicy, send(ppEnt));
 app.use(`${s}branding`, branding, send(bEnt));
@@ -70,9 +66,9 @@ app.use(`${s}challenges`, challenge);
 app.use(`${s}login-tickets`, loginTicket);
 // Self-hosted admin table-view preferences (no longer proxied to Gatelin).
 app.use(`${s}preferences`, preference, send(pEnt));
-// `/foxnox/` uses `sendPwd` because the pwd entity carries `isPrivate` fields
+// `/foxnox/pwd` uses `sendPwd` because the pwd entity carries `isPrivate` fields
 // (pwdHash, twoFactorSecret) that must be stripped before serialization.
-app.use(`${s}`, login, sendPwd);
+app.use(`${s}pwd`, login, sendPwd);
 
 // Error handling
 errorHandler(app);

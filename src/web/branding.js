@@ -29,8 +29,7 @@ export async function loadBrandingFromDb() {
 }
 
 const FONT_FAMILIES = Object.freeze({
-  system:
-    '"Segoe UI", system-ui, -apple-system, sans-serif',
+  system: '"Segoe UI", system-ui, -apple-system, sans-serif',
   serif: 'Georgia, "Times New Roman", serif',
   mono: '"Courier New", ui-monospace, monospace',
 });
@@ -117,7 +116,9 @@ function relativeLuminance(hex) {
     hex.length === 4
       ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
       : hex;
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+  const [r, g, b] = [1, 3, 5].map(
+    (i) => parseInt(full.slice(i, i + 2), 16) / 255,
+  );
   const channel = (c) =>
     c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
@@ -191,7 +192,8 @@ export function getBranding() {
     sanitizeText(process.env.WEB_BRAND_MARK, 2) ||
     name.charAt(0).toUpperCase() ||
     DEFAULTS.mark;
-  const logoUrl = sanitizeUrl(row.logoUrl) || sanitizeUrl(process.env.WEB_BRAND_LOGO_URL);
+  const logoUrl =
+    sanitizeUrl(row.logoUrl) || sanitizeUrl(process.env.WEB_BRAND_LOGO_URL);
   const logoAlt =
     sanitizeText(row.logoAlt, 120) ||
     sanitizeText(process.env.WEB_BRAND_LOGO_ALT, 120) ||
@@ -199,7 +201,8 @@ export function getBranding() {
   const footerText =
     sanitizeText(row.footerText, 240) ||
     sanitizeText(process.env.WEB_BRAND_FOOTER_TEXT, 240);
-  const footerUrl = sanitizeUrl(row.footerUrl) || sanitizeUrl(process.env.WEB_BRAND_FOOTER_URL);
+  const footerUrl =
+    sanitizeUrl(row.footerUrl) || sanitizeUrl(process.env.WEB_BRAND_FOOTER_URL);
   const fontFamily =
     sanitizeFontFamily(row.fontFamily) ||
     sanitizeFontFamily(process.env.WEB_BRAND_FONT) ||

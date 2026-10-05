@@ -8,11 +8,11 @@ Keeping these rules in the database rather than in code means you can tighten re
 
 There is no `active` flag. The migration seeds three policies (`Public User`, `High Security`, `Standard`); the in-force one is whichever non-archived row comes first by `id`. Archive the others if you want a later row to take effect.
 
-Character-class and expiry rules for **user-chosen** passwords are read at the moment a password is rotated, not at boot. **Generated** passwords (`POST /foxnox/`) follow the policy that was loaded during `initPwdGeneration` at process start — restart Foxnox after changing generation rules.
+Character-class and expiry rules for **user-chosen** passwords are read at the moment a password is rotated, not at boot. **Generated** passwords (`POST /foxnox/pwd`) follow the policy that was loaded during `initPwdGeneration` at process start — restart Foxnox after changing generation rules.
 
 `expiryDays` is used to compute the `pwdExpiry` stamped on a `pwd` row when the password is set. Set it to `0` to disable expiry entirely.
 
-`maxFailedAttempts` and `lockoutMinutes` are applied on each failed `POST /foxnox/compare`. Defaults when a policy omits them (or no policy exists) are **5** attempts and **15** minutes.
+`maxFailedAttempts` and `lockoutMinutes` are applied on each failed `POST /foxnox/pwd/compare`. Defaults when a policy omits them (or no policy exists) are **5** attempts and **15** minutes.
 
 Passken generates passwords between **12** and **64** characters. A policy `length` below 12 is still enforced when users choose a password, but generated passwords are clamped up to 12.
 
@@ -105,7 +105,7 @@ Authorization: Bearer <access_token>
 | `strict` | boolean | When true, every enabled character class must be present. When false, the classes act as a pool to draw from rather than a checklist. |
 | `symbols` | 0–50 chars | The set of symbols considered valid for user-chosen passwords |
 | `expiryDays` | ≥ 0 | Days until a new password expires; `0` disables expiry |
-| `maxFailedAttempts` | ≥ 1 | Failed `POST /foxnox/compare` attempts before `lockedUntil` is set |
+| `maxFailedAttempts` | ≥ 1 | Failed `POST /foxnox/pwd/compare` attempts before `lockedUntil` is set |
 | `lockoutMinutes` | ≥ 0 | How long that lock lasts |
 
 At least one of `number`, `symbol`, `lowerCase`, or `upperCase` must be true (enforced by a database check).

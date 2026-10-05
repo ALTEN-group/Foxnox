@@ -15,6 +15,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "name",
@@ -29,6 +30,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "tagline",
@@ -43,6 +45,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "logoUrl",
@@ -57,6 +60,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "logoAlt",
@@ -71,6 +75,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "mark",
@@ -85,6 +90,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "primaryColor",
@@ -99,6 +105,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "secondaryColor",
@@ -113,6 +120,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "primaryHoverColor",
@@ -127,6 +135,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "backgroundColor",
@@ -141,6 +150,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "footerText",
@@ -155,6 +165,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "footerUrl",
@@ -169,6 +180,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "fontFamily",
@@ -183,6 +195,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "radius",
@@ -197,6 +210,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archived",
@@ -211,6 +225,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archivedAt",
@@ -225,6 +240,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "createdAt",
@@ -239,6 +255,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "creatorName",
@@ -253,6 +270,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updatedAt",
@@ -267,6 +285,7 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updaterName",
@@ -281,5 +300,6 @@ export default new SQLEntity("branding", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

@@ -14,11 +14,26 @@ router.post("/search", enforceAcl(tEnt, "search"), tEnt.get);
 // Get version history of a specific row
 router.get("/:id/history", enforceAcl(tEnt, "existing"), history.get("token"));
 // Add tokens
-router.post("/", requireConsumer, enforceAcl(tEnt, "insert"), tEnt.addArraySubstack);
+router.post(
+  "/",
+  requireConsumer,
+  enforceAcl(tEnt, "insert"),
+  tEnt.addArraySubstack,
+);
 // Update fields
-router.put("/", requireConsumer, enforceAcl(tEnt, "existing"), tEnt.updateArraySubstack);
+router.put(
+  "/",
+  requireConsumer,
+  enforceAcl(tEnt, "existing"),
+  tEnt.updateArraySubstack,
+);
 // Bulk archive
-router.post("/archive", requireConsumer, enforceAcl(tEnt, "existing"), tEnt.archive);
+router.post(
+  "/archive",
+  requireConsumer,
+  enforceAcl(tEnt, "existing"),
+  tEnt.archive,
+);
 // Get entity schema
 router.get("/schema", enforceAcl(tEnt, "output"), schema.get(tEnt));
 

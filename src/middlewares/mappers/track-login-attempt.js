@@ -17,9 +17,12 @@ import {
  */
 export function clearLoginAttempts(req, res, next) {
   const row = res.locals?.rows?.[0];
-  if (row && (row.failedAttempts > 0 || row.lockedUntil)) {
-    row.failedAttempts = 0;
-    row.lockedUntil = null;
+  if (row) {
+    if (row.failedAttempts > 0 || row.lockedUntil) {
+      row.failedAttempts = 0;
+      row.lockedUntil = null;
+    }
+    row.lastLoginAt = new Date();
   }
   grantChallengeMint(req.body.userId);
   resetFailedAttempts(req.body.userId)

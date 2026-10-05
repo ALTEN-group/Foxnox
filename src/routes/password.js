@@ -31,13 +31,38 @@ router.post(
 // Search fields
 router.post("/search", enforceAcl(pEnt, "search"), pEnt.get);
 // Get version history of a specific row
-router.get("/:id/history", enforceAcl(pEnt, "existing"), history.get("pwd"));
+// System-managed fields (login/lockout bookkeeping) are ignored so the
+// admin history view only shows entries an admin could actually revert to.
+const historyIgnoreCols = pEnt.properties
+  .filter((p) => p.readOnly)
+  .map((p) => p.key);
+router.get(
+  "/:id/history",
+  enforceAcl(pEnt, "existing"),
+  history.get("pwd", "public", historyIgnoreCols),
+);
 // Add pwds — server generates plaintext + hash for each { userId } row: passken-express
-router.post("/", requireConsumer, enforceAcl(pEnt, "insert"), create, pEnt.addArraySubstack);
+router.post(
+  "/",
+  requireConsumer,
+  enforceAcl(pEnt, "insert"),
+  create,
+  pEnt.addArraySubstack,
+);
 // Update fields
-router.put("/", requireConsumer, enforceAcl(pEnt, "existing"), pEnt.updateArraySubstack);
+router.put(
+  "/",
+  requireConsumer,
+  enforceAcl(pEnt, "existing"),
+  pEnt.updateArraySubstack,
+);
 // Bulk archive
-router.post("/archive", requireConsumer, enforceAcl(pEnt, "existing"), pEnt.archive);
+router.post(
+  "/archive",
+  requireConsumer,
+  enforceAcl(pEnt, "existing"),
+  pEnt.archive,
+);
 // Get entity schema
 router.get("/schema", enforceAcl(pEnt, "output"), schema.get(pEnt));
 

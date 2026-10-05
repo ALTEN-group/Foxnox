@@ -58,7 +58,7 @@ An incomplete submission is treated the same as a wrong one, which avoids leakin
 If the user never set up security questions, the challenge page shows the invalid state instead of a form. There is nothing to verify against, so recovery cannot proceed and an administrator has to disable 2FA manually:
 
 ```
-PUT /api/foxnox/
+PUT /api/foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

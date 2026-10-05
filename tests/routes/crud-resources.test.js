@@ -25,7 +25,7 @@ const CONSUMER_HEADERS = {
 const RESOURCES = [
   {
     name: "pwd",
-    mount: "/foxnox",
+    mount: "/foxnox/pwd",
     entityFile: "pwd.js",
     historyTable: "pwd",
     privateProps: ["pwdHash", "twoFactorSecret"],

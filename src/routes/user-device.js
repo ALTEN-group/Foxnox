@@ -18,11 +18,26 @@ router.get(
   history.get("user_trusted_device"),
 );
 // Add trusted devices
-router.post("/", requireConsumer, enforceAcl(tdEnt, "insert"), tdEnt.addArraySubstack);
+router.post(
+  "/",
+  requireConsumer,
+  enforceAcl(tdEnt, "insert"),
+  tdEnt.addArraySubstack,
+);
 // Update fields
-router.put("/", requireConsumer, enforceAcl(tdEnt, "existing"), tdEnt.updateArraySubstack);
+router.put(
+  "/",
+  requireConsumer,
+  enforceAcl(tdEnt, "existing"),
+  tdEnt.updateArraySubstack,
+);
 // Bulk archive
-router.post("/archive", requireConsumer, enforceAcl(tdEnt, "existing"), tdEnt.archive);
+router.post(
+  "/archive",
+  requireConsumer,
+  enforceAcl(tdEnt, "existing"),
+  tdEnt.archive,
+);
 // Get entity schema
 router.get("/schema", enforceAcl(tdEnt, "output"), schema.get(tdEnt));
 

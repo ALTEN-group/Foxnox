@@ -35,12 +35,12 @@ Mock user passwords are **not** Liquibase seed data — they are created at runt
 ./scripts/setup-mocks.sh
 ```
 
-Waits for foxnox to be healthy, then calls `POST /foxnox/` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
+Waits for foxnox to be healthy, then calls `POST /foxnox/pwd` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
 
 - printed once to your terminal so you can save them for manual login;
 - substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
 
-Run it without a flag any time you want to rotate the mock credentials — it clears the previous mock rows first so `POST /foxnox/compare` picks up the new hashes.
+Run it without a flag any time you want to rotate the mock credentials — it clears the previous mock rows first so `POST /foxnox/pwd/compare` picks up the new hashes.
 
 > If login ever fails with a **404 on `POST /api/gatelin/sessions`**, this is almost always the cause: Gatelin relays the 404 that Foxnox returns when a user has no `pwd` row. Run `./scripts/setup-mocks.sh`.
 
@@ -217,11 +217,11 @@ The public weekly workflow always runs `npm audit`, Biome, outdated, and TODO sc
 Copilot CLI, APM (`apm.yml` / `apm.lock.yaml`), and `audit-fix.yml` stay in this repository so the ALTEN maintainer pipeline is versioned with the product. Those steps run only on `ALTEN-group/Foxnox` when `COPILOT_GITHUB_TOKEN` is set; forks skip them. Configure that secret (and optional `COPILOT_AUDITS_MODEL`) on the canonical repo.
 
 Each release produces the API (with bundled admin) and migration images with the following tag variants (for example,
-release `v0.1.0-alpha.1`):
+release `v0.1.0-alpha.3`):
 
 | Tag | Example |
 |---|---|
-| Full semver | `0.1.0-alpha.1` |
+| Full semver | `0.1.0-alpha.3` |
 | Major.minor | `0.1` |
 | Major | `0` |
 | Floating | `latest` |
@@ -260,7 +260,7 @@ When `UPDATE=1`, the container runs the following steps in order:
 
 ```yaml
 foxnox_migration:
-  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.1
+  image: ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.3
   volumes:
     - ./db/foxnox/data:/liquibase/data
   environment:

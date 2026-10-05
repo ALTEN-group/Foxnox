@@ -104,7 +104,7 @@ Both gain the `Secure` flag when `COOKIE_SECURE=1` or `NODE_ENV=production`.
 The CRUD endpoints are ordinary authenticated JSON calls through the BFF:
 
 ```typescript
-const response = await fetch('/api/foxnox/search', {
+const response = await fetch('/api/foxnox/pwd/search', {
   method: 'POST',
   credentials: 'include',
   headers: {
@@ -122,7 +122,7 @@ const response = await fetch('/api/foxnox/search', {
 
 Every route is restricted to the Super admin and Admin roles, so these are admin-tool calls rather than something to expose to end users.
 
-If you are building admin screens, `GET /api/foxnox/schema` returns the field definitions — types, limits, and which operations each field participates in — which lets forms stay in sync with the backend instead of duplicating its rules.
+If you are building admin screens, `GET /api/foxnox/pwd/schema` returns the field definitions — types, limits, and which operations each field participates in — which lets forms stay in sync with the backend instead of duplicating its rules.
 
 ## What Not to Build
 

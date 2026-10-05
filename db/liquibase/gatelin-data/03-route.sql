@@ -14,18 +14,19 @@
 --   103=updateDevices   104=archiveDevices  105=getDeviceSchema
 --   106=searchBranding  107=getBrandingHistory 108=addBranding
 --   109=updateBranding  110=archiveBranding 111=getBrandingSchema
+--   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
 INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "operationId", "methodIds", "creatorId", "creatorName") VALUES
-  -- password (mounted at Foxnox's Express root, matches password.js exactly)
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '/compare',            'comparePwd',       'Compare a plaintext password against its hash', true, false, ARRAY[13], ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '/search',             'searchPwds',       'Search passwords',                              true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '/(?<id>\d+)/history', 'getPwdHistory',    'Manage password history',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '',                    'addPwds',          'Add passwords',                                 true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '',                    'updatePwds',       'Update passwords',                              true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '/archive',            'archivePwds',      'Archive passwords',                             true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox'),                    '/schema',             'getPwdSchema',     'Get password entity schema',                    true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  -- password (/foxnox/pwd, matches password.js exactly)
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/compare',            'comparePwd',       'Compare a plaintext password against its hash', true, false, ARRAY[13], ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/search',             'searchPwds',       'Search passwords',                              true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/(?<id>\d+)/history', 'getPwdHistory',    'Manage password history',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '',                    'addPwds',          'Add passwords',                                 true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '',                    'updatePwds',       'Update passwords',                              true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/archive',            'archivePwds',      'Archive passwords',                             true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/schema',             'getPwdSchema',     'Get password entity schema',                    true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
   -- tokens (/foxnox/tokens)
   ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '/search',             'searchTokens',     'Search tokens',                                 true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
@@ -57,5 +58,12 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'addBranding',      'Add branding',                                   true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'updateBranding',   'Update branding',                                true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/archive',            'archiveBranding',  'Archive branding',                               true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/schema',             'getBrandingSchema', 'Get branding entity schema',                   true, false, ARRAY[2],  ARRAY[1], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/schema',             'getBrandingSchema', 'Get branding entity schema',                   true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+
+  -- table-view preferences (/foxnox/preferences, served by Foxnox's own routes/preference.js)
+  -- :resource is the admin entity id (passwords, policies, tokens, trustedDevices)
+  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'getFoxnoxPreferences',    'Get table view preferences',     true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'addFoxnoxPreferences',    'Create table view preferences',  true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'updateFoxnoxPreferences', 'Update table view preferences',  true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)/(?<id>\d+)', 'deleteFoxnoxPreference',  'Delete a table view preference', true, false, ARRAY[10], ARRAY[5], -1, 'system')
 ;

@@ -109,7 +109,7 @@ describe("history middleware", () => {
           operation: "UPDATE",
           consumerId: 1,
           consumerName: "alice",
-          record: { id: 7 },
+          record: { id: 7, lockedUntil: "2026-01-02T00:00:00.000Z" },
         },
       ];
       execute.mockResolvedValueOnce({ rowCount: 2, rows });
@@ -282,6 +282,167 @@ describe("history middleware", () => {
       ];
 
       expect(history.groupByAction(rows)).toHaveLength(2);
+    });
+  });
+
+  describe("filterMeaningful", () => {
+    it("should always keep the first row", () => {
+      const rows = [{ operation: "INSERT", record: { id: 7 } }];
+
+      expect(history.filterMeaningful(rows)).toEqual(rows);
+    });
+
+    it("should drop later rows that only change ignored columns", () => {
+      const rows = [
+        { operation: "INSERT", record: { id: 7, lastLoginAt: null } },
+        {
+          operation: "UPDATE",
+          record: { id: 7, lastLoginAt: "2026-01-02T00:00:00.000Z" },
+        },
+        {
+          operation: "UPDATE",
+          record: { id: 7, lastLoginAt: "2026-01-03T00:00:00.000Z" },
+        },
+      ];
+
+      expect(history.filterMeaningful(rows, ["lastLoginAt"])).toEqual([
+        rows[0],
+      ]);
+    });
+
+    it("should keep a row that changes a non-ignored column, then resume ignoring from it", () => {
+      const rows = [
+        {
+          operation: "INSERT",
+          record: { id: 7, lastLoginAt: null, lockedUntil: null },
+        },
+        {
+          operation: "UPDATE",
+          record: {
+            id: 7,
+            lastLoginAt: "2026-01-02T00:00:00.000Z",
+            lockedUntil: null,
+          },
+        },
+        {
+          operation: "UPDATE",
+          record: {
+            id: 7,
+            lastLoginAt: "2026-01-02T00:00:00.000Z",
+            lockedUntil: "2026-01-03T00:00:00.000Z",
+          },
+        },
+        {
+          operation: "UPDATE",
+          record: {
+            id: 7,
+            lastLoginAt: "2026-01-04T00:00:00.000Z",
+            lockedUntil: "2026-01-03T00:00:00.000Z",
+          },
+        },
+      ];
+
+      expect(history.filterMeaningful(rows, ["lastLoginAt"])).toEqual([
+        rows[0],
+        rows[2],
+      ]);
+    });
+
+    it("should always ignore updatedAt/updaterId/updaterName even without being asked", () => {
+      const rows = [
+        {
+          operation: "INSERT",
+          record: {
+            id: 7,
+            updatedAt: null,
+            updaterId: null,
+            updaterName: null,
+          },
+        },
+        {
+          operation: "UPDATE",
+          record: {
+            id: 7,
+            updatedAt: "2026-01-02T00:00:00.000Z",
+            updaterId: -1,
+            updaterName: "system",
+          },
+        },
+      ];
+
+      expect(history.filterMeaningful(rows)).toEqual([rows[0]]);
+    });
+
+    it("should default to an empty ignore list", () => {
+      const rows = [
+        { operation: "INSERT", record: { id: 7, name: "a" } },
+        { operation: "UPDATE", record: { id: 7, name: "b" } },
+      ];
+
+      expect(history.filterMeaningful(rows)).toEqual(rows);
+    });
+  });
+
+  describe("get with ignoreCols", () => {
+    it("should drop rows where only ignored columns changed", async () => {
+      const rows = [
+        {
+          id: 1,
+          tstamp: "2026-01-01T00:00:00.000Z",
+          operation: "INSERT",
+          consumerId: 1,
+          consumerName: "alice",
+          record: { id: 7, lastLoginAt: null },
+        },
+        {
+          id: 2,
+          tstamp: "2026-01-02T00:00:00.000Z",
+          operation: "UPDATE",
+          consumerId: -1,
+          consumerName: "system",
+          record: { id: 7, lastLoginAt: "2026-01-02T00:00:00.000Z" },
+        },
+      ];
+      execute.mockResolvedValueOnce({ rowCount: 2, rows });
+
+      history.get("pwd", "public", ["lastLoginAt"])(req, res, next);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(next).toHaveBeenCalledWith({
+        statusCode: 404,
+        message: "history not found",
+      });
+    });
+
+    it("should keep rows where a non-ignored column changed", async () => {
+      const rows = [
+        {
+          id: 1,
+          tstamp: "2026-01-01T00:00:00.000Z",
+          operation: "INSERT",
+          consumerId: 1,
+          consumerName: "alice",
+          record: { id: 7, lockedUntil: null },
+        },
+        {
+          id: 2,
+          tstamp: "2026-01-02T00:00:00.000Z",
+          operation: "UPDATE",
+          consumerId: 1,
+          consumerName: "alice",
+          record: { id: 7, lockedUntil: "2026-01-02T00:00:00.000Z" },
+        },
+      ];
+      execute.mockResolvedValueOnce({ rowCount: 2, rows });
+
+      history.get("pwd", "public", ["lastLoginAt"])(req, res, next);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(res.locals.rows).toHaveLength(2);
+      expect(res.locals.total).toBe(2);
+      expect(next).toHaveBeenCalledWith();
     });
   });
 });

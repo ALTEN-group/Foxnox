@@ -20,7 +20,7 @@ const defaultValue: AppConfig = {
   appKey: "",
   storageKeys: {},
   sidenavItems: [],
-  foxnoxApi: "/api/foxnox",
+  foxnoxApi: "/api/foxnox/",
   gatelinApi: "/api/gatelin/",
   apiUsers: "/api/users/",
   webBase: "/api/foxnox/web",

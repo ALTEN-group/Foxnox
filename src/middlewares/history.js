@@ -1,5 +1,10 @@
 import { execute } from "@dwtechs/antity-pgsql";
 
+// Bookkeeping columns every audited table stamps on every write, regardless
+// of which field actually changed — always ignored, or a history row would
+// never look like a no-op even when only system-managed columns changed.
+const ALWAYS_IGNORED_COLS = ["updatedAt", "updaterId", "updaterName"];
+
 /**
  * Groups history rows that belong to the same logical action (e.g. a route
  * update that also rewrites its route_operation/route_method junction rows)
@@ -37,6 +42,41 @@ function groupByAction(rows) {
 }
 
 /**
+ * Drops history rows that changed nothing but ignored columns, so the
+ * admin revision view only shows entries a human could actually revert to.
+ * `log.history` itself is untouched — this only filters what gets returned.
+ *
+ * Always keeps the first row (the `INSERT` baseline). Each later row is
+ * compared against the last *kept* row's record, ignoring `ignoreCols` plus
+ * the bookkeeping columns every write stamps regardless of which field
+ * changed; it's kept only if some other key differs, so runs of pure-noise
+ * rows collapse into whichever real edit preceded them.
+ * @param {Array<object>} rows - grouped history entries, ordered oldest to newest
+ * @param {string[]} [ignoreCols=[]] - field-specific columns to ignore (e.g. system-managed fields)
+ * @returns {Array<object>} rows with no-op entries dropped
+ */
+function filterMeaningful(rows, ignoreCols = []) {
+  const ignored = new Set([...ignoreCols, ...ALWAYS_IGNORED_COLS]);
+  const kept = [];
+  let prevRecord = null;
+  for (const row of rows) {
+    if (!prevRecord) {
+      kept.push(row);
+      prevRecord = row.record;
+      continue;
+    }
+    const changed = Object.keys(row.record).some(
+      (key) => !ignored.has(key) && row.record[key] !== prevRecord[key],
+    );
+    if (changed) {
+      kept.push(row);
+      prevRecord = row.record;
+    }
+  }
+  return kept;
+}
+
+/**
  * Creates a history getter middleware for a specific table.
  *
  * Rows carry the trigger's `row_to_json(NEW)` snapshot under `record`, which
@@ -44,9 +84,10 @@ function groupByAction(rows) {
  *
  * @param {string|string[]} tableName - The name(s) of the table(s) to retrieve history for
  * @param {string} [schema='public'] - The schema name (defaults to 'public')
+ * @param {string[]} [ignoreCols=[]] - field-specific columns to ignore when deciding whether a row is meaningful
  * @returns {Function} Express middleware function
  */
-function get(tableName, schema = "public") {
+function get(tableName, schema = "public", ignoreCols = []) {
   return (req, res, next) => {
     const id = req.params.id;
     // log.debug(`getHistory(id=${id})`);
@@ -56,7 +97,7 @@ function get(tableName, schema = "public") {
       .then((r) => {
         if (!r.rowCount)
           return next({ statusCode: 404, message: "history not found" });
-        const rows = groupByAction(r.rows);
+        const rows = filterMeaningful(groupByAction(r.rows), ignoreCols);
         if (rows.length === 1 && rows[0].operation === "INSERT")
           return next({ statusCode: 404, message: "history not found" });
         res.locals.rows = rows;
@@ -91,4 +132,5 @@ function query(tableName, id, schema = "public") {
 export default {
   get,
   groupByAction,
+  filterMeaningful,
 };

@@ -44,6 +44,8 @@ const {
   enableTwoFactor,
   disableTwoFactor,
   verifyCurrentPassword,
+  resetFailedAttempts,
+  recordLastLogin,
 } = await import("../src/services/pwd.js");
 
 const STRONG = "Abcdef1!xyZZ";
@@ -155,6 +157,28 @@ describe("rotatePassword / unlockAccount", () => {
     await expect(unlockAccount(404)).rejects.toMatchObject({
       code: "PWD_NOT_FOUND",
     });
+  });
+
+  it("clears failed attempts and records lastLoginAt on resetFailedAttempts", async () => {
+    db.seedPwd({
+      userId: 15,
+      failedAttempts: 3,
+      lockedUntil: new Date(Date.now() + 60_000),
+      lastLoginAt: null,
+    });
+    await resetFailedAttempts(15);
+    expect(db.pwds[0].failedAttempts).toBe(0);
+    expect(db.pwds[0].lockedUntil).toBeNull();
+    expect(db.pwds[0].lastLoginAt).toBeInstanceOf(Date);
+  });
+
+  it("stamps lastLoginAt on recordLastLogin", async () => {
+    db.seedPwd({
+      userId: 16,
+      lastLoginAt: null,
+    });
+    await recordLastLogin(16);
+    expect(db.pwds[0].lastLoginAt).toBeInstanceOf(Date);
   });
 });
 

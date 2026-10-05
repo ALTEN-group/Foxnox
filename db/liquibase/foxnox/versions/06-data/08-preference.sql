@@ -17,7 +17,7 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
   {"key":"lastLoginAt",      "isVisible":true},
   {"key":"twoFactorEnabled", "isVisible":true,  "defaultWidth":"80px"},
   {"key":"twoFactorSecret",  "isVisible":false},
-  {"key":"createdAt",        "isVisible":false},
+  {"key":"createdAt",        "isVisible":true},
   {"key":"creatorName",      "isVisible":false},
   {"key":"updatedAt",        "isVisible":false},
   {"key":"updaterName",      "isVisible":false},

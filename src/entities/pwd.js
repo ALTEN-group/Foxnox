@@ -15,6 +15,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "userId",
@@ -29,6 +30,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     // Stored as `salt + pbkdf2(...).toString("hex")` by @dwtechs/hashitaka.
@@ -50,6 +52,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     // On INSERT the DB fills this with NOW() (see 03-struct/01-pwd-struct.sql),
@@ -67,6 +70,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: true,
   },
   {
     key: "pwdExpiry",
@@ -81,6 +85,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "failedAttempts",
@@ -95,6 +100,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: true,
   },
   {
     key: "lockedUntil",
@@ -109,6 +115,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "lastLoginAt",
@@ -123,6 +130,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: true,
   },
   {
     key: "twoFactorEnabled",
@@ -137,6 +145,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "twoFactorSecret",
@@ -152,6 +161,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archived",
@@ -166,6 +176,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "archivedAt",
@@ -180,6 +191,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "createdAt",
@@ -194,6 +206,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "creatorName",
@@ -208,6 +221,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updatedAt",
@@ -222,6 +236,7 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
   {
     key: "updaterName",
@@ -236,5 +251,6 @@ export default new SQLEntity("pwd", [
     sanitizer: null,
     normalizer: null,
     validator: null,
+    readOnly: false,
   },
 ]);

@@ -42,7 +42,7 @@ export async function createJsonApiApp() {
   app.use(`${s}devices`, trustedDevice, send(tdEnt));
   app.use(`${s}challenges`, challenge);
   app.use(`${s}login-tickets`, loginTicket);
-  app.use(`${s}`, login, sendPwd);
+  app.use(`${s}pwd`, login, sendPwd);
 
   errorHandler(app);
   return app;

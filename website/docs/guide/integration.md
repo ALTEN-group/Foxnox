@@ -9,7 +9,7 @@ The BFF authenticates callers, issues sessions, and proxies `/foxnox` and `/foxn
 With Gatelin, each internal endpoint gets its own variable:
 
 ```
-PWD_CHECK_URL=http://my-project-foxnox-local:3000/foxnox/compare
+PWD_CHECK_URL=http://my-project-foxnox-local:3000/foxnox/pwd/compare
 PWD_CHALLENGES_URL=http://my-project-foxnox-local:3000/foxnox/challenges
 PWD_TRUSTED_DEVICES_URL=http://my-project-foxnox-local:3000/foxnox/devices/verify
 PWD_LOGIN_TICKET_URL=http://my-project-foxnox-local:3000/foxnox/login-tickets/redeem
@@ -68,7 +68,7 @@ The seed registers:
 |---|---|
 | `01-service.sql` | The `foxnox` service, with an empty pattern because the password router is mounted at the Express root |
 | `02-resource.sql` | Resources `foxnox`, `foxnox/tokens`, `foxnox/policies`, `foxnox/devices` (Gatelin caps `resource.name` at 20 characters) |
-| `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/compare`), all `protected` |
+| `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/pwd/compare`), all `protected` |
 | `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
 | `05`–`08` | The `foxnox/web` resource and every account workflow page route |
 | `09-route-challenges.sql` | Historically registered `foxnox/challenges` as a proxied admin route |
@@ -113,7 +113,7 @@ client bypass the BFF by omitting those headers.
 A fresh Foxnox database has a schema, seeded token types, and a default password policy — but no passwords. Create one per user by posting the user IDs; the service generates and hashes the plaintext itself:
 
 ```
-POST /api/foxnox/
+POST /api/foxnox/pwd
 Content-Type: application/json
 Authorization: Bearer <access_token>
 

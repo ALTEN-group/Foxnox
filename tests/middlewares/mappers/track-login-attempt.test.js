@@ -8,6 +8,7 @@ const resetFailedAttempts = jest.fn(async () => {});
 jest.unstable_mockModule("../../../src/services/pwd.js", () => ({
   recordFailedAttempt,
   resetFailedAttempts,
+  recordLastLogin: jest.fn(async () => {}),
 }));
 
 const { trackFailedAttempt, clearLoginAttempts } = await import(
@@ -65,8 +66,24 @@ describe("clearLoginAttempts", () => {
         expect(reset).toBe(true);
         expect(res.locals.rows[0].failedAttempts).toBe(0);
         expect(res.locals.rows[0].lockedUntil).toBeNull();
+        expect(res.locals.rows[0].lastLoginAt).toBeInstanceOf(Date);
         resolve();
       });
     });
+  });
+
+  it("should stamp lastLoginAt even when failedAttempts is 0 and account is not locked", async () => {
+    const res = {
+      locals: {
+        rows: [{ failedAttempts: 0, lockedUntil: null, lastLoginAt: null }],
+      },
+    };
+    await new Promise((resolve) => {
+      clearLoginAttempts({ body: { userId: 8 } }, res, () => {
+        expect(res.locals.rows[0].lastLoginAt).toBeInstanceOf(Date);
+        resolve();
+      });
+    });
+    expect(resetFailedAttempts).toHaveBeenCalledWith(8);
   });
 });
