@@ -5,7 +5,7 @@ const router = express.Router();
 
 import pEnt from "../entities/preference.js";
 import { filterByIdAndUserIdAndResource } from "../middlewares/filters/byIdAndUserIdAndResource.js";
-import { assertRowsOwnedAndUnlocked } from "../middlewares/mappers/preference/assertRowsOwnedAndUnlocked.js";
+import { assertRowsOwnedOrTemplate } from "../middlewares/mappers/preference/assertRowsOwnedOrTemplate.js";
 import { getPreferences } from "../middlewares/mappers/preference/getPreferences.js";
 import { injectUserIdAndResourceName } from "../middlewares/mappers/preference/injectUserIdAndResourceName.js";
 import { mapConsumer } from "../middlewares/mappers/preference/mapConsumer.js";
@@ -22,12 +22,14 @@ router.post(
 );
 
 // Update preferences.
-// Fail-closed pre-flight: reject unless every req.body.rows[].id is owned by
-// the caller, unlocked, and belongs to :resource (see assertRowsOwnedAndUnlocked).
+// Fail-closed pre-flight: reject unless every req.body.rows[].id belongs to
+// :resource and is either owned by the caller or a system template (see
+// assertRowsOwnedOrTemplate). Templates are never mutated: selecting one records
+// the caller's choice and editing one forks a personal copy.
 router.put(
   "/:resource",
   mapConsumer,
-  assertRowsOwnedAndUnlocked,
+  assertRowsOwnedOrTemplate,
   pEnt.updateArraySubstack,
 );
 
