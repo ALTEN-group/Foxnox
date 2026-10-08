@@ -42,6 +42,8 @@ jest.unstable_mockModule("../../src/entities/pwd.js", () => ({
     addArraySubstack: jest.fn((_req, _res, next) => next()),
     updateArraySubstack: jest.fn((_req, _res, next) => next()),
     archive: jest.fn((_req, _res, next) => next()),
+    getHistory: jest.fn((_req, _res, next) => next()),
+    history: jest.fn(() => (_req, _res, next) => next()),
     privateProps: ["pwdHash", "twoFactorSecret"],
     properties: [
       {
@@ -68,16 +70,6 @@ jest.unstable_mockModule("../../src/entities/pwd.js", () => ({
   },
 }));
 
-jest.unstable_mockModule("../../src/middlewares/history.js", () => ({
-  default: {
-    get: () => (_req, res, next) => {
-      res.locals.rows = [];
-      res.locals.total = 0;
-      next();
-    },
-  },
-}));
-
 // Sibling routers pulled in by the JSON API harness — stub entities.
 for (const [file, privateProps] of [
   ["token.js", ["hash"]],
@@ -90,6 +82,8 @@ for (const [file, privateProps] of [
       addArraySubstack: jest.fn((_req, _res, next) => next()),
       updateArraySubstack: jest.fn((_req, _res, next) => next()),
       archive: jest.fn((_req, _res, next) => next()),
+      getHistory: jest.fn((_req, _res, next) => next()),
+      history: jest.fn(() => (_req, _res, next) => next()),
       privateProps,
       properties: [],
     },

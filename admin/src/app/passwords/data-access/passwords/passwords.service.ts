@@ -4,24 +4,25 @@ import {
   Injectable,
   Injector,
   runInInjectionContext,
-} from "@angular/core";
-import { AclService } from "@core/acl/acl.service";
-import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
-import { AdminEntity } from "@core/app-config/app.entities";
-import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
-import { PASSWORD_COLUMNS } from "app/passwords/data-access/passwords/password.conf";
+} from '@angular/core';
+import { AclService } from '@core/acl/acl.service';
+import { ENTITY_API_PATHS } from '@core/app-config/app.api-paths';
+import { AdminEntity } from '@core/app-config/app.entities';
+import { pwdExpiryForUpdate } from '@core/utils/pwd-expiry/pwd-expiry.utils';
+import { Calls, CrudRepository } from '@dwtechs/ngx-crud-builder';
+import { PASSWORD_COLUMNS } from 'app/passwords/data-access/passwords/password.conf';
 import {
   Password,
   passwordFactory,
-} from "app/passwords/data-access/passwords/password.model";
+} from 'app/passwords/data-access/passwords/password.model';
 
-const passwordsEntity: AdminEntity = "passwords";
+const passwordsEntity: AdminEntity = 'passwords';
 
 /**
  * Service to manage user passwords
  */
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class PasswordsService {
   private readonly aclsService = inject(AclService);
@@ -36,7 +37,16 @@ export class PasswordsService {
   // create intentionally omitted: passwords can never be added from the admin UI
   public readonly httpCalls: Calls<Password> = {
     get: this.crud.get,
-    update: this.crud.update,
+    update: (item) => {
+      const { pwdExpiry, ...rest } = item;
+      const expiry = pwdExpiryForUpdate(pwdExpiry);
+      // pwdExpiry omitted when unchanged and already expired (see util)
+      return this.crud.update(
+        (expiry === undefined
+          ? rest
+          : { ...rest, pwdExpiry: expiry }) as Password,
+      );
+    },
     getHistory: this.crud.getHistory,
   };
 

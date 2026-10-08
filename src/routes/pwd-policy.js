@@ -5,7 +5,6 @@ const router = express.Router();
 
 import ppEnt from "../entities/pwd-policy.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
-import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
 
 //Routes
@@ -15,7 +14,7 @@ router.post("/search", enforceAcl(ppEnt, "search"), ppEnt.get);
 router.get(
   "/:id/history",
   enforceAcl(ppEnt, "existing"),
-  history.get("pwd_policy"),
+  ppEnt.getHistory,
 );
 // Add password policies
 router.post(

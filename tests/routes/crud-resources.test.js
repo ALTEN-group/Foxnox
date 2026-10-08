@@ -101,6 +101,27 @@ for (const resource of RESOURCES) {
   entityUpdates[tag] = updateArraySubstack;
   entityArchives[tag] = archive;
 
+  // SQLEntity.getHistory / history(options) come from @dwtechs/antity-pgsql
+  const getHistory = jest.fn((_req, res, next) => {
+    res.locals.rows = [
+      {
+        id: 1,
+        operation: "UPDATE",
+        record: {
+          id: 1,
+          table: resource.historyTable,
+          pwdHash: "secret",
+          twoFactorSecret: "otp",
+          hash: "tok-hash",
+          deviceTokenHash: "dev-hash",
+        },
+      },
+    ];
+    res.locals.total = 1;
+    next();
+  });
+  historyMiddlewares[resource.historyTable] = getHistory;
+
   jest.unstable_mockModule(
     path.join(__dirname, `../../src/entities/${resource.entityFile}`),
     () => ({
@@ -109,6 +130,8 @@ for (const resource of RESOURCES) {
         addArraySubstack,
         updateArraySubstack,
         archive,
+        getHistory,
+        history: jest.fn(() => getHistory),
         privateProps: resource.privateProps,
         properties: [
           {
@@ -136,36 +159,6 @@ for (const resource of RESOURCES) {
     }),
   );
 }
-
-const historyGet = jest.fn((tableName) => {
-  const mw = jest.fn((_req, res, next) => {
-    res.locals.rows = [
-      {
-        id: 1,
-        operation: "UPDATE",
-        record: {
-          id: 1,
-          table: tableName,
-          pwdHash: "secret",
-          twoFactorSecret: "otp",
-          hash: "tok-hash",
-          deviceTokenHash: "dev-hash",
-        },
-      },
-    ];
-    res.locals.total = 1;
-    next();
-  });
-  historyMiddlewares[tableName] = mw;
-  return mw;
-});
-
-jest.unstable_mockModule(
-  path.join(__dirname, "../../src/middlewares/history.js"),
-  () => ({
-    default: { get: historyGet },
-  }),
-);
 
 jest.unstable_mockModule("@dwtechs/passken-express", () => ({
   compare: jest.fn((_req, _res, next) => next()),

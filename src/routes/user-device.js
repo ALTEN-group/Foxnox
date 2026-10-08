@@ -5,17 +5,21 @@ const router = express.Router();
 
 import tdEnt from "../entities/user-device.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
-import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
 
 //Routes
 // Search fields
 router.post("/search", enforceAcl(tdEnt, "search"), tdEnt.get);
 // Get version history of a specific row
+// System-managed fields (lastUsedAt is touched on every login with the device)
+// are ignored so the history only shows entries an admin could actually revert to.
+const historyIgnoreCols = tdEnt.properties
+  .filter((p) => p.readOnly)
+  .map((p) => p.key);
 router.get(
   "/:id/history",
   enforceAcl(tdEnt, "existing"),
-  history.get("user_trusted_device"),
+  tdEnt.history({ ignoreCols: historyIgnoreCols }),
 );
 // Add trusted devices
 router.post(

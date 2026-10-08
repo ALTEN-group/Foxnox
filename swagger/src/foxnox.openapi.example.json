@@ -216,8 +216,8 @@
           "tableName": { "type": "string", "example": "pwd" },
           "operation": { "type": "string", "enum": ["INSERT", "UPDATE", "DELETE"] },
           "dbUser": { "type": "string", "example": "foxnox_user" },
-          "consumerId": { "type": "integer", "format": "int32", "nullable": true },
-          "consumerName": { "type": "string", "nullable": true },
+          "userId": { "type": "integer", "format": "int32", "nullable": true },
+          "userName": { "type": "string", "nullable": true },
           "record": { "type": "object", "description": "JSON snapshot of the affected row" }
         },
         "required": ["tstamp", "schemaName", "tableName", "operation", "record"]

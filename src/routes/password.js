@@ -7,7 +7,6 @@ const router = express.Router();
 
 import pEnt from "../entities/pwd.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
-import history from "../middlewares/history.js";
 import { checkLockout } from "../middlewares/mappers/check-lockout.js";
 import { serializeCompare } from "../middlewares/mappers/serialize-compare.js";
 import {
@@ -39,7 +38,7 @@ const historyIgnoreCols = pEnt.properties
 router.get(
   "/:id/history",
   enforceAcl(pEnt, "existing"),
-  history.get("pwd", "public", historyIgnoreCols),
+  pEnt.history({ ignoreCols: historyIgnoreCols }),
 );
 // Add pwds — server generates plaintext + hash for each { userId } row: passken-express
 router.post(

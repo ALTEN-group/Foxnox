@@ -86,6 +86,7 @@ export const TRUSTED_DEVICE_COLUMNS: (
         controlType: CONTROL_TYPES.DATE,
         controlOptions: {
           dateShowTime: true,
+          disabled: true,
         },
       },
       ...buildArchivedConfig(),

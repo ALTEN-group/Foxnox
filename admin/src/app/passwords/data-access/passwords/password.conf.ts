@@ -1,8 +1,9 @@
-import { Acls } from "@core/acl/acls.model";
-import { withAclConditions } from "@core/utils/field-config/acl-conditions.utils";
-import { buildArchivedConfig } from "@core/utils/field-config/archived.config";
-import { buildAuditConfig } from "@core/utils/field-config/audit.config";
-import { emptyDateCellRenderer } from "@core/utils/renderers/empty-date.renderer";
+import { Acls } from '@core/acl/acls.model';
+import { withAclConditions } from '@core/utils/field-config/acl-conditions.utils';
+import { buildArchivedConfig } from '@core/utils/field-config/archived.config';
+import { buildAuditConfig } from '@core/utils/field-config/audit.config';
+import { pwdExpiryDateMin } from '@core/utils/pwd-expiry/pwd-expiry.utils';
+import { emptyDateCellRenderer } from '@core/utils/renderers/empty-date.renderer';
 import {
   CONTROL_TYPES,
   ID_CONFIG,
@@ -10,8 +11,8 @@ import {
   min,
   required,
   StrictCrudItemOptions,
-} from "@dwtechs/ngx-crud-builder";
-import { Password } from "app/passwords/data-access/passwords/password.model";
+} from '@dwtechs/ngx-crud-builder';
+import { Password } from 'app/passwords/data-access/passwords/password.model';
 
 export const PASSWORD_COLUMNS: (
   acls: Acls | undefined,
@@ -20,20 +21,20 @@ export const PASSWORD_COLUMNS: (
     [
       ID_CONFIG,
       {
-        key: "userId",
-        label: "User ID",
+        key: 'userId',
+        label: 'User ID',
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.NUMBER,
         columnOptions: {
-          defaultWidth: "80px",
+          defaultWidth: '80px',
         },
         controlOptions: {
           validators: [required, min(1)],
         },
       },
       {
-        key: "pwdHash",
-        label: "Password hash",
+        key: 'pwdHash',
+        label: 'Password hash',
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.TEXT,
         columnOptions: {
@@ -45,25 +46,27 @@ export const PASSWORD_COLUMNS: (
         },
       },
       {
-        key: "pwdUpdatedAt",
-        label: "Password updated at",
+        key: 'pwdUpdatedAt',
+        label: 'Password updated at',
         controlType: CONTROL_TYPES.DATE,
         controlOptions: {
           disabled: true,
         },
       },
       {
-        key: "pwdExpiry",
-        label: "Password expiry",
+        key: 'pwdExpiry',
+        label: 'Password expiry',
         controlType: CONTROL_TYPES.DATE,
         columnOptions: {
           customCellRenderer: emptyDateCellRenderer,
         },
-        controlOptions: {},
+        controlOptions: {
+          dateMin: pwdExpiryDateMin(),
+        },
       },
       {
-        key: "failedAttempts",
-        label: "Failed attempts",
+        key: 'failedAttempts',
+        label: 'Failed attempts',
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.NUMBER,
         controlOptions: {
@@ -72,8 +75,8 @@ export const PASSWORD_COLUMNS: (
         },
       },
       {
-        key: "lockedUntil",
-        label: "Locked until",
+        key: 'lockedUntil',
+        label: 'Locked until',
         controlType: CONTROL_TYPES.DATE,
         columnOptions: {
           customCellRenderer: emptyDateCellRenderer,
@@ -81,8 +84,8 @@ export const PASSWORD_COLUMNS: (
         controlOptions: {},
       },
       {
-        key: "lastLoginAt",
-        label: "Last login at",
+        key: 'lastLoginAt',
+        label: 'Last login at',
         controlType: CONTROL_TYPES.DATE,
         columnOptions: {
           customCellRenderer: emptyDateCellRenderer,
@@ -93,14 +96,14 @@ export const PASSWORD_COLUMNS: (
         },
       },
       {
-        key: "twoFactorEnabled",
-        label: "Two-factor enabled",
+        key: 'twoFactorEnabled',
+        label: 'Two-factor enabled',
         controlType: CONTROL_TYPES.CHECKBOX,
         controlOptions: {},
       },
       {
-        key: "twoFactorSecret",
-        label: "Two-factor secret",
+        key: 'twoFactorSecret',
+        label: 'Two-factor secret',
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.TEXT,
         columnOptions: {

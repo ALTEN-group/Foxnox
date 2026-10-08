@@ -36,6 +36,10 @@
     <comment>Preference functions (limit, template fork/select, template protection)</comment>
     <sqlFile path="versions/02-func/03-preference.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="02-func-04" author="lcluber">
+    <comment>Password expiry guard function (tomorrow or later)</comment>
+    <sqlFile path="versions/02-func/04-pwd-expiry.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">

@@ -5,7 +5,6 @@ const router = express.Router();
 
 import bEnt from "../entities/branding.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
-import history from "../middlewares/history.js";
 import schema from "../middlewares/schema.js";
 import { loadBrandingFromDb } from "../web/branding.js";
 
@@ -26,7 +25,7 @@ router.post("/search", enforceAcl(bEnt, "search"), bEnt.get);
 router.get(
   "/:id/history",
   enforceAcl(bEnt, "existing"),
-  history.get("branding"),
+  bEnt.getHistory,
 );
 // Add branding rows
 router.post(
