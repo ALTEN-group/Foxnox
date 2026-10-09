@@ -1,5 +1,19 @@
 # Changelog
 
+# Unreleased
+
+  - **Audit log page:** new admin-only `Audit log` menu entry listing every tracked change across Foxnox tables (who, what, when, old → new values), newest first, filterable by date, user, entity, action and record id. Backed by the read-only `POST /foxnox/audit/search` route over the new `log.audit` view (previous snapshot, changed columns, `ARCHIVE`/`RESTORE` actions). Automatic bookkeeping writes (login counters, device usage) are `routine` and hidden by default; add them from the `Kind` filter. Hashes and secrets are never returned (`[redacted]`). The Gatelin route `searchAudit` is seeded for Super admin and Admin only (route id `116` on a fresh alpha.5 database, see `app.acls.ts`); the login challenge mint route is no longer seeded at all (internal BFF call only)
+  - Admin: every grid (passwords, policies, tokens, trusted devices, branding) now sorts by `id` ascending by default instead of relying on database row order. Clicking a column header still overrides it
+  - Fixed `PUT`/`POST /foxnox/preferences/:resource` failing with `Invalid "conf" ... Expected object, but received string` (e.g. when resizing a grid column): `conf` is stringified before validation, so it is now typed `json`
+  - `pwd.lockedUntil` and `pwd.twoFactorEnabled` are now system-only (`readOnly`): the lock is set by failed-attempt lockout and cleared by login, password set or the unlock workflow; 2FA is toggled only by enrolment and account recovery, together with its secret. Neither is editable from the admin any more
+  - Admin: `Last login at`, `Failed attempts`, `Locked until`, `Two-factor enabled` and `Password updated at` are hidden from the password edit form and history (system-only fields; logins between two edits showed up as a change in the history). They remain in the grid
+  - Once set, a password's `pwdExpiry` can only be postponed by `PUT /foxnox/pwd` (`400` otherwise; clearing it stays allowed). The admin date picker starts at the stored day. Not enforced by the DB trigger, so password rotation can still set an earlier expiry
+  - Updated `@dwtechs/antity-pgsql` to `0.25.0` and `@dwtechs/gatelin-express` to `0.4.0`
+  - History routes now use the entity's `history()` / `getHistory` (the history middleware is removed); system-managed (`readOnly`) fields are ignored in the `pwd` and `user_device` history
+  - Added password expiry rules: `pwdExpiry` must be at least tomorrow 00:00 UTC, validated in the API (`isValidPwdExpiry`), the admin form and a database trigger
+  - Fixed the admin password edit failing with `null value in column "pwdHash"` (and silently wiping `twoFactorSecret`): both server-side secrets are no longer part of the admin form, so they are never sent on PUT
+  - Fixed PUT on `pwd`, `pwd_policy`, `token`, `user_device` and `branding` failing with `Invalid "createdAt" ... Expected Date, but received string`: audit dates (`archivedAt`, `createdAt`, `updatedAt`) are now `readOnly`
+
 # 0.1.0-alpha.3 (Sep 26th 2026)
 
   - **Branding management:**

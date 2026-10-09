@@ -35,8 +35,6 @@ export class TokensService {
 
   public readonly httpCalls: Calls<Token> = {
     get: this.crud.get,
-    create: this.crud.create,
-    update: this.crud.update,
     archive: this.crud.archive,
     getHistory: this.crud.getHistory,
   };

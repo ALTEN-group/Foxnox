@@ -108,7 +108,7 @@ export default new SQLEntity("user_trusted_device", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "createdAt",
@@ -118,7 +118,7 @@ export default new SQLEntity("user_trusted_device", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "creatorName",
@@ -140,7 +140,7 @@ export default new SQLEntity("user_trusted_device", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "updaterName",

@@ -11,6 +11,7 @@ import webRoutes from "./web/routes.js";
 const app = express();
 app.disable("x-powered-by");
 
+import aEnt from "./entities/audit.js";
 import bEnt from "./entities/branding.js";
 import pEnt from "./entities/preference.js";
 import ppEnt from "./entities/pwd-policy.js";
@@ -19,6 +20,7 @@ import tdEnt from "./entities/user-device.js";
 // middlewares
 import { send } from "./middlewares/res/send.js";
 import { sendPwd } from "./middlewares/res/send-pwd.js";
+import audit from "./routes/audit.js";
 import branding from "./routes/branding.js";
 import challenge from "./routes/challenge.js";
 import trustedDeviceVerify from "./routes/device-verify.js";
@@ -54,6 +56,7 @@ app.use(
 app.use(WEB_MOUNT, webRoutes);
 
 // Routes — every resource router is mounted at its own `/foxnox/<resource>` path.
+app.use(`${s}audit`, audit, send(aEnt));
 app.use(`${s}tokens`, token, send(tEnt));
 app.use(`${s}policies`, pwdPolicy, send(ppEnt));
 app.use(`${s}branding`, branding, send(bEnt));

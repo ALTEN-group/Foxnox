@@ -15,6 +15,7 @@
 --   106=searchBranding  107=getBrandingHistory 108=addBranding
 --   109=updateBranding  110=archiveBranding 111=getBrandingSchema
 --   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
+--   116=searchAudit
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
@@ -65,5 +66,8 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'getFoxnoxPreferences',    'Get table view preferences',     true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'addFoxnoxPreferences',    'Create table view preferences',  true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)',            'updateFoxnoxPreferences', 'Update table view preferences',  true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)/(?<id>\d+)', 'deleteFoxnoxPreference',  'Delete a table view preference', true, false, ARRAY[10], ARRAY[5], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)/(?<id>\d+)', 'deleteFoxnoxPreference',  'Delete a table view preference', true, false, ARRAY[10], ARRAY[5], -1, 'system'),
+
+  -- audit log (/foxnox/audit, served by Foxnox's own routes/audit.js; granted to Super admin and Admin by 04-permission.sql)
+  ((SELECT id FROM resource WHERE name = 'foxnox/audit'),           '/search',                            'searchAudit',             'Search the audit log',           true, false, ARRAY[2],  ARRAY[2], -1, 'system')
 ;

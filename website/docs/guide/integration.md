@@ -71,8 +71,6 @@ The seed registers:
 | `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/pwd/compare`), all `protected` |
 | `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
 | `05`–`08` | The `foxnox/web` resource and every account workflow page route |
-| `09-route-challenges.sql` | Historically registered `foxnox/challenges` as a proxied admin route |
-| `11-unproxy-challenges.sql` | Removes that proxy: minting is internal `PWD_CHALLENGES_URL` only |
 | `10-cors.sql` | Allowed origins |
 | `11`–`13` | Admin table-preference resources (`passwords`, `policies`, `tokens`, `trustedDevices`), default column layouts, and Gatelin preference scopes |
 

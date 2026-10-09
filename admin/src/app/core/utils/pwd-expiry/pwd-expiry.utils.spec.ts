@@ -65,4 +65,42 @@ describe('pwdExpiryForUpdate', () => {
       pwdExpiryForUpdate(new Date('2026-10-07T23:59:00Z'), now),
     ).toBeUndefined();
   });
+
+  it('keeps the stored instant when its own day is picked again', () => {
+    const stored = new Date('2026-12-01T15:30:00.000Z');
+    expect(
+      pwdExpiryForUpdate(new Date(2026, 11, 1), now, stored)?.toISOString(),
+    ).toBe('2026-12-01T15:30:00.000Z');
+  });
+
+  it('still lets a later day through when a stored expiry exists', () => {
+    const stored = new Date('2026-12-01T15:30:00.000Z');
+    expect(
+      pwdExpiryForUpdate(new Date(2026, 11, 5), now, stored)?.toISOString(),
+    ).toBe('2026-12-05T12:00:00.000Z');
+  });
+
+  it('passes null through even when a stored expiry exists', () => {
+    expect(
+      pwdExpiryForUpdate(null, now, new Date('2026-12-01T15:30:00.000Z')),
+    ).toBeNull();
+  });
+});
+
+describe('pwdExpiryDateMin with a stored expiry', () => {
+  const now = new Date('2026-10-07T10:00:00Z');
+
+  it("is the stored expiry's UTC day when later than tomorrow", () => {
+    const min = pwdExpiryDateMin(now, '2026-12-01T15:30:00.000Z');
+    expect([min.getFullYear(), min.getMonth(), min.getDate()]).toEqual([
+      2026, 11, 1,
+    ]);
+  });
+
+  it('stays tomorrow when the stored expiry is sooner or null', () => {
+    for (const original of ['2026-10-07T23:00:00.000Z', null, undefined]) {
+      const min = pwdExpiryDateMin(now, original);
+      expect([min.getMonth(), min.getDate()]).toEqual([9, 8]);
+    }
+  });
 });

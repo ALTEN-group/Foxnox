@@ -10,6 +10,7 @@ import { ENTITY_API_PATHS } from '@core/app-config/app.api-paths';
 import { AdminEntity } from '@core/app-config/app.entities';
 import { pwdExpiryForUpdate } from '@core/utils/pwd-expiry/pwd-expiry.utils';
 import { Calls, CrudRepository } from '@dwtechs/ngx-crud-builder';
+import { tap } from 'rxjs';
 import { PASSWORD_COLUMNS } from 'app/passwords/data-access/passwords/password.conf';
 import {
   Password,
@@ -35,23 +36,39 @@ export class PasswordsService {
   });
 
   // create intentionally omitted: passwords can never be added from the admin UI
+  // Stored expiry per row, read from the server: once set it can only be postponed
+  private readonly storedExpiry = new Map<number, Date | string | null>();
+
+  private remember(rows: Password[] | undefined) {
+    for (const r of rows ?? [])
+      if (r.id != null) this.storedExpiry.set(r.id, r.pwdExpiry);
+  }
+
   public readonly httpCalls: Calls<Password> = {
-    get: this.crud.get,
+    get: (e) => this.crud.get(e).pipe(tap(({ rows }) => this.remember(rows))),
     update: (item) => {
       const { pwdExpiry, ...rest } = item;
-      const expiry = pwdExpiryForUpdate(pwdExpiry);
-      // pwdExpiry omitted when unchanged and already expired (see util)
-      return this.crud.update(
-        (expiry === undefined
-          ? rest
-          : { ...rest, pwdExpiry: expiry }) as Password,
+      const expiry = pwdExpiryForUpdate(
+        pwdExpiry,
+        new Date(),
+        item.id == null ? undefined : this.storedExpiry.get(item.id),
       );
+      // pwdExpiry omitted when unchanged and already expired (see util)
+      return this.crud
+        .update(
+          (expiry === undefined
+            ? rest
+            : { ...rest, pwdExpiry: expiry }) as Password,
+        )
+        .pipe(tap(({ rows }) => this.remember(rows)));
     },
     getHistory: this.crud.getHistory,
   };
 
   public readonly config = computed(() =>
-    runInInjectionContext(this.injector, () => PASSWORD_COLUMNS(this.acls())),
+    runInInjectionContext(this.injector, () =>
+      PASSWORD_COLUMNS(this.acls(), (id) => this.storedExpiry.get(id)),
+    ),
   );
   public readonly entityFactory = passwordFactory;
 }

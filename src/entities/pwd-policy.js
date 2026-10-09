@@ -1,5 +1,11 @@
 // @ts-check
 import { SQLEntity } from "@dwtechs/antity-pgsql";
+import { dedupeSymbols } from "../utils/pwd-symbols.js";
+
+// ASCII punctuation only (no letters, digits or whitespace), max 50 chars.
+// Must stay in sync with the admin policy form (policy.conf.ts) and the
+// pwd_policy CHECK on `symbols` (db/liquibase/foxnox/versions/03-struct/02-pwd-policy.sql).
+const SYMBOLS_RE = /^[!-/:-@[-`{-~]{0,50}$/;
 
 export default new SQLEntity("pwd_policy", [
   {
@@ -104,6 +110,9 @@ export default new SQLEntity("pwd_policy", [
     min: 0,
     max: 50,
     isTypeChecked: true,
+    normalizer: dedupeSymbols,
+    validator: (/** @type {unknown} */ v) =>
+      typeof v === "string" && SYMBOLS_RE.test(v),
     isFilterable: true,
     requiredFor: ["PUT"],
     operations: ["SELECT", "INSERT", "UPDATE"],
@@ -161,7 +170,7 @@ export default new SQLEntity("pwd_policy", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "createdAt",
@@ -171,7 +180,7 @@ export default new SQLEntity("pwd_policy", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "creatorName",
@@ -193,7 +202,7 @@ export default new SQLEntity("pwd_policy", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "updaterName",

@@ -94,6 +94,19 @@ export const ROUTES: Routes = [
     },
   },
   {
+    path: AppPaths.AUDITLOGS,
+    loadComponent: () =>
+      import("./audit/features/audit-logs/audit-logs.component").then(
+        (m) => m.AuditLogsComponent,
+      ),
+    title: "Audit log",
+    canActivate: [aclGuard()],
+    data: {
+      breadcrumb: $localize`:@@Admin_AuditLogsNav:Audit log`,
+      functionality: AppPaths.AUDITLOGS,
+    },
+  },
+  {
     path: AppPaths.UNAUTHORIZED,
     loadComponent: () =>
       import("./core/pages/unauthorized/unauthorized.component").then(

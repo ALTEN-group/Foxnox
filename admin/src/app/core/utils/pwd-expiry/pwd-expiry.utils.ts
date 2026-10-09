@@ -11,12 +11,25 @@ function earliestInstant(now: Date): Date {
 }
 
 /** Local-midnight Date of tomorrow's UTC calendar day, for the picker `dateMin`. */
-export function pwdExpiryDateMin(now: Date = new Date()): Date {
-  return new Date(
+export function pwdExpiryDateMin(
+  now: Date = new Date(),
+  original?: Date | string | null,
+): Date {
+  const tomorrow = new Date(
     now.getUTCFullYear(),
     now.getUTCMonth(),
     now.getUTCDate() + 1,
   );
+  if (original == null) return tomorrow;
+  const stored = new Date(original);
+  if (Number.isNaN(stored.getTime())) return tomorrow;
+  // An already-set expiry can only be postponed: its own day is the earliest pick
+  const storedDay = new Date(
+    stored.getUTCFullYear(),
+    stored.getUTCMonth(),
+    stored.getUTCDate(),
+  );
+  return storedDay > tomorrow ? storedDay : tomorrow;
 }
 
 /**
@@ -36,10 +49,14 @@ export function toPwdExpiryInstant(picked: Date): Date {
  * - any other value is the stored one sent back by the full-row update: kept
  *   when still valid, omitted when already in the past (unchanged expired row,
  *   the picker cannot produce it) so editing other fields keeps working.
+ * - with the stored `original` (already set, so postpone-only): picking the
+ *   original's own UTC day keeps the original instant, as 12:00 UTC could
+ *   otherwise land before it on that same day.
  */
 export function pwdExpiryForUpdate(
   value: Date | string | null | undefined,
   now: Date = new Date(),
+  original?: Date | string | null,
 ): Date | null | undefined {
   if (value === null || value === undefined) return value;
   const d = new Date(value);
@@ -50,6 +67,15 @@ export function pwdExpiryForUpdate(
     d.getSeconds() === 0 &&
     d.getMilliseconds() === 0;
   const candidate = isPickedDay ? toPwdExpiryInstant(d) : d;
+  if (original != null) {
+    const stored = new Date(original);
+    if (
+      !Number.isNaN(stored.getTime()) &&
+      candidate < stored &&
+      candidate.toISOString().slice(0, 10) === stored.toISOString().slice(0, 10)
+    )
+      return stored;
+  }
   return candidate.getTime() >= earliestInstant(now).getTime()
     ? candidate
     : undefined;

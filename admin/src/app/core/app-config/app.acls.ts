@@ -18,6 +18,7 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
  *   103=updateDevices   104=archiveDevices  105=getDeviceSchema
  *   106=searchBranding  107=getBrandingHistory 108=addBranding
  *   109=updateBranding  110=archiveBranding 111=getBrandingSchema
+ *   112-115=preferences 116=searchAudit
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
@@ -30,8 +31,7 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   tokens: {
     get: 88, // searchTokens
     getHistory: 89, // getTokenHistory
-    create: 90, // addTokens
-    update: 91, // updateTokens
+    // create/update intentionally omitted: tokens are issued and consumed by Foxnox's own flows, never edited from the admin UI
     archive: 92, // archiveTokens
   },
   policies: {
@@ -44,8 +44,7 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   trustedDevices: {
     get: 100, // searchDevices
     getHistory: 101, // getDeviceHistory
-    // create intentionally omitted: deviceTokenHash is INSERT-only server-side, never settable from the admin UI
-    update: 103, // updateDevices
+    // create/update intentionally omitted: trusted devices are issued and refreshed by Foxnox's login flow, never edited from the admin UI
     archive: 104, // archiveDevices
   },
   branding: {
@@ -54,5 +53,8 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
     create: 108, // addBranding
     update: 109, // updateBranding
     archive: 110, // archiveBranding
+  },
+  auditLogs: {
+    get: 116, // searchAudit (db/liquibase/gatelin-data/03-route.sql)
   },
 };

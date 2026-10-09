@@ -7,14 +7,12 @@ import { ArchiveInfo } from "@dwtechs/ngx-crud-builder";
 export interface Password extends ArchiveInfo {
   id: number | null;
   userId: number;
-  pwdHash: string;
   pwdUpdatedAt: Date | null;
   pwdExpiry: Date | null;
   failedAttempts: number;
   lockedUntil: Date | null;
   lastLoginAt: Date | null;
   twoFactorEnabled: boolean;
-  twoFactorSecret: string;
 }
 
 /**
@@ -26,13 +24,11 @@ export interface Password extends ArchiveInfo {
 export const passwordFactory = (): Password => ({
   id: null,
   userId: 0,
-  pwdHash: "",
   pwdUpdatedAt: null,
   pwdExpiry: null,
   failedAttempts: 0,
   lockedUntil: null,
   lastLoginAt: null,
   twoFactorEnabled: false,
-  twoFactorSecret: "",
   ...new ArchiveInfo(),
 });

@@ -72,7 +72,7 @@
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "description": "When the password must be rotated"
+            "description": "When the password must be rotated. Tomorrow (UTC) or later; once set, a PUT can only postpone it (clearing with null is always allowed)"
           },
           "failedAttempts": {
             "type": "integer",

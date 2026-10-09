@@ -23,5 +23,6 @@ CREATE TABLE IF NOT EXISTS pwd_policy (
   "updaterName" TEXT,
   CHECK (length > 5),
   CHECK ("maxFailedAttempts" > 0),
+  CHECK (symbols ~ '^[!-/:-@\[-`{-~]*$'),
   CHECK (number = TRUE OR symbol = TRUE OR "lowerCase" = TRUE OR "upperCase" = TRUE)
 );

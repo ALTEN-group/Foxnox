@@ -36,7 +36,6 @@ export class TrustedDevicesService {
   // create intentionally omitted: deviceTokenHash is INSERT-only server-side, never settable from the admin UI
   public readonly httpCalls: Calls<TrustedDevice> = {
     get: this.crud.get,
-    update: this.crud.update,
     getHistory: this.crud.getHistory,
   };
 

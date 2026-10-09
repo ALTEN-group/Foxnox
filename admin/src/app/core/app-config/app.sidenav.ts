@@ -47,4 +47,13 @@ export const SIDENAV: MenuItem[] = [
       functionality: "branding",
     },
   },
+  {
+    id: "auditLogs",
+    label: $localize`:@@Admin_AuditLogsNav:Audit log`,
+    routerLink: `/${AppPaths.AUDITLOGS}`,
+    icon: "pi pi-history",
+    data: {
+      functionality: "auditLogs",
+    },
+  },
 ];

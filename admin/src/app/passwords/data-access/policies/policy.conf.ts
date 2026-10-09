@@ -2,13 +2,14 @@ import { Acls } from "@core/acl/acls.model";
 import { withAclConditions } from "@core/utils/field-config/acl-conditions.utils";
 import { buildArchivedConfig } from "@core/utils/field-config/archived.config";
 import { buildAuditConfig } from "@core/utils/field-config/audit.config";
+import { ID_SORTED_CONFIG } from "@core/utils/field-config/id-sorted.config";
 import {
   CONTROL_TYPES,
-  ID_CONFIG,
   INPUT_TYPES,
   maxlength,
   min,
   minlength,
+  patternValidator,
   required,
   StrictCrudItemOptions,
 } from "@dwtechs/ngx-crud-builder";
@@ -19,7 +20,7 @@ export const POLICY_COLUMNS: (
 ) => StrictCrudItemOptions<Policy>[] = (acls) =>
   withAclConditions(
     [
-      ID_CONFIG,
+      ID_SORTED_CONFIG,
       {
         key: "name",
         label: "Name",
@@ -40,7 +41,7 @@ export const POLICY_COLUMNS: (
       },
       {
         key: "length",
-        label: "Minimum length",
+        label: "Min len",
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.NUMBER,
         columnOptions: {
@@ -52,25 +53,25 @@ export const POLICY_COLUMNS: (
       },
       {
         key: "number",
-        label: "Requires a number",
+        label: "Number",
         controlType: CONTROL_TYPES.CHECKBOX,
         controlOptions: {},
       },
       {
         key: "symbol",
-        label: "Requires a symbol",
+        label: "Symbol",
         controlType: CONTROL_TYPES.CHECKBOX,
         controlOptions: {},
       },
       {
         key: "lowerCase",
-        label: "Requires a lowercase letter",
+        label: "Lowercase",
         controlType: CONTROL_TYPES.CHECKBOX,
         controlOptions: {},
       },
       {
         key: "upperCase",
-        label: "Requires an uppercase letter",
+        label: "Uppercase",
         controlType: CONTROL_TYPES.CHECKBOX,
         controlOptions: {},
       },
@@ -78,6 +79,10 @@ export const POLICY_COLUMNS: (
         key: "strict",
         label: "Strict mode",
         controlType: CONTROL_TYPES.CHECKBOX,
+        columnOptions: {
+          headerTooltip:
+            "Applies to generated passwords only. On: each required character type (number, symbol, lowercase, uppercase) appears at least once. Off: characters are picked at random, so a required type may be missing.",
+        },
         controlOptions: {},
       },
       {
@@ -86,7 +91,13 @@ export const POLICY_COLUMNS: (
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.TEXT,
         controlOptions: {
-          validators: [maxlength(50)],
+          validators: [
+            maxlength(50),
+            patternValidator({
+              pattern: /^[!-/:-@[-`{-~]*$/,
+              message: "Symbols only (no letters, numbers or spaces)",
+            }),
+          ],
         },
         conditions: {
           controlOptions: {

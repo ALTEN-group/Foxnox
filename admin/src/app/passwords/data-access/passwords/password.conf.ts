@@ -4,9 +4,9 @@ import { buildArchivedConfig } from '@core/utils/field-config/archived.config';
 import { buildAuditConfig } from '@core/utils/field-config/audit.config';
 import { pwdExpiryDateMin } from '@core/utils/pwd-expiry/pwd-expiry.utils';
 import { emptyDateCellRenderer } from '@core/utils/renderers/empty-date.renderer';
+import { ID_SORTED_CONFIG } from '@core/utils/field-config/id-sorted.config';
 import {
   CONTROL_TYPES,
-  ID_CONFIG,
   INPUT_TYPES,
   min,
   required,
@@ -16,10 +16,11 @@ import { Password } from 'app/passwords/data-access/passwords/password.model';
 
 export const PASSWORD_COLUMNS: (
   acls: Acls | undefined,
-) => StrictCrudItemOptions<Password>[] = (acls) =>
+  storedExpiry?: (id: number) => Date | string | null | undefined,
+) => StrictCrudItemOptions<Password>[] = (acls, storedExpiry) =>
   withAclConditions(
     [
-      ID_CONFIG,
+      ID_SORTED_CONFIG,
       {
         key: 'userId',
         label: 'User ID',
@@ -33,24 +34,12 @@ export const PASSWORD_COLUMNS: (
         },
       },
       {
-        key: 'pwdHash',
-        label: 'Password hash',
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
-        columnOptions: {
-          isHardHidden: true,
-        },
-        controlOptions: {
-          hidden: true,
-          validators: [required],
-        },
-      },
-      {
         key: 'pwdUpdatedAt',
         label: 'Password updated at',
         controlType: CONTROL_TYPES.DATE,
         controlOptions: {
           disabled: true,
+          hidden: true,
         },
       },
       {
@@ -63,6 +52,16 @@ export const PASSWORD_COLUMNS: (
         controlOptions: {
           dateMin: pwdExpiryDateMin(),
         },
+        conditions: {
+          controlOptions: {
+            // set expiry can only be postponed: earliest pick is its own day
+            dateMin: ({ model }: { model: Password }) =>
+              pwdExpiryDateMin(
+                undefined,
+                model.id == null ? undefined : storedExpiry?.(model.id),
+              ),
+          },
+        },
       },
       {
         key: 'failedAttempts',
@@ -71,6 +70,9 @@ export const PASSWORD_COLUMNS: (
         type: INPUT_TYPES.NUMBER,
         controlOptions: {
           disabled: true,
+          // hidden also removes it from the history, where hidden system writes
+          // (logins) would otherwise show up as a change of the edited entry
+          hidden: true,
           validators: [min(0)],
         },
       },
@@ -81,7 +83,10 @@ export const PASSWORD_COLUMNS: (
         columnOptions: {
           customCellRenderer: emptyDateCellRenderer,
         },
-        controlOptions: {},
+        controlOptions: {
+          disabled: true,
+          hidden: true,
+        },
       },
       {
         key: 'lastLoginAt',
@@ -93,23 +98,15 @@ export const PASSWORD_COLUMNS: (
         controlOptions: {
           dateShowTime: true,
           disabled: true,
+          hidden: true,
         },
       },
       {
         key: 'twoFactorEnabled',
         label: 'Two-factor enabled',
         controlType: CONTROL_TYPES.CHECKBOX,
-        controlOptions: {},
-      },
-      {
-        key: 'twoFactorSecret',
-        label: 'Two-factor secret',
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
-        columnOptions: {
-          isHardHidden: true,
-        },
         controlOptions: {
+          disabled: true,
           hidden: true,
         },
       },

@@ -90,7 +90,7 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
   {"key":"lowerCase",   "isVisible":true,  "defaultWidth":"80px"},
   {"key":"upperCase",   "isVisible":true,  "defaultWidth":"80px"},
   {"key":"strict",      "isVisible":true,  "defaultWidth":"80px"},
-  {"key":"symbols",     "isVisible":false},
+  {"key":"symbols",     "isVisible":true},
   {"key":"expiryDays",  "isVisible":true,  "defaultWidth":"80px"},
   {"key":"active",      "isVisible":true,  "defaultWidth":"60px"},
   {"key":"createdAt",   "isVisible":false},

@@ -75,7 +75,7 @@ export default new SQLEntity("token", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "createdAt",
@@ -85,7 +85,7 @@ export default new SQLEntity("token", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "creatorName",
@@ -107,7 +107,7 @@ export default new SQLEntity("token", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "updaterName",

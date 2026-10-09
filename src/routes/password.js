@@ -15,6 +15,7 @@ import {
 } from "../middlewares/mappers/track-login-attempt.js";
 import schema from "../middlewares/schema.js";
 import { checkCompareBody } from "../middlewares/validators/check-compare.js";
+import { checkPwdExpiryPostpone } from "../middlewares/validators/check-pwd-expiry-postpone.js";
 
 //Routes
 router.post(
@@ -53,6 +54,7 @@ router.put(
   "/",
   requireConsumer,
   enforceAcl(pEnt, "existing"),
+  checkPwdExpiryPostpone,
   pEnt.updateArraySubstack,
 );
 // Bulk archive

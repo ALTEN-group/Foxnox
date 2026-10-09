@@ -86,7 +86,7 @@ export default new SQLEntity("pwd", [
     requiredFor: [],
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "lastLoginAt",
@@ -106,7 +106,7 @@ export default new SQLEntity("pwd", [
     requiredFor: [],
     operations: ["SELECT", "UPDATE"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "twoFactorSecret",
@@ -139,7 +139,7 @@ export default new SQLEntity("pwd", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "createdAt",
@@ -149,7 +149,7 @@ export default new SQLEntity("pwd", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "creatorName",
@@ -171,7 +171,7 @@ export default new SQLEntity("pwd", [
     requiredFor: [],
     operations: ["SELECT"],
     isPrivate: false,
-    readOnly: false,
+    readOnly: true,
   },
   {
     key: "updaterName",

@@ -9,6 +9,7 @@ export const ADMIN_ENTITIES = [
   "tokens",
   "trustedDevices",
   "branding",
+  "auditLogs",
 ] as const;
 
 export type AdminEntity = (typeof ADMIN_ENTITIES)[number];

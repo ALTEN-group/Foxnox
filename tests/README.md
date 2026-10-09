@@ -30,6 +30,8 @@ npm run test:coverage     # coverage under tests/coverage/
 | `routes/gatelin-contract.test.js` | Challenges, trusted-device verify, login-ticket redeem, validators |
 | `middlewares/res/send.test.js` | Unit: `isPrivate` stripping, nested history `record`, `x-acl-fields` projection |
 | `routes/crud-resources.test.js` | Parameterized wiring for pwd / tokens / policies / trusted-devices (search, history, add, update, archive, schema + mount order) |
+| `routes/audit.test.js` | `POST /foxnox/audit/search` wiring, read-only surface, secrets never reach the response |
+| `middlewares/mappers/audit-changes.test.js` | Unit: `changes` text per operation, secret redaction, truncation |
 | `routes/health.test.js` | Real `app.js`: `/foxnox/health` liveness + `/foxnox/health/ready` db probe (mocked pg-pool); proves healix is mounted before `startTimer` |
 
 Helpers: `helpers/auth-db-mock.js`, `helpers/token-db-mock.js`, `helpers/json-api-app.js` (JSON mounts mirroring `src/app.js`), `helpers/form.js` (CSRF forms).
