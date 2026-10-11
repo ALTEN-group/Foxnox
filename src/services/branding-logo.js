@@ -24,6 +24,7 @@ export const LOGO_FILE_RE = /^logo-[0-9a-f-]{36}\.(png|jpg|webp|svg)$/;
  */
 export async function saveLogo(id, consumer, logo) {
   const file = `logo-${randomUUID()}.${logo.ext}`;
+  if (!LOGO_FILE_RE.test(file)) throw new Error("Invalid logo extension");
   await mkdir(LOGO_DIR, { recursive: true });
   await writeFile(path.join(LOGO_DIR, file), logo.buffer, { flag: "wx" });
 

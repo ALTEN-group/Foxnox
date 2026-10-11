@@ -18,6 +18,9 @@ const upload = multer({
 const SVG_FORBIDDEN =
   /<script|<foreignObject|<iframe|<embed|<object|<!ENTITY|\son\w+\s*=|(java|vb)script:/i;
 
+// Whole-prefix match: nothing is stripped, so no partial-sanitization pitfalls.
+const SVG_PREFIX = /^\uFEFF?\s*(?:(?:<\?xml[^>]*\?>|<!--[\s\S]*?-->)\s*)*$/;
+
 /**
  * Only whitespace, an XML declaration and comments may precede `<svg`.
  * @param {string} text
@@ -27,11 +30,7 @@ function isSvg(text) {
   const head = text.slice(0, 4096);
   const at = head.search(/<svg[\s>]/i);
   if (at < 0) return false;
-  const prefix = head
-    .slice(0, at)
-    .replace(/<\?xml[^>]*\?>|<!--[\s\S]*?-->/g, "")
-    .replace(/^\uFEFF/, "");
-  return prefix.trim() === "" && !SVG_FORBIDDEN.test(text);
+  return SVG_PREFIX.test(head.slice(0, at)) && !SVG_FORBIDDEN.test(text);
 }
 
 /**
