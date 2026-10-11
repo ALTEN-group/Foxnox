@@ -9,7 +9,6 @@ import {
 } from "@angular/core";
 import { rxResource, takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TABLES } from "@core/app-config/app.tables";
-import { SnackbarService } from "@core/utils/snackbar/snackbar.service";
 import {
   FileInfo,
   FormComponent,
@@ -81,7 +80,11 @@ export class BrandingComponent {
       .subscribe((res) => {
         const [updated] = res.rows;
         if (updated) {
-          this.model.update((m) => ({ ...m, ...updated, logoFile: m.logoFile }));
+          this.model.update((m) => ({
+            ...m,
+            ...updated,
+            logoFile: m.logoFile,
+          }));
         }
       });
   }
