@@ -19,7 +19,7 @@ const SVG_FORBIDDEN =
   /<script|<foreignObject|<iframe|<embed|<object|<!ENTITY|\son\w+\s*=|(java|vb)script:/i;
 
 // Whole-prefix match: nothing is stripped, so no partial-sanitization pitfalls.
-const SVG_PREFIX = /^\uFEFF?\s*(?:(?:<\?xml[^>]*\?>|<!--[\s\S]*?-->)\s*)*$/;
+const SVG_PREFIX = /^\uFEFF?\s*(?:(?:<\?xml[^>]*\?>|<!--(?:[^-]|-(?!->))*-->)\s*)*$/;
 
 /**
  * Only whitespace, an XML declaration and comments may precede `<svg`.
