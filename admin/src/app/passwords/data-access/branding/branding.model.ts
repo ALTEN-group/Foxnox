@@ -9,6 +9,8 @@ export interface Branding extends ArchiveInfo {
   name: string;
   tagline: string;
   logoUrl: string;
+  /** Server-generated name of the uploaded logo; written only by the logo upload route. */
+  logoFile: string;
   logoAlt: string;
   mark: string;
   primaryColor: string;
@@ -32,6 +34,7 @@ export const brandingFactory = (): Branding => ({
   name: "Foxnox",
   tagline: "Account security",
   logoUrl: "",
+  logoFile: "",
   logoAlt: "",
   mark: "F",
   primaryColor: "#1f6feb",

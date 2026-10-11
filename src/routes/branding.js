@@ -5,7 +5,13 @@ const router = express.Router();
 
 import bEnt from "../entities/branding.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
+import { saveBrandingLogo } from "../middlewares/mappers/save-logo.js";
 import schema from "../middlewares/schema.js";
+import {
+  assertLogoFieldAllowed,
+  parseLogoUpload,
+  validateLogoFile,
+} from "../middlewares/validators/logo-upload.js";
 import { loadBrandingFromDb } from "../web/branding.js";
 
 /**
@@ -22,11 +28,7 @@ async function invalidateBrandingCache(_req, _res, next) {
 // Search fields
 router.post("/search", enforceAcl(bEnt, "search"), bEnt.get);
 // Get version history of a specific row
-router.get(
-  "/:id/history",
-  enforceAcl(bEnt, "existing"),
-  bEnt.getHistory,
-);
+router.get("/:id/history", enforceAcl(bEnt, "existing"), bEnt.getHistory);
 // Add branding rows
 router.post(
   "/",
@@ -49,6 +51,17 @@ router.post(
   requireConsumer,
   enforceAcl(bEnt, "existing"),
   bEnt.archive,
+  invalidateBrandingCache,
+);
+// Upload the logo image (multipart, single `logo` file)
+router.put(
+  "/:id/logo",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertLogoFieldAllowed,
+  parseLogoUpload,
+  validateLogoFile,
+  saveBrandingLogo,
   invalidateBrandingCache,
 );
 // Get entity schema

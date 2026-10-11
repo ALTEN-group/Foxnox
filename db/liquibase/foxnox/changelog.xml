@@ -71,6 +71,10 @@
     <comment>Branding table structure (workflow pages + email look and feel)</comment>
     <sqlFile path="versions/03-struct/07-branding.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="03-struct-08" author="lcluber">
+    <comment>Branding uploaded logo file name</comment>
+    <sqlFile path="versions/03-struct/08-branding-logo.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- views -->
   <changeSet id="04-view-01" author="lcluber">

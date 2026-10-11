@@ -39,11 +39,12 @@ export const BRANDING_COLUMNS: (
       },
       {
         key: "logoUrl",
-        label: "Logo URL",
+        label: "Logo URL (takes priority over the uploaded image)",
         controlType: CONTROL_TYPES.INPUT,
         type: INPUT_TYPES.TEXT,
         controlOptions: {
           validators: [maxlength(2048)],
+          width: "33%",
         },
       },
       {
@@ -53,6 +54,7 @@ export const BRANDING_COLUMNS: (
         type: INPUT_TYPES.TEXT,
         controlOptions: {
           validators: [maxlength(120)],
+          width: "33%",
         },
       },
       {
@@ -62,13 +64,25 @@ export const BRANDING_COLUMNS: (
         type: INPUT_TYPES.TEXT,
         controlOptions: {
           validators: [maxlength(2)],
+          width: "33%",
+        },
+      },
+      {
+        key: "logoFile",
+        label: "Logo image (uploading it clears the logo URL)",
+        controlType: CONTROL_TYPES.FILES,
+        controlOptions: {
+          mediaType: "image",
+          isPreviewEnabled: true,
+          multiple: false,
+          maxFileSize: 10 * 1024 * 1024,
+          width: "100%",
         },
       },
       {
         key: "primaryColor",
         label: "Primary color",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
           validators: [required, minlength(4), maxlength(7)],
         },
@@ -76,8 +90,7 @@ export const BRANDING_COLUMNS: (
       {
         key: "primaryHoverColor",
         label: "Primary color (hover)",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
           validators: [required, minlength(4), maxlength(7)],
         },
@@ -85,8 +98,7 @@ export const BRANDING_COLUMNS: (
       {
         key: "secondaryColor",
         label: "Secondary color",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
           validators: [required, minlength(4), maxlength(7)],
         },
@@ -94,8 +106,7 @@ export const BRANDING_COLUMNS: (
       {
         key: "backgroundColor",
         label: "Background color",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
           validators: [required, minlength(4), maxlength(7)],
         },
@@ -140,4 +151,17 @@ export const BRANDING_COLUMNS: (
       ...buildAuditConfig(),
     ] as StrictCrudItemOptions<Branding>[],
     acls,
+  ).map((col) =>
+    // logoFile is not an UPDATE field of the entity (the generic PUT must not write it), so the
+    // schema-derived allow-list always excludes it: gate it on the upload route permission instead.
+    col.key === "logoFile"
+      ? {
+          ...col,
+          conditions: {
+            controlOptions: {
+              disabled: () => !!acls && !acls.updateFiles?.allowed,
+            },
+          },
+        }
+      : col,
   );

@@ -1,0 +1,3 @@
+
+ALTER TABLE branding
+  ADD COLUMN IF NOT EXISTS "logoFile" varchar(255) NOT NULL DEFAULT '';
