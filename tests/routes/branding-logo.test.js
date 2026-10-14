@@ -14,6 +14,7 @@ const PNG = Buffer.concat([
 ]);
 
 const saveLogo = jest.fn();
+const deleteLogo = jest.fn();
 const loadBrandingFromDb = jest.fn();
 const noop = jest.fn((_req, _res, next) => next());
 
@@ -30,6 +31,7 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
 }));
 jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
   saveLogo,
+  deleteLogo,
   LOGO_FILE_RE: /^logo-.+$/,
 }));
 jest.unstable_mockModule("../../src/web/branding.js", () => ({
@@ -115,5 +117,49 @@ describe("PUT /foxnox/branding/:id/logo", () => {
 
     expect(res.status).toBe(403);
     expect(saveLogo).not.toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /foxnox/branding/:id/logo", () => {
+  const del = (id = 1) =>
+    request(app).delete(`/foxnox/branding/${id}/logo`).set(CONSUMER);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    deleteLogo.mockResolvedValue({ id: 1, logoFile: "" });
+  });
+
+  it("should clear the logo and return the updated row", async () => {
+    const res = await del();
+
+    expect(res.status).toBe(200);
+    expect(res.body.rows).toEqual([{ id: 1, logoFile: "" }]);
+    expect(deleteLogo).toHaveBeenCalledWith(1, {
+      userId: 1,
+      nickname: "tester",
+    });
+    expect(loadBrandingFromDb).toHaveBeenCalledTimes(1);
+  });
+
+  it("should reject a write with no consumer headers", async () => {
+    const res = await request(app).delete("/foxnox/branding/1/logo");
+
+    expect(res.status).toBe(401);
+    expect(deleteLogo).not.toHaveBeenCalled();
+  });
+
+  it("should answer 404 when the branding row does not exist", async () => {
+    deleteLogo.mockResolvedValue(null);
+    const res = await del(9);
+
+    expect(res.status).toBe(404);
+    expect(loadBrandingFromDb).not.toHaveBeenCalled();
+  });
+
+  it("should answer 403 when the ACL field allow-list excludes logoFile", async () => {
+    const res = await del().set("x-acl-fields", "name,tagline");
+
+    expect(res.status).toBe(403);
+    expect(deleteLogo).not.toHaveBeenCalled();
   });
 });

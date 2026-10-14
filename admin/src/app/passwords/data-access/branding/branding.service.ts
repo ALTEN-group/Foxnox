@@ -7,8 +7,8 @@ import {
   runInInjectionContext,
 } from "@angular/core";
 import { AclService } from "@core/acl/acl.service";
-import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { APP_CONFIG } from "@core/app-config/app-config.token";
+import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import {
   Calls,
@@ -51,6 +51,11 @@ export class BrandingService {
       body,
     );
   };
+
+  public readonly deleteLogo = (id: number) =>
+    this.http.delete<Rows<Branding>>(
+      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/logo`,
+    );
 
   public readonly httpCalls: Calls<Branding> = {
     get: this.crud.get,

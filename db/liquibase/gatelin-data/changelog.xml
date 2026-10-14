@@ -51,5 +51,9 @@
     <comment>Branding logo upload route + permissions for Super admin / Admin</comment>
     <sqlFile path="11-route-branding-logo.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-13" author="lcluber">
+    <comment>Branding logo delete route + permissions for Super admin / Admin</comment>
+    <sqlFile path="12-route-branding-logo-delete.sql"/>
+  </changeSet>
 
 </databaseChangeLog>

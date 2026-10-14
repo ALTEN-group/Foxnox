@@ -5,7 +5,10 @@ const router = express.Router();
 
 import bEnt from "../entities/branding.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
-import { saveBrandingLogo } from "../middlewares/mappers/save-logo.js";
+import {
+  deleteBrandingLogo,
+  saveBrandingLogo,
+} from "../middlewares/mappers/save-logo.js";
 import schema from "../middlewares/schema.js";
 import {
   assertLogoFieldAllowed,
@@ -62,6 +65,15 @@ router.put(
   parseLogoUpload,
   validateLogoFile,
   saveBrandingLogo,
+  invalidateBrandingCache,
+);
+// Remove the uploaded logo image
+router.delete(
+  "/:id/logo",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertLogoFieldAllowed,
+  deleteBrandingLogo,
   invalidateBrandingCache,
 );
 // Get entity schema

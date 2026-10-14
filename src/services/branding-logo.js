@@ -59,6 +59,34 @@ export async function saveLogo(id, consumer, logo) {
 }
 
 /**
+ * Clears `logoFile` and removes the stored image from disk.
+ *
+ * @param {number} id branding row id
+ * @param {{ userId: number, nickname: string }} consumer
+ * @returns {Promise<Record<string, unknown>|null>} updated row, or null when the row is missing/archived
+ */
+export async function deleteLogo(id, consumer) {
+  const res = await execute(
+    `WITH old AS (
+       SELECT "logoFile" AS previous FROM branding
+       WHERE id = $3 AND archived IS NOT TRUE
+     )
+     UPDATE branding
+     SET "logoFile" = '', "updatedAt" = NOW(),
+         "updaterId" = $1, "updaterName" = $2
+     WHERE id = $3 AND archived IS NOT TRUE
+     RETURNING *, (SELECT previous FROM old) AS "previousLogoFile"`,
+    [consumer.userId, consumer.nickname, id],
+    null,
+  );
+  const row = res.rows?.[0];
+  if (!row) return null;
+  const { previousLogoFile, ...updated } = row;
+  if (previousLogoFile) await removeLogo(previousLogoFile);
+  return updated;
+}
+
+/**
  * Best-effort delete: a leftover file is harmless, a failed request is not.
  * @param {string} file
  * @returns {Promise<void>}
