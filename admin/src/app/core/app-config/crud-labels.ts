@@ -56,6 +56,11 @@ export const CRUD_LABELS_CONFIG: Partial<CrudLabels> = {
     maxFileSizeExceeded: (fileName: string, maxFileSize: number) =>
       `The file ${fileName} exceeds the maximum allowed size of ${maxFileSize} MB`,
     preview: "Preview",
+    remove: "Remove",
+    clearAll: "Clear all",
+    download: "Download",
+    maxFileSize: "Maximum file size",
+    mediaType: "Media type",
   },
   form: {
     reset: "Reset",

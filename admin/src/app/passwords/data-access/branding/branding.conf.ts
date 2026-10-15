@@ -58,33 +58,6 @@ export const BRANDING_COLUMNS: (
           { label: "URL", value: "url" },
           { label: "Uploaded image", value: "file" },
         ],
-        controlOptions: {
-          width: "33%",
-        },
-      },
-      {
-        key: "logoAlt",
-        label: "Logo alt text",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
-        controlOptions: {
-          validators: [maxlength(120)],
-          nonNullable: true,
-          defaultValue: "",
-          width: "33%",
-        },
-      },
-      {
-        key: "mark",
-        label: "Fallback mark (shown when no logo)",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
-        controlOptions: {
-          validators: [maxlength(2)],
-          nonNullable: true,
-          defaultValue: "",
-          width: "33%",
-        },
       },
       {
         key: "logoUrl",
@@ -95,7 +68,6 @@ export const BRANDING_COLUMNS: (
           validators: [maxlength(2048)],
           nonNullable: true,
           defaultValue: "",
-          width: "100%",
         },
         conditions: {
           controlOptions: {
@@ -112,7 +84,29 @@ export const BRANDING_COLUMNS: (
           isPreviewEnabled: true,
           multiple: false,
           maxFileSize: 10 * 1024 * 1024,
-          width: "100%",
+          uploadSize: "small",
+        },
+      },
+      {
+        key: "logoAlt",
+        label: "Logo alt text",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.TEXT,
+        controlOptions: {
+          validators: [maxlength(120)],
+          nonNullable: true,
+          defaultValue: "",
+        },
+      },
+      {
+        key: "mark",
+        label: "Fallback mark (shown when no logo)",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.TEXT,
+        controlOptions: {
+          validators: [maxlength(2)],
+          nonNullable: true,
+          defaultValue: "",
         },
       },
       {
