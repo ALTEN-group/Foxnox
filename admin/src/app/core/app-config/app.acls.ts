@@ -19,7 +19,7 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
  *   106=searchBranding  107=getBrandingHistory 108=addBranding
  *   109=updateBranding  110=archiveBranding 111=getBrandingSchema
  *   112-115=preferences 116=searchAudit
- *   142=updateBrandingLogo (db/liquibase/gatelin-data/11-route-branding-logo.sql; id measured on Gatelin alpha.8, 81 core routes)
+ *   117=updateBrandingLogo 118=deleteBrandingLogo
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
@@ -54,7 +54,7 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
     create: 108, // addBranding
     update: 109, // updateBranding
     archive: 110, // archiveBranding
-    updateFiles: 142, // updateBrandingLogo
+    updateFiles: 117, // updateBrandingLogo
   },
   auditLogs: {
     get: 116, // searchAudit (db/liquibase/gatelin-data/03-route.sql)

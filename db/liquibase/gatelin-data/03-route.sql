@@ -1,6 +1,6 @@
 --
 -- Foxnox route default inserts.
--- operationIds: 2=list 5=bulk update 7=bulk create 9=bulk archive 13=execute (from Gatelin's core operation seed)
+-- operationIds: 2=list 5=bulk update 7=bulk create 9=bulk archive 10=delete 13=execute (from Gatelin's core operation seed)
 -- methodIds:    1=GET  2=POST        3=PUT                                    (from Gatelin's core method seed)
 --
 -- Assigned route IDs (Gatelin 0.1.0-alpha.5 core seed ends at 80 = getBasicUserInfo):
@@ -15,7 +15,7 @@
 --   106=searchBranding  107=getBrandingHistory 108=addBranding
 --   109=updateBranding  110=archiveBranding 111=getBrandingSchema
 --   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
---   116=searchAudit
+--   116=searchAudit     117=updateBrandingLogo 118=deleteBrandingLogo
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
@@ -69,5 +69,9 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/preferences'),     '/(?<resource>[A-Za-z]+)/(?<id>\d+)', 'deleteFoxnoxPreference',  'Delete a table view preference', true, false, ARRAY[10], ARRAY[5], -1, 'system'),
 
   -- audit log (/foxnox/audit, served by Foxnox's own routes/audit.js; granted to Super admin and Admin by 04-permission.sql)
-  ((SELECT id FROM resource WHERE name = 'foxnox/audit'),           '/search',                            'searchAudit',             'Search the audit log',           true, false, ARRAY[2],  ARRAY[2], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/audit'),           '/search',                            'searchAudit',             'Search the audit log',           true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+
+  -- branding logo (/foxnox/branding/:id/logo, multipart upload + delete)
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/logo',                   'updateBrandingLogo',      'Upload branding logo',           true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/logo',                   'deleteBrandingLogo',      'Delete branding logo',           true, false, ARRAY[10], ARRAY[5], -1, 'system')
 ;
