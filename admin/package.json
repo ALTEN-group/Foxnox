@@ -38,7 +38,7 @@
     "@angular/service-worker": "22.1.8",
     "@dwtechs/checkard": "3.7.0",
     "@dwtechs/ctrltab": "3.0.1",
-    "@dwtechs/ngx-crud-builder": "0.3.3",
+    "@dwtechs/ngx-crud-builder": "0.3.4",
     "@lcluber/frameratjs": "1.1.0",
     "@lcluber/mouettejs": "2.5.0",
     "@lcluber/roostrjs": "0.6.0",
