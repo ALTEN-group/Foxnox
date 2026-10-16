@@ -7,18 +7,30 @@ import {
   ConditionFn,
   CONTROL_TYPES,
   INPUT_TYPES,
+  max,
   maxlength,
+  min,
   minlength,
   required,
   StrictCrudItemOptions,
 } from "@dwtechs/ngx-crud-builder";
 import { Branding } from "app/passwords/data-access/branding/branding.model";
 
-// logoSource is a UI-only form field, absent from the Branding type
-const hiddenUnlessLogoSource =
-  (source: "url" | "file"): ConditionFn<Branding> =>
+// Keys accepted by the backend (src/web/branding.js FONT_FAMILIES).
+const FONT_FAMILIES = [
+  { label: "System", value: "system" },
+  { label: "Serif", value: "serif" },
+  { label: "Monospace", value: "mono" },
+];
+
+// logoSource and faviconSource are UI-only form fields, absent from the Branding type
+const hiddenUnlessSource =
+  (
+    field: "logoSource" | "faviconSource",
+    source: "url" | "file",
+  ): ConditionFn<Branding> =>
   ({ model }) =>
-    (model as unknown as { logoSource: string }).logoSource !== source;
+    (model as unknown as Record<string, string>)[field] !== source;
 
 export const BRANDING_COLUMNS: (
   acls: Acls | undefined,
@@ -71,7 +83,7 @@ export const BRANDING_COLUMNS: (
         },
         conditions: {
           controlOptions: {
-            hidden: hiddenUnlessLogoSource("url"),
+            hidden: hiddenUnlessSource("logoSource", "url"),
           },
         },
       },
@@ -110,6 +122,44 @@ export const BRANDING_COLUMNS: (
         },
       },
       {
+        // UI-only switch: not sent to the backend
+        key: "faviconSource",
+        label: "Favicon source",
+        controlType: CONTROL_TYPES.SELECT_BUTTON,
+        options: [
+          { label: "URL", value: "url" },
+          { label: "Uploaded image", value: "file" },
+        ],
+      },
+      {
+        key: "faviconUrl",
+        label: "Favicon URL",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.TEXT,
+        controlOptions: {
+          validators: [maxlength(2048)],
+          nonNullable: true,
+          defaultValue: "",
+        },
+        conditions: {
+          controlOptions: {
+            hidden: hiddenUnlessSource("faviconSource", "url"),
+          },
+        },
+      },
+      {
+        key: "faviconFile",
+        label: "Favicon image",
+        controlType: CONTROL_TYPES.FILES,
+        controlOptions: {
+          mediaType: "image",
+          isPreviewEnabled: true,
+          multiple: false,
+          maxFileSize: 10 * 1024 * 1024,
+          uploadSize: "small",
+        },
+      },
+      {
         key: "primaryColor",
         label: "Primary color",
         controlType: CONTROL_TYPES.COLOR,
@@ -142,25 +192,60 @@ export const BRANDING_COLUMNS: (
         },
       },
       {
-        key: "fontFamily",
-        label: "Font (system, serif or mono)",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        key: "brandNameColor",
+        label: "Brand name color",
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
-          validators: [required, maxlength(20)],
-          nonNullable: true,
-          defaultValue: "",
+          validators: [required, minlength(4), maxlength(7)],
         },
       },
       {
-        key: "radius",
-        label: "Corner radius (e.g. 12px)",
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+        key: "cardTitleColor",
+        label: "Card title color",
+        controlType: CONTROL_TYPES.COLOR,
         controlOptions: {
-          validators: [required, maxlength(6)],
+          validators: [required, minlength(4), maxlength(7)],
+        },
+      },
+      {
+        key: "labelColor",
+        label: "Field label color",
+        controlType: CONTROL_TYPES.COLOR,
+        controlOptions: {
+          validators: [required, minlength(4), maxlength(7)],
+        },
+      },
+      {
+        key: "buttonTextColor",
+        label: "Button text color",
+        controlType: CONTROL_TYPES.COLOR,
+        controlOptions: {
+          validators: [required, minlength(4), maxlength(7)],
+        },
+      },
+      {
+        key: "fontFamily",
+        label: "Font",
+        controlType: CONTROL_TYPES.SELECT,
+        options: FONT_FAMILIES,
+        controlOptions: {
+          validators: [required],
+        },
+      },
+      {
+        // Held as a number in the form; the component maps it to the stored "<n>px" string
+        key: "radius",
+        label: "Corner radius (px)",
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.NUMBER,
+        controlOptions: {
+          validators: [required, min(0), max(24)],
+          min: 0,
+          max: 24,
+          step: 1,
+          maxFractionDigits: 0,
           nonNullable: true,
-          defaultValue: "",
+          defaultValue: 12,
         },
       },
       {
@@ -189,20 +274,24 @@ export const BRANDING_COLUMNS: (
       ...buildAuditConfig(),
     ] as StrictCrudItemOptions<Branding>[],
     acls,
-  ).map((col) =>
-    // logoFile is not an UPDATE field of the entity (the generic PUT must not write it), so the
-    // schema-derived allow-list always excludes it: gate it on the upload route permission instead.
-    col.key === "logoFile"
-      ? {
-          ...col,
-          conditions: {
-            controlOptions: {
-              disabled: () => !!acls && !acls.updateFiles?.allowed,
-              hidden: hiddenUnlessLogoSource("file"),
-            },
+  ).map((col) => {
+    const key = col.key as string;
+    // The file fields are not UPDATE fields of the entity (the generic PUT must not write them), so the
+    // schema-derived allow-list always excludes them: gate them on the upload route permission instead.
+    if (key === "logoFile" || key === "faviconFile")
+      return {
+        ...col,
+        conditions: {
+          controlOptions: {
+            disabled: () => !!acls && !acls.updateFiles?.allowed,
+            hidden: hiddenUnlessSource(
+              key === "logoFile" ? "logoSource" : "faviconSource",
+              "file",
+            ),
           },
-        }
-      : (col.key as string) === "logoSource"
-        ? { ...col, conditions: undefined }
-        : col,
-  );
+        },
+      };
+    if (key === "logoSource" || key === "faviconSource")
+      return { ...col, conditions: undefined };
+    return col;
+  });

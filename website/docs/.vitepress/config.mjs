@@ -42,6 +42,7 @@ export default withMermaid(defineConfig({
         text: 'Account Workflows',
         items: [
           { text: 'How Workflows Work', link: '/guide/workflows' },
+          { text: 'Try Workflows Locally', link: '/guide/workflows-local' },
           {
             text: 'Recovery',
             collapsed: false,

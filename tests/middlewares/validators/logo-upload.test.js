@@ -2,9 +2,8 @@
 // @ts-check
 import { jest } from "@jest/globals";
 
-const { assertLogoFieldAllowed, validateLogoFile } = await import(
-  "../../../src/middlewares/validators/logo-upload.js"
-);
+const { assertLogoFieldAllowed, validateLogoFile, validateFaviconFile } =
+  await import("../../../src/middlewares/validators/logo-upload.js");
 
 const PNG = Buffer.concat([
   Buffer.from("89504e470d0a1a0a", "hex"),
@@ -82,6 +81,37 @@ describe("validateLogoFile", () => {
     );
     expect(run(Buffer.alloc(0)).next).toHaveBeenCalledWith(
       expect.objectContaining({ statusCode: 400 }),
+    );
+  });
+});
+
+describe("validateFaviconFile", () => {
+  const runFavicon = (buffer) => {
+    const next = jest.fn();
+    const res = { locals: /** @type {Record<string, any>} */ ({}) };
+    validateFaviconFile(
+      /** @type {any} */ ({ file: { buffer } }),
+      /** @type {any} */ (res),
+      next,
+    );
+    return { next, res };
+  };
+
+  it("should expose the validated image under res.locals.favicon", () => {
+    const { next, res } = runFavicon(PNG);
+    expect(next).toHaveBeenCalledWith();
+    expect(res.locals.favicon).toEqual({ buffer: PNG, ext: "png" });
+    expect(res.locals.logo).toBeUndefined();
+  });
+
+  it("should name the favicon in its error messages", () => {
+    expect(runFavicon(undefined).next).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Missing favicon file" }),
+    );
+    expect(runFavicon(Buffer.from("GIF89a....")).next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringMatching(/^Favicon must be/),
+      }),
     );
   });
 });

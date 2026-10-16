@@ -1,5 +1,6 @@
 // @ts-check
 import express from "express";
+import { getBranding } from "./branding.js";
 import { csrfProtection } from "./csrf.js";
 import {
   getAccountRecoverChallenge,
@@ -40,6 +41,12 @@ import {
 } from "./handlers/unlock.js";
 
 const router = express.Router();
+
+// Served as a file: the edge CSP (`style-src 'self'`) blocks an inline <style>.
+router.get("/assets/brand.css", (_req, res) => {
+  res.set("Cache-Control", "no-cache");
+  res.type("text/css").send(`:root{${getBranding().cssVars}}`);
+});
 
 // HTML forms — keep this parser local so JSON API routes stay JSON-only.
 router.use(express.urlencoded({ extended: false, limit: "16kb" }));

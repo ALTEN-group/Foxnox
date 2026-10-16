@@ -6,13 +6,18 @@ const router = express.Router();
 import bEnt from "../entities/branding.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
 import {
+  deleteBrandingFavicon,
   deleteBrandingLogo,
+  saveBrandingFavicon,
   saveBrandingLogo,
 } from "../middlewares/mappers/save-logo.js";
 import schema from "../middlewares/schema.js";
 import {
+  assertFaviconFieldAllowed,
   assertLogoFieldAllowed,
+  parseFaviconUpload,
   parseLogoUpload,
+  validateFaviconFile,
   validateLogoFile,
 } from "../middlewares/validators/logo-upload.js";
 import { loadBrandingFromDb } from "../web/branding.js";
@@ -74,6 +79,26 @@ router.delete(
   enforceAcl(bEnt, "existing"),
   assertLogoFieldAllowed,
   deleteBrandingLogo,
+  invalidateBrandingCache,
+);
+// Upload the favicon image (multipart, single `favicon` file)
+router.put(
+  "/:id/favicon",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertFaviconFieldAllowed,
+  parseFaviconUpload,
+  validateFaviconFile,
+  saveBrandingFavicon,
+  invalidateBrandingCache,
+);
+// Remove the uploaded favicon image
+router.delete(
+  "/:id/favicon",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertFaviconFieldAllowed,
+  deleteBrandingFavicon,
   invalidateBrandingCache,
 );
 // Get entity schema

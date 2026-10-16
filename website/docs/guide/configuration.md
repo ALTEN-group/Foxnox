@@ -68,6 +68,11 @@ One brand per Foxnox deployment. See [Branding](./branding) for what each value 
 | `WEB_BRAND_PRIMARY_HOVER_COLOR` | `#1858c3` | Button hover accent |
 | `WEB_BRAND_SECONDARY_COLOR` | `#5c6570` | Muted and secondary text |
 | `WEB_BRAND_BACKGROUND_COLOR` | `#f4f6f8` | Page background |
+| `WEB_BRAND_NAME_COLOR` | `#1a1d21` | Brand name in the page header |
+| `WEB_BRAND_CARD_TITLE_COLOR` | `#1a1d21` | Card titles |
+| `WEB_BRAND_LABEL_COLOR` | `#1a1d21` | Form field labels |
+| `WEB_BRAND_BUTTON_TEXT_COLOR` | `#ffffff` | Text inside primary buttons |
+| `WEB_BRAND_FAVICON_URL` | packaged `favicon.svg` | Absolute or root-relative favicon URL |
 | `WEB_BRAND_FOOTER_TEXT` | — | Optional footer copy |
 | `WEB_BRAND_FOOTER_URL` | — | Optional footer link |
 

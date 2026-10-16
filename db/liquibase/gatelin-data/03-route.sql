@@ -16,6 +16,7 @@
 --   109=updateBranding  110=archiveBranding 111=getBrandingSchema
 --   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
 --   116=searchAudit     117=updateBrandingLogo 118=deleteBrandingLogo
+--   119=updateBrandingFavicon 120=deleteBrandingFavicon
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
@@ -73,5 +74,9 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
 
   -- branding logo (/foxnox/branding/:id/logo, multipart upload + delete)
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/logo',                   'updateBrandingLogo',      'Upload branding logo',           true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/logo',                   'deleteBrandingLogo',      'Delete branding logo',           true, false, ARRAY[10], ARRAY[5], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/logo',                   'deleteBrandingLogo',      'Delete branding logo',           true, false, ARRAY[10], ARRAY[5], -1, 'system'),
+
+  -- branding favicon (/foxnox/branding/:id/favicon, multipart upload + delete)
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/favicon',                'updateBrandingFavicon',   'Upload branding favicon',        true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/favicon',                'deleteBrandingFavicon',   'Delete branding favicon',        true, false, ARRAY[10], ARRAY[5], -1, 'system')
 ;

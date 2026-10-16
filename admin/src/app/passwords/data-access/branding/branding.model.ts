@@ -17,6 +17,13 @@ export interface Branding extends ArchiveInfo {
   secondaryColor: string;
   primaryHoverColor: string;
   backgroundColor: string;
+  brandNameColor: string;
+  cardTitleColor: string;
+  labelColor: string;
+  buttonTextColor: string;
+  faviconUrl: string;
+  /** Server-generated name of the uploaded favicon; written only by the favicon upload route. */
+  faviconFile: string;
   footerText: string;
   footerUrl: string;
   fontFamily: string;
@@ -41,6 +48,12 @@ export const brandingFactory = (): Branding => ({
   secondaryColor: "#5c6570",
   primaryHoverColor: "#1858c3",
   backgroundColor: "#f4f6f8",
+  brandNameColor: "#1a1d21",
+  cardTitleColor: "#1a1d21",
+  labelColor: "#1a1d21",
+  buttonTextColor: "#ffffff",
+  faviconUrl: "",
+  faviconFile: "",
   footerText: "",
   footerUrl: "",
   fontFamily: "system",
