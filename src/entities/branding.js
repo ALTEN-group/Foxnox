@@ -49,6 +49,18 @@ export default new SQLEntity("branding", [
     readOnly: false,
   },
   {
+    key: "logoFile",
+    type: "string",
+    min: 0,
+    max: 255,
+    isTypeChecked: true,
+    isFilterable: false,
+    requiredFor: [],
+    operations: ["SELECT"],
+    isPrivate: false,
+    readOnly: true,
+  },
+  {
     key: "logoAlt",
     type: "string",
     min: 0,

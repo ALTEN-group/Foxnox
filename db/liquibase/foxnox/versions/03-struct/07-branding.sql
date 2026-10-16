@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS branding (
   tagline varchar(160) NOT NULL DEFAULT 'Account security',
   "logoUrl" varchar(2048) NOT NULL DEFAULT '',
   "logoAlt" varchar(120) NOT NULL DEFAULT '',
+  "logoFile" varchar(255) NOT NULL DEFAULT '',
   mark varchar(2) NOT NULL DEFAULT 'F',
   "primaryColor" varchar(7) NOT NULL DEFAULT '#1f6feb',
   "secondaryColor" varchar(7) NOT NULL DEFAULT '#5c6570',

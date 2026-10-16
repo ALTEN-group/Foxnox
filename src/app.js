@@ -31,6 +31,7 @@ import preference from "./routes/preference.js";
 import pwdPolicy from "./routes/pwd-policy.js";
 import token from "./routes/token.js";
 import trustedDevice from "./routes/user-device.js";
+import { LOGO_DIR } from "./services/branding-logo.js";
 
 const s = "/foxnox/";
 
@@ -49,6 +50,20 @@ app.use(
 app.use(startTimer);
 
 // Account workflow pages (Handlebars SSR) — before JSON CRUD routers.
+// Uploaded logos may be SVG: the sandbox CSP keeps one opened directly from running scripts.
+app.use(
+  `${WEB_MOUNT}/assets/branding`,
+  express.static(LOGO_DIR, {
+    index: false,
+    setHeaders: (res) => {
+      res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+      );
+      res.setHeader("X-Content-Type-Options", "nosniff");
+    },
+  }),
+);
 app.use(
   `${WEB_MOUNT}/assets`,
   express.static(path.join(PUBLIC_ROOT, "assets")),

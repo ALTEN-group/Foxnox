@@ -47,6 +47,21 @@ export const CRUD_LABELS_CONFIG: Partial<CrudLabels> = {
     validate: "Submit",
     restore: "Restore",
   },
+  fileUpload: {
+    chooseFile: "Choose file",
+    dragDropLabel: "Drag and drop files here",
+    uploadedFilesTitle: "Uploaded files",
+    canAddMore: "You can add more files",
+    cannotAddMore: "You cannot add more files",
+    maxFileSizeExceeded: (fileName: string, maxFileSize: number) =>
+      `The file ${fileName} exceeds the maximum allowed size of ${maxFileSize} MB`,
+    preview: "Preview",
+    remove: "Remove",
+    clearAll: "Clear all",
+    download: "Download",
+    maxFileSize: "Maximum file size",
+    mediaType: "Media type",
+  },
   form: {
     reset: "Reset",
     submit: "Submit",
