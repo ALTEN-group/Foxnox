@@ -20,6 +20,7 @@ import { BRANDING_COLUMNS } from "app/passwords/data-access/branding/branding.co
 import {
   Branding,
   brandingFactory,
+  BrandingPreviewPage,
 } from "app/passwords/data-access/branding/branding.model";
 
 const brandingEntity: AdminEntity = "branding";
@@ -62,6 +63,16 @@ export class BrandingService {
   public readonly uploadFavicon = this.uploadImage("favicon");
   public readonly deleteLogo = this.deleteImage("logo");
   public readonly deleteFavicon = this.deleteImage("favicon");
+
+  /** Server-rendered workflow page (HTML) with the given unsaved branding laid over the stored one. */
+  public readonly preview = (
+    page: BrandingPreviewPage,
+    branding: Partial<Record<keyof Branding, string>>,
+  ) =>
+    this.http.post<{ html: string }>(
+      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/preview`,
+      { page, branding },
+    );
 
   public readonly httpCalls: Calls<Branding> = {
     get: this.crud.get,

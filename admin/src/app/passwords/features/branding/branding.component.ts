@@ -9,33 +9,26 @@ import {
 } from "@angular/core";
 import { rxResource, takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TABLES } from "@core/app-config/app.tables";
-import { FileInfo, FormComponent, Rows } from "@dwtechs/ngx-crud-builder";
+import { FileInfo, Rows } from "@dwtechs/ngx-crud-builder";
 import {
   Branding,
   brandingFactory,
+  BrandingForm,
 } from "app/passwords/data-access/branding/branding.model";
 import { BrandingService } from "app/passwords/data-access/branding/branding.service";
+import { BrandingFormComponent } from "app/passwords/ui/branding-form/branding-form.component";
+import { BrandingPreviewComponent } from "app/passwords/ui/branding-preview/branding-preview.component";
 import { map, Observable, of, switchMap } from "rxjs";
-
-/** The image controls hold files, not the stored file names; logoSource and faviconSource are UI-only switches. */
-// radius is a number in the form, stored as "<n>px"
-type BrandingForm = Omit<Branding, "logoFile" | "faviconFile" | "radius"> & {
-  logoFile: FileInfo[];
-  logoSource: "url" | "file";
-  faviconFile: FileInfo[];
-  faviconSource: "url" | "file";
-  radius: number;
-};
 
 const radiusToNumber = (radius: string): number => Number.parseInt(radius, 10);
 
 /**
- * Component to display and manage the single workflow-page/email branding record as a form
+ * Loads and saves the single workflow-page/email branding record, shown as a form and a live preview
  */
 @Component({
   selector: "adm-branding",
   templateUrl: "./branding.component.html",
-  imports: [FormComponent],
+  imports: [BrandingFormComponent, BrandingPreviewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BrandingComponent {
@@ -54,7 +47,7 @@ export class BrandingComponent {
   // The form only reads its model when created, so it is rendered once the row is loaded
   public readonly isLoaded = computed(() => this.brandingResource.hasValue());
 
-  private readonly brandingForm = viewChild(FormComponent);
+  private readonly brandingForm = viewChild(BrandingFormComponent);
 
   // The lib resets hidden controls, so the stored image cannot be read back from the form value
   private readonly storedLogoFile = linkedSignal(
@@ -143,7 +136,7 @@ export class BrandingComponent {
           logoFile: logoFiles,
           faviconFile: faviconFiles,
         }));
-        this.brandingForm()?.form()?.patchValue({
+        this.brandingForm()?.patchValue({
           logoUrl: merged.logoUrl,
           logoFile: logoFiles,
           faviconUrl: merged.faviconUrl,

@@ -1,17 +1,14 @@
 <div class="page-container">
 
-  <h2>{{ tableInformation.title }}</h2>
-
   @if (isLoaded()) {
-    <frm-form
+    <adm-branding-form
+        [heading]="tableInformation.title"
         [config]="config()"
-        [columnsCount]="4"
         [(model)]="model"
-        [showReset]="true"
-        [showSubmit]="true"
-        [submitButtonLabel]="'Save'"
         (submitted)="onSubmitted($event)"
     />
+
+    <adm-branding-preview [model]="model()" />
   }
 
 </div>

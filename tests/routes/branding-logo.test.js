@@ -42,6 +42,9 @@ jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
 jest.unstable_mockModule("../../src/web/branding.js", () => ({
   loadBrandingFromDb,
 }));
+jest.unstable_mockModule("../../src/web/preview.js", () => ({
+  previewBranding: noop,
+}));
 
 const express = (await import("express")).default;
 const { errorHandler } = await import("@dwtechs/errandler-express");

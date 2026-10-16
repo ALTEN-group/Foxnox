@@ -10,7 +10,7 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
   default: { getCache },
 }));
 
-const { getBranding, loadBrandingFromDb } = await import(
+const { getBranding, loadBrandingFromDb, pickBrandingOverrides } = await import(
   "../../src/web/branding.js"
 );
 
@@ -157,5 +157,66 @@ describe("getBranding text and button colors", () => {
       const brand = await brandingWith({ faviconUrl: "", faviconFile: "" });
       expect(brand.faviconUrl).toBe("https://env.example.test/i.png");
     });
+  });
+});
+
+describe("getBranding overrides", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("should lay unsaved values over the stored row", async () => {
+    getCache.mockResolvedValue([{ name: "Stored", primaryColor: "#111111" }]);
+    await loadBrandingFromDb();
+
+    const brand = getBranding({ name: "Draft", primaryColor: "#222222" });
+
+    expect(brand.name).toBe("Draft");
+    expect(brand.cssVars).toContain("--brand-primary:#222222");
+    expect(getBranding().name).toBe("Stored");
+  });
+
+  it("should still sanitize overridden values", async () => {
+    getCache.mockResolvedValue([{ primaryColor: "#111111" }]);
+    await loadBrandingFromDb();
+
+    const brand = getBranding({
+      primaryColor: "red;}</style><script>",
+      footerUrl: "javascript:alert(1)",
+      radius: "50%",
+    });
+
+    expect(brand.cssVars).toContain("--brand-primary:#1f6feb");
+    expect(brand.cssVars).toContain("--brand-radius:12px");
+    expect(brand.footerUrl).toBe("");
+  });
+});
+
+describe("pickBrandingOverrides", () => {
+  it("should keep whitelisted strings and drop everything else", () => {
+    const picked = pickBrandingOverrides({
+      name: "Acme",
+      primaryColor: "#abcdef",
+      faviconUrl: "https://x.example.test/i.png",
+      logoFile: "logo-x.png",
+      faviconFile: "favicon-x.png",
+      id: 1,
+      radius: 12,
+      tagline: ["a"],
+    });
+
+    expect(picked).toEqual({
+      name: "Acme",
+      primaryColor: "#abcdef",
+      faviconUrl: "https://x.example.test/i.png",
+    });
+  });
+
+  it("should cap value length and tolerate non-objects", () => {
+    expect(pickBrandingOverrides({ name: "x".repeat(5000) }).name).toHaveLength(
+      2048,
+    );
+    expect(pickBrandingOverrides(null)).toEqual({});
+    expect(pickBrandingOverrides("name")).toEqual({});
   });
 });

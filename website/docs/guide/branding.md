@@ -75,6 +75,14 @@ The favicon follows the same either/or rule as the logo: uploading an image clea
 
 The server logs a warning when the primary color has a contrast ratio below 3 against the button text color.
 
+## Live Preview
+
+Below the form, the admin Branding page shows a preview card. Pick a workflow page and it re-renders as you type, using the current, unsaved form values.
+
+The page is rendered by Foxnox itself (`POST /foxnox/branding/preview`) from the real Handlebars templates with placeholder data, so it matches what end users see and needs no token. Only an authenticated admin with access to the branding resource can call it, and nothing is stored. The result is shown in a script-less, non-interactive iframe.
+
+A pending logo or favicon upload is not previewed: only the image already stored appears until you save.
+
 ## One Brand Per Deployment
 
 Branding is read from the environment, so a Foxnox instance carries exactly one brand. Serving several tenants with different looks currently means running an instance per tenant.

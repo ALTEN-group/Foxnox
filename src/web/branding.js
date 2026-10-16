@@ -191,10 +191,52 @@ function faviconFileUrl(value) {
 }
 
 /**
+ * Columns the admin preview may override. File columns are excluded: a stored
+ * file name is only ever produced by the upload routes.
+ */
+const OVERRIDABLE = Object.freeze([
+  "name",
+  "tagline",
+  "logoUrl",
+  "logoAlt",
+  "mark",
+  "primaryColor",
+  "secondaryColor",
+  "primaryHoverColor",
+  "backgroundColor",
+  "brandNameColor",
+  "cardTitleColor",
+  "labelColor",
+  "buttonTextColor",
+  "fontFamily",
+  "radius",
+  "footerText",
+  "footerUrl",
+  "faviconUrl",
+]);
+
+/**
+ * Keeps only whitelisted string values; the sanitizers in `getBranding` do the rest.
+ * @param {unknown} input
+ * @returns {Record<string, string>}
+ */
+export function pickBrandingOverrides(input) {
+  /** @type {Record<string, string>} */
+  const out = {};
+  if (!input || typeof input !== "object") return out;
+  for (const key of OVERRIDABLE) {
+    const value = /** @type {Record<string, unknown>} */ (input)[key];
+    if (typeof value === "string") out[key] = value.slice(0, 2048);
+  }
+  return out;
+}
+
+/**
+ * @param {Record<string, unknown>} [overrides] unsaved values applied over the stored row (admin preview)
  * @returns {typeof DEFAULTS & { cssVars: string, hasLogo: boolean, hasFooter: boolean }}
  */
-export function getBranding() {
-  const row = dbRow || {};
+export function getBranding(overrides = {}) {
+  const row = { ...(dbRow || {}), ...overrides };
 
   const primaryColor =
     sanitizeHexColor(row.primaryColor) ||
