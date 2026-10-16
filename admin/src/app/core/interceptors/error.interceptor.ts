@@ -67,10 +67,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     return returnError(err);
   };
 
+  const isSessionRequest = (method: string) =>
+    req.url.includes("sessions") && req.method === method;
+
   const refreshToken = (err: HttpErrorResponse) => {
-    const isRefreshTokenRequest =
-      req.url.includes("sessions") && req.method === "PUT";
-    if (isRefreshTokenRequest) {
+    if (isSessionRequest("POST")) {
+      return returnError(err, true);
+    }
+    if (isSessionRequest("PUT")) {
       return redirectToLogin(err);
     }
     return authenticationService.refreshToken().pipe(
