@@ -36,6 +36,15 @@ import { catchError, debounceTime, EMPTY, map, switchMap } from "rxjs";
       gap: 1rem;
     }
 
+    .branding-preview__note {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-right: auto;
+      color: var(--p-text-muted-color, #64748b);
+      font-size: 0.875rem;
+    }
+
     .branding-preview__frame {
       display: block;
       width: 100%;
@@ -54,6 +63,12 @@ export class BrandingPreviewComponent {
 
   public readonly pages = BRANDING_PREVIEW_PAGES;
   public readonly page = signal<BrandingPreviewPage>("recover");
+
+  public readonly usesUploadedImage = computed(
+    () =>
+      this.model().logoSource === "file" ||
+      this.model().faviconSource === "file",
+  );
 
   private readonly request = computed(() => {
     const m = this.model();

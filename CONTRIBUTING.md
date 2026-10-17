@@ -65,6 +65,31 @@ Operational paths (local Docker base `http://localhost:8100`):
 
 Requires Gatelin `gatelin-data` changesets 05–12. Run Liquibase so login challenge token types exist. `POST /foxnox/challenges` is not a Gatelin-proxied admin route.
 
+#### Try the workflows locally
+
+`./scripts/start-dev.sh` also starts **Mailpit** (local mail catcher). The `web/` folder is bind-mounted into the Foxnox container, so edits to templates, locales, and CSS show up on the next page load.
+
+| What | URL |
+|---|---|
+| Workflow pages | `http://localhost:8100/api/foxnox/web/<path>` |
+| Mailpit inbox | `http://localhost:8025` |
+
+The workflow base comes from `WEB_PUBLIC_BASE` in `docker/conf/.env.dev`. Mailpit's UI port is published directly by Docker (`MAILPIT_UI_PORT`), not through Traefik; its SMTP port `1025` is only reachable inside the Docker network. On a remote host or dev container, forward ports `8100` and `8025`.
+
+**Email-driven pages** (`/recover`, `/unlock`, `/account-recover`) need no token to open the request page. To reach the page behind the link:
+
+1. Open the request page and submit the email of an existing user.
+2. Open Mailpit and the message.
+3. Click the link (`…/recover/reset?token=…`, `…/unlock/confirm?token=…`, or `…/account-recover/challenge?token=…`).
+
+The user lookup goes through `USER_SEARCH_URL` (the `ms_user` mock in the dev stack). An unknown address shows the same "check your email" page but sends nothing. Submitting less than 1.5 seconds after the page rendered is treated as a bot and answered with `204`; wait a moment before clicking Submit.
+
+**Login-step pages** (`/2fa/verify`, `/password/expired`, `/trusted-devices/prompt`) need a `?challenge=…` minted by the BFF after a successful password check, so they cannot be opened with a hand-written URL. Sign in with a user whose account triggers the step (2FA enabled, or an expired password).
+
+**Self-service pages** (`/2fa/setup`, `/security-questions`, `/trusted-devices`) are `protected`: sign in first, then open them from the same browser.
+
+Pages that need a token fail with the "link is no longer valid" page. A missing page or blank CSS usually means the stack is not up or the base path is wrong.
+
 ### Start / Restart
 
 After the first-time setup above, `./scripts/start-dev.sh` is also the everyday command to (re)build and (re)start the stack. Mock passwords persist in Postgres across restarts, so the seeding step is skipped and your credentials stay put. You only need `setup-mocks.sh` directly when you want to rotate them.

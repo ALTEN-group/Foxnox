@@ -5,6 +5,7 @@ import {
   model,
   output,
   viewChild,
+  ViewEncapsulation,
 } from "@angular/core";
 import {
   FormComponent,
@@ -25,13 +26,15 @@ import {
   templateUrl: "./branding-form.component.html",
   imports: [FormComponent, CardModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   styles: `
-    .branding-form__card {
+    .branding-form__card .p-card-body {
       padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
     }
 
     /* The lib sets margin-top: 1rem on its actions row, inside its own encapsulation */
-    .branding-form__card ::ng-deep .actions-container {
+    .branding-form__card .actions-container {
       margin-top: 0;
     }
   `,

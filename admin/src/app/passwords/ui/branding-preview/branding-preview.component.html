@@ -2,6 +2,12 @@
   <ng-template #title>
     <div class="branding-preview__header">
       <span class="card-title">Preview</span>
+      @if (usesUploadedImage()) {
+        <span class="branding-preview__note">
+          <i class="pi pi-info-circle"></i>
+          Uploaded images appear in the preview only after saving.
+        </span>
+      }
       <p-select
           [options]="pages"
           optionLabel="label"
