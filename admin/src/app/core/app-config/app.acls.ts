@@ -20,6 +20,7 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
  *   109=updateBranding  110=archiveBranding 111=getBrandingSchema
  *   112-115=preferences 116=searchAudit
  *   117=updateBrandingLogo 118=deleteBrandingLogo
+ *   119=updateBrandingFavicon 120=deleteBrandingFavicon 121=previewBranding
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {

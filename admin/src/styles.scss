@@ -122,3 +122,10 @@ body {
 .opacity-50 {
   opacity: 0.5;
 }
+
+/* Same look as the tables' toolbar-title, for card headings */
+.card-title {
+  color: var(--p-primary-color);
+  font-weight: 700;
+  font-size: 1.25rem;
+}

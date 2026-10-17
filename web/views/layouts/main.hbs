@@ -6,8 +6,13 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="{{brand.backgroundColor}}">
   <title>{{page.title}}</title>
+  <link rel="icon" href="{{brand.faviconUrl}}">
   <link rel="stylesheet" href="{{assetBase}}/assets/css/workflows.css">
-  <style>:root { {{brand.cssVars}} }</style>
+  {{#if previewCss}}
+  <style>{{{previewCss}}}</style>
+  {{else}}
+  <link rel="stylesheet" href="{{assetBase}}/assets/brand.css">
+  {{/if}}
 </head>
 <body>
   <a class="visually-hidden-focusable" href="#main">{{common.skipToContent}}</a>

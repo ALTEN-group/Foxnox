@@ -6,16 +6,22 @@ const router = express.Router();
 import bEnt from "../entities/branding.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
 import {
+  deleteBrandingFavicon,
   deleteBrandingLogo,
+  saveBrandingFavicon,
   saveBrandingLogo,
 } from "../middlewares/mappers/save-logo.js";
 import schema from "../middlewares/schema.js";
 import {
+  assertFaviconFieldAllowed,
   assertLogoFieldAllowed,
+  parseFaviconUpload,
   parseLogoUpload,
+  validateFaviconFile,
   validateLogoFile,
 } from "../middlewares/validators/logo-upload.js";
 import { loadBrandingFromDb } from "../web/branding.js";
+import { previewBranding } from "../web/preview.js";
 
 /**
  * Refreshes the in-memory branding cache after any write so workflow pages
@@ -30,6 +36,8 @@ async function invalidateBrandingCache(_req, _res, next) {
 //Routes
 // Search fields
 router.post("/search", enforceAcl(bEnt, "search"), bEnt.get);
+// Render a workflow page with unsaved branding values (admin live preview)
+router.post("/preview", requireConsumer, previewBranding);
 // Get version history of a specific row
 router.get("/:id/history", enforceAcl(bEnt, "existing"), bEnt.getHistory);
 // Add branding rows
@@ -74,6 +82,26 @@ router.delete(
   enforceAcl(bEnt, "existing"),
   assertLogoFieldAllowed,
   deleteBrandingLogo,
+  invalidateBrandingCache,
+);
+// Upload the favicon image (multipart, single `favicon` file)
+router.put(
+  "/:id/favicon",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertFaviconFieldAllowed,
+  parseFaviconUpload,
+  validateFaviconFile,
+  saveBrandingFavicon,
+  invalidateBrandingCache,
+);
+// Remove the uploaded favicon image
+router.delete(
+  "/:id/favicon",
+  requireConsumer,
+  enforceAcl(bEnt, "existing"),
+  assertFaviconFieldAllowed,
+  deleteBrandingFavicon,
   invalidateBrandingCache,
 );
 // Get entity schema
