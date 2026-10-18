@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { rxResource, takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TABLES } from "@core/app-config/app.tables";
+import { SnackbarService } from "@core/utils/snackbar/snackbar.service";
 import { FileInfo, Rows } from "@dwtechs/ngx-crud-builder";
 import {
   Branding,
@@ -34,6 +35,7 @@ const radiusToNumber = (radius: string): number => Number.parseInt(radius, 10);
 export class BrandingComponent {
   private readonly brandingService = inject(BrandingService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly snackbarService = inject(SnackbarService);
 
   public readonly config = this.brandingService.config;
 
@@ -142,6 +144,7 @@ export class BrandingComponent {
           faviconUrl: merged.faviconUrl,
           faviconFile: faviconFiles,
         });
+        this.snackbarService.displaySuccess("Branding saved");
       });
   }
 
