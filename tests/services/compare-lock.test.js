@@ -1,6 +1,9 @@
 /** @jest-environment node */
 // @ts-check
-import { acquireCompareLock, clearCompareLocks } from "../../src/services/compare-lock.js";
+import {
+  acquireCompareLock,
+  clearCompareLocks,
+} from "../../src/services/compare-lock.js";
 
 describe("compare lock", () => {
   beforeEach(() => {

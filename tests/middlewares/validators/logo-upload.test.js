@@ -2,9 +2,8 @@
 // @ts-check
 import { jest } from "@jest/globals";
 
-const { assertLogoFieldAllowed, validateLogoFile } = await import(
-  "../../../src/middlewares/validators/logo-upload.js"
-);
+const { assertLogoFieldAllowed, validateLogoFile, validateFaviconFile } =
+  await import("../../../src/middlewares/validators/logo-upload.js");
 
 const PNG = Buffer.concat([
   Buffer.from("89504e470d0a1a0a", "hex"),
@@ -23,7 +22,7 @@ const run = (buffer) => {
   const next = jest.fn();
   const res = { locals: /** @type {Record<string, any>} */ ({}) };
   validateLogoFile(
-    /** @type {any} */ ({ file: { buffer } }),
+    /** @type {any} */ ({ body: { rows: [{ id: "1", logoFile: buffer }] } }),
     /** @type {any} */ (res),
     next,
   );
@@ -86,27 +85,68 @@ describe("validateLogoFile", () => {
   });
 });
 
+describe("validateFaviconFile", () => {
+  const runFavicon = (buffer) => {
+    const next = jest.fn();
+    const res = { locals: /** @type {Record<string, any>} */ ({}) };
+    validateFaviconFile(
+      /** @type {any} */ ({ body: { rows: [{ id: "1", faviconFile: buffer }] } }),
+      /** @type {any} */ (res),
+      next,
+    );
+    return { next, res };
+  };
+
+  it("should expose the validated image under res.locals.favicon", () => {
+    const { next, res } = runFavicon(PNG);
+    expect(next).toHaveBeenCalledWith();
+    expect(res.locals.favicon).toEqual({ buffer: PNG, ext: "png" });
+    expect(res.locals.logo).toBeUndefined();
+  });
+
+  it("should name the favicon in its error messages", () => {
+    expect(runFavicon(undefined).next).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Missing favicon file" }),
+    );
+    expect(runFavicon(Buffer.from("GIF89a....")).next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringMatching(/^Favicon must be/),
+      }),
+    );
+  });
+});
+
 describe("assertLogoFieldAllowed", () => {
-  const run = (fields) => {
+  const run = (row) => {
     const next = jest.fn();
     assertLogoFieldAllowed(
+      /** @type {any} */ ({ body: { rows: [row] } }),
       /** @type {any} */ ({}),
-      /** @type {any} */ ({ locals: { acl: { fields } } }),
       next,
     );
     return next;
   };
 
-  it("should allow when there is no field allow-list", () => {
-    expect(run(null)).toHaveBeenCalledWith();
+  it("should allow when logoFile survived the ACL field strip", () => {
+    expect(run({ id: "1", logoFile: "" })).toHaveBeenCalledWith();
   });
 
-  it("should allow when logoFile is in the allow-list", () => {
-    expect(run(new Set(["logoFile"]))).toHaveBeenCalledWith();
+  it("should refuse with 403 when the ACL stripped logoFile", () => {
+    expect(run({ id: "1" })).toHaveBeenCalledWith(
+      expect.objectContaining({ statusCode: 403 }),
+    );
   });
+});
 
-  it("should refuse with 403 when logoFile is not in the allow-list", () => {
-    expect(run(new Set(["name"]))).toHaveBeenCalledWith(
+describe("validateLogoFile field check", () => {
+  it("should refuse with 403 when the ACL stripped logoFile", () => {
+    const next = jest.fn();
+    validateLogoFile(
+      /** @type {any} */ ({ body: { rows: [{ id: "1" }] } }),
+      /** @type {any} */ ({ locals: {} }),
+      next,
+    );
+    expect(next).toHaveBeenCalledWith(
       expect.objectContaining({ statusCode: 403 }),
     );
   });

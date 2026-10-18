@@ -17,6 +17,11 @@ Branding is configured entirely through `WEB_BRAND_*` environment variables, app
 | `WEB_BRAND_PRIMARY_HOVER_COLOR` | `#1858c3` | `--brand-primary-hover`: button hover state |
 | `WEB_BRAND_SECONDARY_COLOR` | `#5c6570` | `--brand-secondary`: muted and secondary text |
 | `WEB_BRAND_BACKGROUND_COLOR` | `#f4f6f8` | `--brand-bg`: page background |
+| `WEB_BRAND_NAME_COLOR` | `#1a1d21` | `--brand-name-color`: brand name in the page header |
+| `WEB_BRAND_CARD_TITLE_COLOR` | `#1a1d21` | `--brand-card-title-color`: card titles |
+| `WEB_BRAND_LABEL_COLOR` | `#1a1d21` | `--brand-label-color`: form field labels |
+| `WEB_BRAND_BUTTON_TEXT_COLOR` | `#ffffff` | `--brand-button-text`: text inside primary buttons |
+| `WEB_BRAND_FAVICON_URL` | packaged `favicon.svg` | Favicon URL |
 | `WEB_BRAND_FOOTER_TEXT` | — | Footer copy. Omitted entirely when unset. |
 | `WEB_BRAND_FOOTER_URL` | — | Makes the footer text a link |
 
@@ -53,6 +58,30 @@ The practical consequence is that a wrong value fails quietly rather than loudly
 With no `WEB_BRAND_LOGO_URL`, pages render a letter mark — `WEB_BRAND_MARK` if set, otherwise the first letter of the brand name. It is a reasonable default that needs no asset hosting.
 
 Set a logo URL for anything user-facing. It must be reachable by the browser, not just from inside your network, and SVG is preferred since the mark is displayed small.
+
+## Text Colours, Button Text and Favicon
+
+These fields are set from the admin Branding page and stored in the `branding` table. A stored value wins over the matching `WEB_BRAND_*` variable above, which only applies when no branding row is active.
+
+| Field | Default | Effect |
+|---|---|---|
+| Brand name color | `#1a1d21` | `--brand-name-color`: the name in the page header |
+| Card title color | `#1a1d21` | `--brand-card-title-color`: the title of each card |
+| Field label color | `#1a1d21` | `--brand-label-color`: form field labels |
+| Button text color | `#ffffff` | `--brand-button-text`: text inside primary buttons |
+| Favicon | packaged `favicon.svg` | A URL or an uploaded PNG, JPEG, WebP or script-free SVG image (max 10 MB) |
+
+The favicon follows the same either/or rule as the logo: uploading an image clears the URL, and a URL typed afterwards wins over the stored file. The order is stored URL, stored file, `WEB_BRAND_FAVICON_URL`, then the packaged `web/public/assets/favicon.svg`.
+
+The server logs a warning when the primary color has a contrast ratio below 3 against the button text color.
+
+## Live Preview
+
+Below the form, the admin Branding page shows a preview card. Pick a workflow page and it re-renders as you type, using the current, unsaved form values.
+
+The page is rendered by Foxnox itself (`POST /foxnox/branding/preview`) from the real Handlebars templates with placeholder data, so it matches what end users see and needs no token. Only an authenticated admin with access to the branding resource can call it, and nothing is stored. The result is shown in a script-less, non-interactive iframe.
+
+A pending logo or favicon upload is not previewed: only the image already stored appears until you save.
 
 ## One Brand Per Deployment
 

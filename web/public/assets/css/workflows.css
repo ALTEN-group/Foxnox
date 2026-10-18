@@ -104,6 +104,7 @@ body {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--brand-name-color, var(--text));
 }
 
 .shell__tagline {
@@ -151,6 +152,7 @@ body {
   font-size: 1.35rem;
   letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
+  color: var(--brand-card-title-color, var(--text));
 }
 
 .card__subtitle,
@@ -176,6 +178,7 @@ body {
 .form-group label {
   font-size: 0.9rem;
   font-weight: 600;
+  color: var(--brand-label-color, var(--text));
 }
 
 .form-group input {
@@ -225,7 +228,7 @@ body {
 
 .btn--primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--brand-button-text, #fff);
 }
 
 .btn--primary:hover {

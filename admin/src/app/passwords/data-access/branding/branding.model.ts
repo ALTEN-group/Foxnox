@@ -1,4 +1,4 @@
-import { ArchiveInfo } from "@dwtechs/ngx-crud-builder";
+import { ArchiveInfo, FileInfo } from "@dwtechs/ngx-crud-builder";
 
 /**
  * Represents the workflow-page/email branding (logo, colors, font, radius).
@@ -17,11 +17,57 @@ export interface Branding extends ArchiveInfo {
   secondaryColor: string;
   primaryHoverColor: string;
   backgroundColor: string;
+  brandNameColor: string;
+  cardTitleColor: string;
+  labelColor: string;
+  buttonTextColor: string;
+  faviconUrl: string;
+  /** Server-generated name of the uploaded favicon; written only by the favicon upload route. */
+  faviconFile: string;
   footerText: string;
   footerUrl: string;
   fontFamily: string;
   radius: string;
 }
+
+/**
+ * Value held by the branding form. The image controls hold files rather than the stored
+ * file names, `logoSource`/`faviconSource` are UI-only switches, and `radius` is a number
+ * (stored as "<n>px").
+ */
+export type BrandingForm = Omit<
+  Branding,
+  "logoFile" | "faviconFile" | "radius"
+> & {
+  logoFile: FileInfo[];
+  logoSource: "url" | "file";
+  faviconFile: FileInfo[];
+  faviconSource: "url" | "file";
+  radius: number;
+};
+
+export type BrandingPreviewPage =
+  | "recover"
+  | "twofa"
+  | "expired"
+  | "unlock"
+  | "devices"
+  | "success"
+  | "invalid";
+
+/** Workflow pages the preview can show; values are the keys known by src/web/preview.js. */
+export const BRANDING_PREVIEW_PAGES: {
+  label: string;
+  value: BrandingPreviewPage;
+}[] = [
+  { label: "Password recovery", value: "recover" },
+  { label: "Two-factor verification", value: "twofa" },
+  { label: "Expired password", value: "expired" },
+  { label: "Account unlock", value: "unlock" },
+  { label: "Trusted device prompt", value: "devices" },
+  { label: "Success page", value: "success" },
+  { label: "Invalid link", value: "invalid" },
+];
 
 /**
  * Creates a new Branding entity with default values
@@ -41,6 +87,12 @@ export const brandingFactory = (): Branding => ({
   secondaryColor: "#5c6570",
   primaryHoverColor: "#1858c3",
   backgroundColor: "#f4f6f8",
+  brandNameColor: "#1a1d21",
+  cardTitleColor: "#1a1d21",
+  labelColor: "#1a1d21",
+  buttonTextColor: "#ffffff",
+  faviconUrl: "",
+  faviconFile: "",
   footerText: "",
   footerUrl: "",
   fontFamily: "system",

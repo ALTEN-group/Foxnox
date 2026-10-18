@@ -40,6 +40,10 @@
     <comment>Password expiry guard function (tomorrow or later)</comment>
     <sqlFile path="versions/02-func/04-pwd-expiry.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="02-func-05" author="lcluber">
+    <comment>Branding update guard function (updatedAt stamp, file replaces URL)</comment>
+    <sqlFile path="versions/02-func/05-branding.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">

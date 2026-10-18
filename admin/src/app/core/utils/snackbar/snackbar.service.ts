@@ -14,8 +14,9 @@ export class SnackbarService {
     });
   }
 
-  public displaySuccess() {
+  public displaySuccess(message?: string) {
     this.show({
+      detail: message,
       key: "bottomCenter",
       severity: "success",
       closable: false,

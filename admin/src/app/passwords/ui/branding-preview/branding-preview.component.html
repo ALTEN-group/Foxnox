@@ -1,0 +1,29 @@
+<p-card>
+  <ng-template #title>
+    <div class="branding-preview__header">
+      <span class="card-title">Preview</span>
+      @if (usesUploadedImage()) {
+        <span class="branding-preview__note">
+          <i class="pi pi-info-circle"></i>
+          Uploaded images appear in the preview only after saving.
+        </span>
+      }
+      <p-select
+          [options]="pages"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="page()"
+          (ngModelChange)="page.set($event)"
+          ariaLabel="Preview page"
+      />
+    </div>
+  </ng-template>
+  @if (html(); as doc) {
+    <iframe
+        class="branding-preview__frame"
+        title="Workflow page preview"
+        sandbox="allow-same-origin"
+        [srcdoc]="doc"
+    ></iframe>
+  }
+</p-card>

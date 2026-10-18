@@ -10,7 +10,7 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
   default: { getCache },
 }));
 
-const { getBranding, loadBrandingFromDb } = await import(
+const { getBranding, loadBrandingFromDb, pickBrandingOverrides } = await import(
   "../../src/web/branding.js"
 );
 
@@ -54,5 +54,169 @@ describe("getBranding logo resolution", () => {
     process.env.WEB_BRAND_LOGO_URL = "https://env.example.test/logo.png";
     const brand = await brandingWith({ logoUrl: "", logoFile: "" });
     expect(brand.logoUrl).toBe("https://env.example.test/logo.png");
+  });
+});
+
+const FAVICON = `favicon-${"a".repeat(8)}-aaaa-aaaa-aaaa-${"a".repeat(12)}.png`;
+
+describe("getBranding favicon resolution", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("should expose an uploaded favicon as an absolute public URL", async () => {
+    const brand = await brandingWith({ faviconUrl: "", faviconFile: FAVICON });
+    expect(brand.faviconUrl).toBe(
+      `https://auth.example.test/api/foxnox/web/assets/branding/${FAVICON}`,
+    );
+  });
+
+  it("should prefer faviconUrl over the uploaded file", async () => {
+    const brand = await brandingWith({
+      faviconUrl: "https://cdn.example.test/icon.png",
+      faviconFile: FAVICON,
+    });
+    expect(brand.faviconUrl).toBe("https://cdn.example.test/icon.png");
+  });
+
+  it("should ignore a stored file name the upload route could not have generated", async () => {
+    const brand = await brandingWith({
+      faviconUrl: "",
+      faviconFile: "../../x.png",
+    });
+    expect(brand.faviconUrl).toBe("/api/foxnox/web/assets/favicon.svg");
+  });
+
+  it("should serve the packaged favicon when none is configured", async () => {
+    const brand = await brandingWith({ faviconUrl: "", faviconFile: "" });
+    expect(brand.faviconUrl).toBe("/api/foxnox/web/assets/favicon.svg");
+  });
+});
+
+describe("getBranding text and button colors", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("should expose the stored colors as CSS variables", async () => {
+    const brand = await brandingWith({
+      brandNameColor: "#111111",
+      cardTitleColor: "#222222",
+      labelColor: "#333333",
+      buttonTextColor: "#fafafa",
+    });
+    expect(brand.cssVars).toContain("--brand-name-color:#111111");
+    expect(brand.cssVars).toContain("--brand-card-title-color:#222222");
+    expect(brand.cssVars).toContain("--brand-label-color:#333333");
+    expect(brand.cssVars).toContain("--brand-button-text:#fafafa");
+  });
+
+  it("should keep the current look when the columns are empty or invalid", async () => {
+    const brand = await brandingWith({
+      brandNameColor: "red",
+      cardTitleColor: "",
+    });
+    expect(brand.cssVars).toContain("--brand-name-color:#1a1d21");
+    expect(brand.cssVars).toContain("--brand-card-title-color:#1a1d21");
+    expect(brand.cssVars).toContain("--brand-label-color:#1a1d21");
+    expect(brand.cssVars).toContain("--brand-button-text:#ffffff");
+  });
+
+  describe("env fallback", () => {
+    const ENV = [
+      "WEB_BRAND_NAME_COLOR",
+      "WEB_BRAND_CARD_TITLE_COLOR",
+      "WEB_BRAND_LABEL_COLOR",
+      "WEB_BRAND_BUTTON_TEXT_COLOR",
+      "WEB_BRAND_FAVICON_URL",
+    ];
+    afterEach(() => {
+      for (const k of ENV) delete process.env[k];
+    });
+
+    it("should use WEB_BRAND_* when the column is empty", async () => {
+      process.env.WEB_BRAND_NAME_COLOR = "#010101";
+      process.env.WEB_BRAND_CARD_TITLE_COLOR = "#020202";
+      process.env.WEB_BRAND_LABEL_COLOR = "#030303";
+      process.env.WEB_BRAND_BUTTON_TEXT_COLOR = "#040404";
+      const brand = await brandingWith({});
+      expect(brand.cssVars).toContain("--brand-name-color:#010101");
+      expect(brand.cssVars).toContain("--brand-card-title-color:#020202");
+      expect(brand.cssVars).toContain("--brand-label-color:#030303");
+      expect(brand.cssVars).toContain("--brand-button-text:#040404");
+    });
+
+    it("should prefer the stored column over WEB_BRAND_*", async () => {
+      process.env.WEB_BRAND_LABEL_COLOR = "#030303";
+      const brand = await brandingWith({ labelColor: "#abcdef" });
+      expect(brand.cssVars).toContain("--brand-label-color:#abcdef");
+    });
+
+    it("should use WEB_BRAND_FAVICON_URL before the packaged favicon", async () => {
+      process.env.WEB_BRAND_FAVICON_URL = "https://env.example.test/i.png";
+      const brand = await brandingWith({ faviconUrl: "", faviconFile: "" });
+      expect(brand.faviconUrl).toBe("https://env.example.test/i.png");
+    });
+  });
+});
+
+describe("getBranding overrides", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it("should lay unsaved values over the stored row", async () => {
+    getCache.mockResolvedValue([{ name: "Stored", primaryColor: "#111111" }]);
+    await loadBrandingFromDb();
+
+    const brand = getBranding({ name: "Draft", primaryColor: "#222222" });
+
+    expect(brand.name).toBe("Draft");
+    expect(brand.cssVars).toContain("--brand-primary:#222222");
+    expect(getBranding().name).toBe("Stored");
+  });
+
+  it("should still sanitize overridden values", async () => {
+    getCache.mockResolvedValue([{ primaryColor: "#111111" }]);
+    await loadBrandingFromDb();
+
+    const brand = getBranding({
+      primaryColor: "red;}</style><script>",
+      footerUrl: "javascript:alert(1)",
+      radius: "50%",
+    });
+
+    expect(brand.cssVars).toContain("--brand-primary:#1f6feb");
+    expect(brand.cssVars).toContain("--brand-radius:12px");
+    expect(brand.footerUrl).toBe("");
+  });
+});
+
+describe("pickBrandingOverrides", () => {
+  it("should keep whitelisted strings and drop everything else", () => {
+    const picked = pickBrandingOverrides({
+      name: "Acme",
+      primaryColor: "#abcdef",
+      faviconUrl: "https://x.example.test/i.png",
+      logoFile: "logo-x.png",
+      faviconFile: "favicon-x.png",
+      id: 1,
+      radius: 12,
+      tagline: ["a"],
+    });
+
+    expect(picked).toEqual({
+      name: "Acme",
+      primaryColor: "#abcdef",
+      faviconUrl: "https://x.example.test/i.png",
+    });
+  });
+
+  it("should cap value length and tolerate non-objects", () => {
+    expect(pickBrandingOverrides({ name: "x".repeat(5000) }).name).toHaveLength(
+      2048,
+    );
+    expect(pickBrandingOverrides(null)).toEqual({});
+    expect(pickBrandingOverrides("name")).toEqual({});
   });
 });

@@ -15,8 +15,19 @@ const PNG = Buffer.concat([
 
 const saveLogo = jest.fn();
 const deleteLogo = jest.fn();
+const saveFavicon = jest.fn();
+const deleteFavicon = jest.fn();
 const loadBrandingFromDb = jest.fn();
 const noop = jest.fn((_req, _res, next) => next());
+
+const { isImage, toImage } = await import("../../src/utils/image.js");
+const imageProp = (key) => ({
+  key,
+  isFilterable: false,
+  normalizer: toImage,
+  validator: isImage,
+});
+const props = [imageProp("logoFile"), imageProp("faviconFile")];
 
 jest.unstable_mockModule("../../src/entities/branding.js", () => ({
   default: {
@@ -26,7 +37,8 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
     updateArraySubstack: noop,
     archive: noop,
     privateProps: [],
-    properties: [{ key: "logoFile", isFilterable: false }],
+    properties: props,
+    getProp: (key) => props.find((p) => p.key === key),
   },
 }));
 jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
@@ -34,8 +46,16 @@ jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
   deleteLogo,
   LOGO_FILE_RE: /^logo-.+$/,
 }));
+jest.unstable_mockModule("../../src/services/branding-favicon.js", () => ({
+  saveFavicon,
+  deleteFavicon,
+  FAVICON_FILE_RE: /^favicon-.+$/,
+}));
 jest.unstable_mockModule("../../src/web/branding.js", () => ({
   loadBrandingFromDb,
+}));
+jest.unstable_mockModule("../../src/web/preview.js", () => ({
+  previewBranding: noop,
 }));
 
 const express = (await import("express")).default;
@@ -122,7 +142,10 @@ describe("PUT /foxnox/branding/:id/logo", () => {
 
 describe("DELETE /foxnox/branding/:id/logo", () => {
   const del = (id = 1) =>
-    request(app).delete(`/foxnox/branding/${id}/logo`).set(CONSUMER);
+    request(app)
+      .delete(`/foxnox/branding/${id}/logo`)
+      .set(CONSUMER)
+      .send({ rows: [{ id, logoFile: "" }] });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -148,6 +171,15 @@ describe("DELETE /foxnox/branding/:id/logo", () => {
     expect(deleteLogo).not.toHaveBeenCalled();
   });
 
+  it("should reject a request without a row in the body", async () => {
+    const res = await request(app)
+      .delete("/foxnox/branding/1/logo")
+      .set(CONSUMER);
+
+    expect(res.status).toBe(400);
+    expect(deleteLogo).not.toHaveBeenCalled();
+  });
+
   it("should answer 404 when the branding row does not exist", async () => {
     deleteLogo.mockResolvedValue(null);
     const res = await del(9);
@@ -161,5 +193,105 @@ describe("DELETE /foxnox/branding/:id/logo", () => {
 
     expect(res.status).toBe(403);
     expect(deleteLogo).not.toHaveBeenCalled();
+  });
+});
+
+describe("PUT /foxnox/branding/:id/favicon", () => {
+  const putFavicon = (id = 1) =>
+    request(app).put(`/foxnox/branding/${id}/favicon`).set(CONSUMER);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    saveFavicon.mockResolvedValue({ id: 1, faviconFile: "favicon-x.png" });
+  });
+
+  it("should store the favicon and return the updated row", async () => {
+    const res = await putFavicon().attach("favicon", PNG, "any-name.txt");
+
+    expect(res.status).toBe(200);
+    expect(res.body.rows).toEqual([{ id: 1, faviconFile: "favicon-x.png" }]);
+    expect(saveFavicon).toHaveBeenCalledWith(
+      1,
+      { userId: 1, nickname: "tester" },
+      { buffer: expect.any(Buffer), ext: "png" },
+    );
+    expect(saveLogo).not.toHaveBeenCalled();
+    expect(loadBrandingFromDb).toHaveBeenCalledTimes(1);
+  });
+
+  it("should reject a file sent under the logo field name", async () => {
+    const res = await putFavicon().attach("logo", PNG, "logo.png");
+
+    expect(res.status).toBe(400);
+    expect(saveFavicon).not.toHaveBeenCalled();
+  });
+
+  it("should reject content that is not an image", async () => {
+    const res = await putFavicon().attach(
+      "favicon",
+      Buffer.from("GIF89a...."),
+      "a.png",
+    );
+
+    expect(res.status).toBe(400);
+    expect(saveFavicon).not.toHaveBeenCalled();
+  });
+
+  it("should answer 404 when the branding row does not exist", async () => {
+    saveFavicon.mockResolvedValue(null);
+    const res = await putFavicon(9).attach("favicon", PNG, "favicon.png");
+
+    expect(res.status).toBe(404);
+    expect(loadBrandingFromDb).not.toHaveBeenCalled();
+  });
+
+  it("should answer 403 when the ACL field allow-list excludes faviconFile", async () => {
+    const res = await putFavicon()
+      .set("x-acl-fields", "name,logoFile")
+      .attach("favicon", PNG, "favicon.png");
+
+    expect(res.status).toBe(403);
+    expect(saveFavicon).not.toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /foxnox/branding/:id/favicon", () => {
+  const delFavicon = (id = 1) =>
+    request(app)
+      .delete(`/foxnox/branding/${id}/favicon`)
+      .set(CONSUMER)
+      .send({ rows: [{ id, faviconFile: "" }] });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    deleteFavicon.mockResolvedValue({ id: 1, faviconFile: "" });
+  });
+
+  it("should clear the favicon and return the updated row", async () => {
+    const res = await delFavicon();
+
+    expect(res.status).toBe(200);
+    expect(res.body.rows).toEqual([{ id: 1, faviconFile: "" }]);
+    expect(deleteFavicon).toHaveBeenCalledWith(1, {
+      userId: 1,
+      nickname: "tester",
+    });
+    expect(deleteLogo).not.toHaveBeenCalled();
+    expect(loadBrandingFromDb).toHaveBeenCalledTimes(1);
+  });
+
+  it("should answer 404 when the branding row does not exist", async () => {
+    deleteFavicon.mockResolvedValue(null);
+    const res = await delFavicon(9);
+
+    expect(res.status).toBe(404);
+    expect(loadBrandingFromDb).not.toHaveBeenCalled();
+  });
+
+  it("should answer 403 when the ACL field allow-list excludes faviconFile", async () => {
+    const res = await delFavicon().set("x-acl-fields", "name,logoFile");
+
+    expect(res.status).toBe(403);
+    expect(deleteFavicon).not.toHaveBeenCalled();
   });
 });

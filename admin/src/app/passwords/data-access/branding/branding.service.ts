@@ -20,6 +20,7 @@ import { BRANDING_COLUMNS } from "app/passwords/data-access/branding/branding.co
 import {
   Branding,
   brandingFactory,
+  BrandingPreviewPage,
 } from "app/passwords/data-access/branding/branding.model";
 
 const brandingEntity: AdminEntity = "branding";
@@ -42,19 +43,36 @@ export class BrandingService {
   private readonly http = inject(HttpClient);
   private readonly appConfig = inject(APP_CONFIG);
 
-  // The library's own updateFiles posts to a fixed "/pictures" path, so the logo route is called directly.
-  private readonly uploadLogo = (files: File[], id: number) => {
-    const body = new FormData();
-    body.append("logo", files[0]);
-    return this.http.put<Rows<Branding>>(
-      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/logo`,
-      body,
-    );
-  };
+  // The library's own updateFiles posts to a fixed "/pictures" path, so the logo and favicon routes are called directly.
+  private readonly uploadImage =
+    (route: "logo" | "favicon") => (files: File[], id: number) => {
+      const body = new FormData();
+      body.append(route, files[0]);
+      return this.http.put<Rows<Branding>>(
+        `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/${route}`,
+        body,
+      );
+    };
 
-  public readonly deleteLogo = (id: number) =>
+  private readonly deleteImage = (route: "logo" | "favicon") => (id: number) =>
     this.http.delete<Rows<Branding>>(
-      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/logo`,
+      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/${route}`,
+      { body: { rows: [{ id, [`${route}File`]: "" }] } },
+    );
+
+  private readonly uploadLogo = this.uploadImage("logo");
+  public readonly uploadFavicon = this.uploadImage("favicon");
+  public readonly deleteLogo = this.deleteImage("logo");
+  public readonly deleteFavicon = this.deleteImage("favicon");
+
+  /** Server-rendered workflow page (HTML) with the given unsaved branding laid over the stored one. */
+  public readonly preview = (
+    page: BrandingPreviewPage,
+    branding: Partial<Record<keyof Branding, string>>,
+  ) =>
+    this.http.post<{ html: string }>(
+      `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/preview`,
+      { page, branding },
     );
 
   public readonly httpCalls: Calls<Branding> = {
@@ -72,13 +90,13 @@ export class BrandingService {
   );
   public readonly entityFactory = brandingFactory;
 
-  /** Form value of the logo control: the stored file as a server-side FileInfo, if any. */
-  public logoFiles(logoFile: string): FileInfo[] {
-    if (!logoFile) return [];
+  /** Form value of an image control: the stored file as a server-side FileInfo, if any. */
+  public logoFiles(file: string): FileInfo[] {
+    if (!file) return [];
     return [
       new FileInfo({
         type: "server",
-        src: `${this.appConfig.webBase}/assets/branding/${logoFile}`,
+        src: `${this.appConfig.webBase}/assets/branding/${file}`,
       }),
     ];
   }

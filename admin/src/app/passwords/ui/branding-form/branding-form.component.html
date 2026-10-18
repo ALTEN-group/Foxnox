@@ -1,0 +1,14 @@
+<p-card class="branding-form__card">
+  <ng-template #title>
+    <span class="card-title">{{ heading() }}</span>
+  </ng-template>
+  <frm-form
+      [config]="config()"
+      [columnsCount]="4"
+      [(model)]="model"
+      [showReset]="true"
+      [showSubmit]="true"
+      [submitButtonLabel]="'Save'"
+      (submitted)="submitted.emit($event)"
+  />
+</p-card>
