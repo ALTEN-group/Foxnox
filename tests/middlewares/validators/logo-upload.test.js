@@ -22,7 +22,7 @@ const run = (buffer) => {
   const next = jest.fn();
   const res = { locals: /** @type {Record<string, any>} */ ({}) };
   validateLogoFile(
-    /** @type {any} */ ({ file: { buffer } }),
+    /** @type {any} */ ({ body: { rows: [{ id: "1", logoFile: buffer }] } }),
     /** @type {any} */ (res),
     next,
   );
@@ -90,7 +90,7 @@ describe("validateFaviconFile", () => {
     const next = jest.fn();
     const res = { locals: /** @type {Record<string, any>} */ ({}) };
     validateFaviconFile(
-      /** @type {any} */ ({ file: { buffer } }),
+      /** @type {any} */ ({ body: { rows: [{ id: "1", faviconFile: buffer }] } }),
       /** @type {any} */ (res),
       next,
     );
@@ -117,26 +117,36 @@ describe("validateFaviconFile", () => {
 });
 
 describe("assertLogoFieldAllowed", () => {
-  const run = (fields) => {
+  const run = (row) => {
     const next = jest.fn();
     assertLogoFieldAllowed(
+      /** @type {any} */ ({ body: { rows: [row] } }),
       /** @type {any} */ ({}),
-      /** @type {any} */ ({ locals: { acl: { fields } } }),
       next,
     );
     return next;
   };
 
-  it("should allow when there is no field allow-list", () => {
-    expect(run(null)).toHaveBeenCalledWith();
+  it("should allow when logoFile survived the ACL field strip", () => {
+    expect(run({ id: "1", logoFile: "" })).toHaveBeenCalledWith();
   });
 
-  it("should allow when logoFile is in the allow-list", () => {
-    expect(run(new Set(["logoFile"]))).toHaveBeenCalledWith();
+  it("should refuse with 403 when the ACL stripped logoFile", () => {
+    expect(run({ id: "1" })).toHaveBeenCalledWith(
+      expect.objectContaining({ statusCode: 403 }),
+    );
   });
+});
 
-  it("should refuse with 403 when logoFile is not in the allow-list", () => {
-    expect(run(new Set(["name"]))).toHaveBeenCalledWith(
+describe("validateLogoFile field check", () => {
+  it("should refuse with 403 when the ACL stripped logoFile", () => {
+    const next = jest.fn();
+    validateLogoFile(
+      /** @type {any} */ ({ body: { rows: [{ id: "1" }] } }),
+      /** @type {any} */ ({ locals: {} }),
+      next,
+    );
+    expect(next).toHaveBeenCalledWith(
       expect.objectContaining({ statusCode: 403 }),
     );
   });

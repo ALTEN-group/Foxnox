@@ -57,6 +57,7 @@ export class BrandingService {
   private readonly deleteImage = (route: "logo" | "favicon") => (id: number) =>
     this.http.delete<Rows<Branding>>(
       `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/${id}/${route}`,
+      { body: { rows: [{ id, [`${route}File`]: "" }] } },
     );
 
   private readonly uploadLogo = this.uploadImage("logo");

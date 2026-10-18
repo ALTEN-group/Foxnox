@@ -1,5 +1,6 @@
 // @ts-check
 import { SQLEntity } from "@dwtechs/antity-pgsql";
+import { isImage, toImage } from "../utils/image.js";
 
 export default new SQLEntity("branding", [
   {
@@ -59,6 +60,9 @@ export default new SQLEntity("branding", [
     operations: ["SELECT"],
     isPrivate: false,
     readOnly: true,
+    // Read-only for JSON writes; applied to the uploaded file by the image routes.
+    normalizer: toImage,
+    validator: isImage,
   },
   {
     key: "faviconUrl",
@@ -83,6 +87,9 @@ export default new SQLEntity("branding", [
     operations: ["SELECT"],
     isPrivate: false,
     readOnly: true,
+    // Read-only for JSON writes; applied to the uploaded file by the image routes.
+    normalizer: toImage,
+    validator: isImage,
   },
   {
     key: "logoAlt",

@@ -20,6 +20,15 @@ const deleteFavicon = jest.fn();
 const loadBrandingFromDb = jest.fn();
 const noop = jest.fn((_req, _res, next) => next());
 
+const { isImage, toImage } = await import("../../src/utils/image.js");
+const imageProp = (key) => ({
+  key,
+  isFilterable: false,
+  normalizer: toImage,
+  validator: isImage,
+});
+const props = [imageProp("logoFile"), imageProp("faviconFile")];
+
 jest.unstable_mockModule("../../src/entities/branding.js", () => ({
   default: {
     get: noop,
@@ -28,7 +37,8 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
     updateArraySubstack: noop,
     archive: noop,
     privateProps: [],
-    properties: [{ key: "logoFile", isFilterable: false }],
+    properties: props,
+    getProp: (key) => props.find((p) => p.key === key),
   },
 }));
 jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
@@ -130,7 +140,10 @@ describe("PUT /foxnox/branding/:id/logo", () => {
 
 describe("DELETE /foxnox/branding/:id/logo", () => {
   const del = (id = 1) =>
-    request(app).delete(`/foxnox/branding/${id}/logo`).set(CONSUMER);
+    request(app)
+      .delete(`/foxnox/branding/${id}/logo`)
+      .set(CONSUMER)
+      .send({ rows: [{ id, logoFile: "" }] });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -153,6 +166,15 @@ describe("DELETE /foxnox/branding/:id/logo", () => {
     const res = await request(app).delete("/foxnox/branding/1/logo");
 
     expect(res.status).toBe(401);
+    expect(deleteLogo).not.toHaveBeenCalled();
+  });
+
+  it("should reject a request without a row in the body", async () => {
+    const res = await request(app)
+      .delete("/foxnox/branding/1/logo")
+      .set(CONSUMER);
+
+    expect(res.status).toBe(400);
     expect(deleteLogo).not.toHaveBeenCalled();
   });
 
@@ -233,7 +255,10 @@ describe("PUT /foxnox/branding/:id/favicon", () => {
 
 describe("DELETE /foxnox/branding/:id/favicon", () => {
   const delFavicon = (id = 1) =>
-    request(app).delete(`/foxnox/branding/${id}/favicon`).set(CONSUMER);
+    request(app)
+      .delete(`/foxnox/branding/${id}/favicon`)
+      .set(CONSUMER)
+      .send({ rows: [{ id, faviconFile: "" }] });
 
   beforeEach(() => {
     jest.clearAllMocks();
