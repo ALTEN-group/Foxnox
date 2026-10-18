@@ -18,6 +18,7 @@
   --accent-hover: var(--brand-primary-hover, #1858c3);
   --danger: #b42318;
   --danger-bg: #fef3f2;
+  --success: #1a7f37;
   --radius: var(--brand-radius, 12px);
   --shadow: 0 10px 30px rgba(26, 29, 33, 0.06);
   --font: var(--brand-font, "Segoe UI", system-ui, -apple-system, sans-serif);
@@ -195,6 +196,89 @@ body {
   outline: 2px solid rgba(31, 111, 235, 0.35);
   outline-offset: 1px;
   border-color: var(--accent);
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 2.9rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-toggle[hidden] {
+  display: none;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--text);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid rgba(31, 111, 235, 0.35);
+}
+
+.password-toggle__slash {
+  display: none;
+}
+
+.password-toggle.is-active .password-toggle__slash {
+  display: inline;
+}
+
+.pwd-policy__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pwd-policy__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.pwd-policy__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.pwd-policy__list li::before {
+  content: "•";
+  flex: 0 0 1em;
+  text-align: center;
+}
+
+.pwd-policy__list li.is-met {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.pwd-policy__list li.is-met::before {
+  content: "✓";
 }
 
 .form-input--code {

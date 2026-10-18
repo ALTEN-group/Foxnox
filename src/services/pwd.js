@@ -121,16 +121,21 @@ export async function initPwdGeneration() {
 }
 
 /**
- * HTML form constraints from the active policy (browser hints only —
- * server still enforces via `passwordMeetsPolicy`).
+ * HTML form constraints and checklist rules from the active policy (browser
+ * hints only — server still enforces via `passwordMeetsPolicy`). Without an
+ * active policy, passken's defaults apply: every character class is required.
  *
- * @returns {Promise<{ minLength: number, maxLength: number }>}
+ * @returns {Promise<{ minLength: number, maxLength: number, lowerCase: boolean, upperCase: boolean, number: boolean, symbol: boolean }>}
  */
 export async function getPasswordFormPolicy() {
   const p = await getActivePwdPolicy();
   return {
     minLength: p?.length ?? 12,
     maxLength: 64,
+    lowerCase: p?.lowerCase ?? true,
+    upperCase: p?.upperCase ?? true,
+    number: p?.number ?? true,
+    symbol: p?.symbol ?? true,
   };
 }
 

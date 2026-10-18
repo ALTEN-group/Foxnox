@@ -69,6 +69,10 @@ describe("password policy", () => {
     expect(await getPasswordFormPolicy()).toEqual({
       minLength: 10,
       maxLength: 64,
+      lowerCase: true,
+      upperCase: true,
+      number: true,
+      symbol: true,
     });
   });
 
@@ -77,6 +81,10 @@ describe("password policy", () => {
     expect(await getPasswordFormPolicy()).toEqual({
       minLength: 12,
       maxLength: 64,
+      lowerCase: true,
+      upperCase: true,
+      number: true,
+      symbol: true,
     });
   });
 
