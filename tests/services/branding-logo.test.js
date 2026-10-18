@@ -20,14 +20,12 @@ jest.unstable_mockModule("node:fs/promises", () => ({
   unlink,
 }));
 
-const {
-  saveLogo,
-  deleteLogo,
-  saveFavicon,
-  deleteFavicon,
-  LOGO_FILE_RE,
-  FAVICON_FILE_RE,
-} = await import("../../src/services/branding-logo.js");
+const { saveLogo, deleteLogo, LOGO_FILE_RE } = await import(
+  "../../src/services/branding-logo.js"
+);
+const { saveFavicon, deleteFavicon, FAVICON_FILE_RE } = await import(
+  "../../src/services/branding-favicon.js"
+);
 
 const CONSUMER = { userId: 7, nickname: "admin" };
 const LOGO = { buffer: Buffer.from("x"), ext: "png" };

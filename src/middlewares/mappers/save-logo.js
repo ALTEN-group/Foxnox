@@ -1,11 +1,7 @@
 // @ts-check
 import { isValidInteger } from "@dwtechs/checkard";
-import {
-  deleteFavicon,
-  deleteLogo,
-  saveFavicon,
-  saveLogo,
-} from "../../services/branding-logo.js";
+import { deleteFavicon, saveFavicon } from "../../services/branding-favicon.js";
+import { deleteLogo, saveLogo } from "../../services/branding-logo.js";
 
 /**
  * PUT /branding/:id/<image> — stores the validated image (`res.locals[localsKey]`)

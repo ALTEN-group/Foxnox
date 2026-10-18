@@ -1,7 +1,8 @@
 // @ts-check
 import { log } from "@dwtechs/winstan";
 import bEnt from "../entities/branding.js";
-import { FAVICON_FILE_RE, LOGO_FILE_RE } from "../services/branding-logo.js";
+import { FAVICON_FILE_RE } from "../services/branding-favicon.js";
+import { LOGO_FILE_RE } from "../services/branding-logo.js";
 import { getPublicOrigin, getPublicWebBase } from "./deep-link.js";
 
 /**

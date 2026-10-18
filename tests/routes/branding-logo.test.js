@@ -44,9 +44,11 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
 jest.unstable_mockModule("../../src/services/branding-logo.js", () => ({
   saveLogo,
   deleteLogo,
+  LOGO_FILE_RE: /^logo-.+$/,
+}));
+jest.unstable_mockModule("../../src/services/branding-favicon.js", () => ({
   saveFavicon,
   deleteFavicon,
-  LOGO_FILE_RE: /^logo-.+$/,
   FAVICON_FILE_RE: /^favicon-.+$/,
 }));
 jest.unstable_mockModule("../../src/web/branding.js", () => ({

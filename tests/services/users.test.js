@@ -82,7 +82,10 @@ describe("findUserByEmail", () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(globalThis.fetch).toHaveBeenCalledWith(SEARCH_URL, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json" },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+      },
       body: JSON.stringify({
         filters: {
           email: { value: EMAIL, matchMode: "equals" },
@@ -93,9 +96,9 @@ describe("findUserByEmail", () => {
 
   it("should omit nickname and fall back to the search email when the row is sparse", async () => {
     process.env.USER_SEARCH_URL = SEARCH_URL;
-    globalThis.fetch = jest.fn().mockResolvedValue(
-      jsonResponse(200, { rows: [{ id: 3 }] }),
-    );
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse(200, { rows: [{ id: 3 }] }));
 
     await expect(findUserByEmail(EMAIL)).resolves.toEqual({
       id: 3,
@@ -129,27 +132,27 @@ describe("findUserByEmail", () => {
     globalThis.fetch = jest.fn().mockResolvedValue(jsonResponse(200, {}));
     await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
 
-    globalThis.fetch = jest.fn().mockResolvedValue(
-      jsonResponse(200, { rows: [] }),
-    );
-    await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
-
-    globalThis.fetch = jest.fn().mockResolvedValue(
-      jsonResponse(200, { rows: [{ email: EMAIL }] }),
-    );
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse(200, { rows: [] }));
     await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
 
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(jsonResponse(200, { rows: [{ id: 0, email: EMAIL }] }));
+      .mockResolvedValue(jsonResponse(200, { rows: [{ email: EMAIL }] }));
+    await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
+
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(200, { rows: [{ id: 0, email: EMAIL }] }),
+      );
     await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
   });
 
   it("should return null when fetch rejects without logging the email", async () => {
     process.env.USER_SEARCH_URL = SEARCH_URL;
-    globalThis.fetch = jest
-      .fn()
-      .mockRejectedValue(new Error("network down"));
+    globalThis.fetch = jest.fn().mockRejectedValue(new Error("network down"));
 
     await expect(findUserByEmail(EMAIL)).resolves.toBeNull();
     expect(logError).toHaveBeenCalledTimes(1);

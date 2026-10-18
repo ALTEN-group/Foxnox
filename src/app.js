@@ -31,7 +31,7 @@ import preference from "./routes/preference.js";
 import pwdPolicy from "./routes/pwd-policy.js";
 import token from "./routes/token.js";
 import trustedDevice from "./routes/user-device.js";
-import { LOGO_DIR } from "./services/branding-logo.js";
+import { IMAGE_DIR } from "./services/branding-image.js";
 
 const s = "/foxnox/";
 
@@ -53,7 +53,7 @@ app.use(startTimer);
 // Uploaded logos may be SVG: the sandbox CSP keeps one opened directly from running scripts.
 app.use(
   `${WEB_MOUNT}/assets/branding`,
-  express.static(LOGO_DIR, {
+  express.static(IMAGE_DIR, {
     index: false,
     setHeaders: (res) => {
       res.setHeader(
