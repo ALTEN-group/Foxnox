@@ -1,5 +1,14 @@
 # Changelog
 
+# Unreleased
+
+  - **Branding favicon:** the favicon can be a URL (`faviconUrl`) or an uploaded PNG, JPEG, WebP or script-free SVG image (`faviconFile`, read-only). New `PUT`/`DELETE /foxnox/branding/:id/favicon` routes (multipart upload, ACL-protected, branding cache invalidated). Uploading clears the URL; a URL typed afterwards wins over the stored file. Fallback order: stored URL, stored file, `WEB_BRAND_FAVICON_URL`, packaged `favicon.svg`
+  - **Branding colors:** new `brandNameColor`, `cardTitleColor`, `labelColor` and `buttonTextColor` fields (hex, validated by DB `CHECK` constraints) styling the header brand name, card titles, form labels and primary button text of the workflow pages. Matching `WEB_BRAND_*_COLOR` / `WEB_BRAND_BUTTON_TEXT_COLOR` / `WEB_BRAND_FAVICON_URL` env variables apply when no branding row is active. The server logs a warning when the primary color contrast against the button text color is below 3
+  - **Branding live preview:** the admin Branding page shows a preview card that re-renders a chosen workflow page as you type, using unsaved form values. Rendered by Foxnox from the real templates through the new `POST /foxnox/branding/preview` route (admin only). Pending logo/favicon uploads are not previewed
+  - Branding CSS variables are now served from `/assets/brand.css` instead of an inline `<style>` (blocked by the edge CSP `style-src 'self'`)
+  - Gatelin routes: added `updateBrandingFavicon`, `deleteBrandingFavicon` and `previewBranding` in `gatelin-data/03-route.sql`; re-run Liquibase
+  - **Breaking (schema):** `branding` table gains the favicon and color columns above in the `07-branding.sql` changeset; recreate the DB (`./scripts/reset-db.sh`) if it was already applied
+
 # 0.1.0-alpha.3 (Oct 7th 2026)
 
   - **Audit log page:** new admin-only `Audit log` menu entry listing every tracked change across Foxnox tables (who, what, when, old → new values), newest first, filterable by date, user, entity, action and record id. Backed by the read-only `POST /foxnox/audit/search` route over the new `log.audit` view (previous snapshot, changed columns, `ARCHIVE`/`RESTORE` actions). Automatic bookkeeping writes (login counters, device usage) are `routine` and hidden by default; add them from the `Kind` filter. Hashes and secrets are never returned (`[redacted]`). The Gatelin route `searchAudit` is seeded for Super admin and Admin only (route id `116` on a fresh alpha.5 database, see `app.acls.ts`); the login challenge mint route is no longer seeded at all (internal BFF call only)
