@@ -57,10 +57,10 @@ export default new SQLEntity("branding", [
     isTypeChecked: true,
     isFilterable: false,
     requiredFor: [],
-    operations: ["SELECT"],
+    operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     readOnly: true,
-    // Read-only for JSON writes; applied to the uploaded file by the image routes.
+    // Read-only for JSON writes; set by the image routes through the entity update.
     normalizer: toImage,
     validator: isImage,
   },
@@ -84,10 +84,10 @@ export default new SQLEntity("branding", [
     isTypeChecked: true,
     isFilterable: false,
     requiredFor: [],
-    operations: ["SELECT"],
+    operations: ["SELECT", "UPDATE"],
     isPrivate: false,
     readOnly: true,
-    // Read-only for JSON writes; applied to the uploaded file by the image routes.
+    // Read-only for JSON writes; set by the image routes through the entity update.
     normalizer: toImage,
     validator: isImage,
   },
