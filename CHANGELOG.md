@@ -7,6 +7,7 @@
   - **Branding live preview:** the admin Branding page shows a preview card that re-renders a chosen workflow page as you type, using unsaved form values. Rendered by Foxnox from the real templates through the new `POST /foxnox/branding/preview` route (admin only). Pending logo/favicon uploads are not previewed
   - Branding CSS variables are now served from `/assets/brand.css` instead of an inline `<style>` (blocked by the edge CSP `style-src 'self'`)
   - Gatelin routes: added `updateBrandingFavicon`, `deleteBrandingFavicon` and `previewBranding` in `gatelin-data/03-route.sql`; re-run Liquibase
+  - **Fix:** refreshing the page after submitting a request form (`/recover`, `/account-recover`, `/unlock`) asked to resubmit the form and sent another email. The `POST` now redirects (303) to a new `GET /recover/sent`, `/account-recover/sent` or `/unlock/sent` confirmation page. Gatelin routes added in `gatelin-data/11-route-web-sent.sql` (changeset `foxnox-data-12`); re-run `gatelin_migration` and restart Gatelin
   - **Breaking (schema):** `branding` table gains the favicon and color columns above in the `07-branding.sql` changeset; recreate the DB (`./scripts/reset-db.sh`) if it was already applied
 
 # 0.1.0-alpha.3 (Oct 7th 2026)
