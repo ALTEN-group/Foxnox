@@ -66,13 +66,14 @@ The seed registers:
 
 | Changeset | What it adds |
 |---|---|
-| `01-service.sql` | The `foxnox` service, with an empty pattern because the password router is mounted at the Express root |
-| `02-resource.sql` | Resources `foxnox`, `foxnox/tokens`, `foxnox/policies`, `foxnox/devices` (Gatelin caps `resource.name` at 20 characters) |
-| `03-route.sql` | The 25 JSON CRUD routes (including `/foxnox/pwd/compare`), all `protected` |
-| `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles |
-| `05`–`08` | The `foxnox/web` resource and every account workflow page route |
-| `10-cors.sql` | Allowed origins |
-| `11`–`13` | Admin table-preference resources (`passwords`, `policies`, `tokens`, `trustedDevices`), default column layouts, and Gatelin preference scopes |
+| `01-service.sql` | The `foxnox` service, with an empty pattern because the password router is mounted at the Express root, and the `foxnox_csrf` cookie forwarded for workflow pages |
+| `02-resource.sql` | Resources `foxnox/pwd`, `foxnox/tokens`, `foxnox/policies`, `foxnox/devices`, `foxnox/branding`, `foxnox/preferences`, `foxnox/audit` (Gatelin caps `resource.name` at 20 characters) |
+| `03-route.sql` | The 41 JSON CRUD routes (including `/foxnox/pwd/compare`), all `protected` |
+| `04-permission.sql` | Grants those routes to the **Super admin** (role 1) and **Admin** (role 2) roles, except add/update on tokens and trusted devices |
+| `05-resource-web.sql` | The `foxnox/web` resource |
+| `06-route-web.sql` | The 27 account workflow page routes (recovery, 2FA, security questions, trusted devices, expired password, unlock, "request sent" pages, assets) |
+| `07-permission-web.sql` | Grants the protected workflow page routes to Super admin and Admin |
+| `08-cors.sql` | Allowed browser origins (CORS whitelist) |
 
 `POST /foxnox/challenges`, `POST /foxnox/devices/verify`, and `POST /foxnox/login-tickets/redeem` are not proxied CRUD routes. The BFF calls them on the internal network (Gatelin uses `PWD_CHALLENGES_URL`, `PWD_TRUSTED_DEVICES_URL`, and `PWD_LOGIN_TICKET_URL`).
 
