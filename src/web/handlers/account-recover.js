@@ -23,7 +23,7 @@ import { issueWorkflowNotification } from "../issue-notification.js";
 
 /** @type {import('express').RequestHandler} */
 export function getAccountRecoverRequest(req, res) {
-  res.render(
+  return res.render(
     "account-recover/request",
     buildViewContext(req, "accountRecoverRequest"),
   );
@@ -52,6 +52,11 @@ export async function postAccountRecoverRequest(req, res) {
     lang: resolveLang(req),
   });
 
+  return res.redirect(303, `${ctx.assetBase}/account-recover/sent`);
+}
+
+/** @type {import('express').RequestHandler} */
+export function getAccountRecoverSent(req, res) {
   return res.render(
     "account-recover/sent",
     buildViewContext(req, "accountRecoverSent"),

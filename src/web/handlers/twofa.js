@@ -112,7 +112,7 @@ export function getTwofaSetup(req, res) {
     accountName: String(userId),
   });
 
-  res.render(
+  return res.render(
     "twofa/setup",
     buildViewContext(req, "twofaSetup", {
       form: { secret, otpauthUrl, setupToken: "" },

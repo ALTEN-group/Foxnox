@@ -47,5 +47,9 @@
     <comment>Allowed browser Origins for the admin UI (CORS whitelist)</comment>
     <sqlFile path="10-cors.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-12" author="lcluber">
+    <comment>Foxnox web "request sent" confirmation routes</comment>
+    <sqlFile path="11-route-web-sent.sql"/>
+  </changeSet>
 
 </databaseChangeLog>
