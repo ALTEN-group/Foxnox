@@ -33,6 +33,11 @@ export function configureWebEngine(app) {
       defaultLayout: "main",
       layoutsDir: path.join(VIEWS_ROOT, "layouts"),
       partialsDir: path.join(VIEWS_ROOT, "partials"),
+      helpers: {
+        // {{format common.policyMinLength n=policy.minLength}} replaces "{n}".
+        format: (str, { hash }) =>
+          String(str).replace(/\{(\w+)\}/g, (m, k) => hash[k] ?? m),
+      },
     }),
   );
   app.set("view engine", "hbs");

@@ -34,6 +34,8 @@ const createLoginChallenge = jest.fn(async () => ({
 const rotatePassword = jest.fn(async () => {});
 const unlockAccount = jest.fn(async () => {});
 const passwordMeetsPolicy = jest.fn(async () => true);
+const userPolicy = { id: 3, length: 12 };
+const getPwdPolicyForUser = jest.fn(async () => userPolicy);
 const verifyCurrentPassword = jest.fn(async () => true);
 const getPasswordFormPolicy = jest.fn(async () => ({
   minLength: 8,
@@ -94,7 +96,8 @@ jest.unstable_mockModule("../src/services/pwd.js", () => ({
   unlockAccount,
   passwordMeetsPolicy,
   getPasswordFormPolicy,
-  getActivePwdPolicy: jest.fn(),
+  getPwdPolicyForUser,
+  getFirstActivePwdPolicy: jest.fn(),
   getPwdAuthState: jest.fn(async () => ({
     id: 1,
     userId: 55,
@@ -295,6 +298,7 @@ describe("password recover", () => {
       plaintext: "plain",
       typeName: "Password reset",
     });
+    expect(getPasswordFormPolicy).toHaveBeenCalledWith(55);
   });
 
   it("POST /recover/reset rotates password and consumes token", async () => {
@@ -304,6 +308,8 @@ describe("password recover", () => {
       confirm: "GoodPass1!",
     });
     expect(res.status).toBe(200);
+    expect(getPwdPolicyForUser).toHaveBeenCalledWith(55);
+    expect(passwordMeetsPolicy).toHaveBeenCalledWith("GoodPass1!", userPolicy);
     expect(rotatePassword).toHaveBeenCalledWith(55, "GoodPass1!");
     expect(consumeWorkflowToken).toHaveBeenCalledWith(10);
   });

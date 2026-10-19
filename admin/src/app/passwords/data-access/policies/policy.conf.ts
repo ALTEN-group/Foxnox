@@ -1,8 +1,11 @@
+import { DomSanitizer } from "@angular/platform-browser";
 import { Acls } from "@core/acl/acls.model";
 import { withAclConditions } from "@core/utils/field-config/acl-conditions.utils";
 import { buildArchivedConfig } from "@core/utils/field-config/archived.config";
 import { buildAuditConfig } from "@core/utils/field-config/audit.config";
 import { ID_SORTED_CONFIG } from "@core/utils/field-config/id-sorted.config";
+import { toSelectItems } from "@core/utils/primeng/to-select-items";
+import { buildColoredChipsCellRenderer } from "@core/utils/renderers/colored-chips.renderer";
 import {
   CONTROL_TYPES,
   INPUT_TYPES,
@@ -13,11 +16,14 @@ import {
   required,
   StrictCrudItemOptions,
 } from "@dwtechs/ngx-crud-builder";
+import { PolicyRole } from "app/passwords/data-access/policies/policy-role.model";
 import { Policy } from "app/passwords/data-access/policies/policy.model";
 
 export const POLICY_COLUMNS: (
   acls: Acls | undefined,
-) => StrictCrudItemOptions<Policy>[] = (acls) =>
+  roles: PolicyRole[],
+  sanitizer: DomSanitizer,
+) => StrictCrudItemOptions<Policy>[] = (acls, roles, sanitizer) =>
   withAclConditions(
     [
       ID_SORTED_CONFIG,
@@ -139,6 +145,28 @@ export const POLICY_COLUMNS: (
         },
         controlOptions: {
           validators: [required, min(0)],
+        },
+      },
+      {
+        key: "roleIds",
+        label: "Roles",
+        controlType: CONTROL_TYPES.MULTISELECT,
+        options: toSelectItems(roles, "name"),
+        columnOptions: {
+          headerTooltip:
+            "Gatelin roles this policy applies to. A user with several roles must satisfy all their policies: the strictest rules are combined (longest length, every required character class, shortest expiry, fewest failed attempts, longest lockout). Users with no mapped role get the first policy.",
+          customCellRenderer: buildColoredChipsCellRenderer(
+            sanitizer,
+            (value: unknown) => {
+              const role = roles.find((r) => r.id === Number(value));
+              return role
+                ? { label: role.name, color: role.color || null }
+                : undefined;
+            },
+          ),
+        },
+        controlOptions: {
+          width: "100%",
         },
       },
       ...buildArchivedConfig(),

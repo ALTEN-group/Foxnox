@@ -61,6 +61,10 @@ describe("previewBranding", () => {
     expect(res.render.mock.calls[0][1].policy).toEqual({
       minLength: 12,
       maxLength: 64,
+      lowerCase: true,
+      upperCase: true,
+      number: true,
+      symbol: true,
     });
   });
 

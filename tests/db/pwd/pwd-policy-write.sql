@@ -8,6 +8,7 @@ BEGIN
     name,
     description,
     length,
+    "roleIds",
     "creatorId",
     "creatorName"
   )
@@ -15,6 +16,7 @@ BEGIN
     'dbContractPolicy',
     'PostgreSQL contract test',
     12,
+    '{7,8}',
     9001,
     'db-test'
   )
@@ -26,6 +28,7 @@ BEGIN
     WHERE id = policy_id
       AND name = 'dbContractPolicy'
       AND length = 12
+      AND "roleIds" = '{7,8}'
       AND "creatorId" = 9001
   ) THEN
     RAISE EXCEPTION 'pwd_policy insert was not readable from the base table';

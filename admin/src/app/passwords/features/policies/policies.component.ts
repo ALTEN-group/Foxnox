@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
 import { TABLES } from "@core/app-config/app.tables";
 import { TableComponent } from "@dwtechs/ngx-crud-builder";
 import { PoliciesService } from "app/passwords/data-access/policies/policies.service";
@@ -14,8 +15,9 @@ import { PoliciesService } from "app/passwords/data-access/policies/policies.ser
 })
 export class PoliciesComponent {
   private readonly policiesService = inject(PoliciesService);
+  private readonly route = inject(ActivatedRoute);
 
-  public readonly config = this.policiesService.config;
+  public readonly config = this.policiesService.config(this.route.snapshot);
 
   public readonly entityFactory = this.policiesService.entityFactory;
 

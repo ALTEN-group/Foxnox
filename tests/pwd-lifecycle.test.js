@@ -34,7 +34,7 @@ jest.unstable_mockModule("../src/entities/pwd.js", () => ({
 }));
 
 const {
-  getActivePwdPolicy,
+  getFirstActivePwdPolicy,
   getPasswordFormPolicy,
   passwordMeetsPolicy,
   rotatePassword,
@@ -64,19 +64,27 @@ describe("password policy", () => {
       upperCase: true,
       expiryDays: 90,
     });
-    const policy = await getActivePwdPolicy();
+    const policy = await getFirstActivePwdPolicy();
     expect(policy).toMatchObject({ length: 10, expiryDays: 90 });
     expect(await getPasswordFormPolicy()).toEqual({
       minLength: 10,
       maxLength: 64,
+      lowerCase: true,
+      upperCase: true,
+      number: true,
+      symbol: true,
     });
   });
 
   it("returns null / defaults when no active policy", async () => {
-    expect(await getActivePwdPolicy()).toBeNull();
+    expect(await getFirstActivePwdPolicy()).toBeNull();
     expect(await getPasswordFormPolicy()).toEqual({
       minLength: 12,
       maxLength: 64,
+      lowerCase: true,
+      upperCase: true,
+      number: true,
+      symbol: true,
     });
   });
 
