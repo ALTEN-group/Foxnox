@@ -35,6 +35,19 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'required Standard policy seed is missing';
   END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM (
+      SELECT unnest("roleIds") AS role_id
+      FROM pwd_policy
+      WHERE archived IS NOT TRUE
+    ) r
+    GROUP BY role_id
+    HAVING count(*) > 1
+  ) THEN
+    RAISE EXCEPTION 'a role is attached to more than one seeded policy';
+  END IF;
 END;
 $$;
 

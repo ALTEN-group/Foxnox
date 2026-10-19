@@ -9,7 +9,16 @@ const PAGES = Object.freeze({
   expired: {
     view: "password/expired",
     key: "passwordExpired",
-    extra: { policy: { minLength: 12, maxLength: 64 } },
+    extra: {
+      policy: {
+        minLength: 12,
+        maxLength: 64,
+        lowerCase: true,
+        upperCase: true,
+        number: true,
+        symbol: true,
+      },
+    },
   },
   unlock: { view: "unlock/request", key: "unlockRequest" },
   devices: { view: "devices/prompt", key: "trustedDevicePrompt" },

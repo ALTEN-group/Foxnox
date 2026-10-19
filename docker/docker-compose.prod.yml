@@ -232,6 +232,7 @@ services:
       ADMIN_PORT: ${ADMIN_PORT}
       ADMIN_BASE_PATH: ${ADMIN_BASE_PATH:-/foxnox}
       ADMIN_SSO_TOKEN_KEY: ${ADMIN_SSO_TOKEN_KEY:-}
+      ADMIN_ROLES_SEARCH_URL: ${ADMIN_ROLES_SEARCH_URL:-}
     depends_on:
       postgres:
         condition: service_healthy

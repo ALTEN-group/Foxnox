@@ -30,11 +30,12 @@ describe("bundled admin server", () => {
     const rendered = renderAdminIndex(indexHtml, {
       ADMIN_BASE_PATH: "/accounts",
       ADMIN_SSO_TOKEN_KEY: "shared_access_token",
+      ADMIN_ROLES_SEARCH_URL: "/api/gatelin/roles/search",
     });
 
     expect(rendered).toContain('<base href="/accounts/">');
     expect(rendered).toContain(
-      'window.__FOXNOX_ADMIN__={"ssoTokenKey":"shared_access_token"};',
+      'window.__FOXNOX_ADMIN__={"ssoTokenKey":"shared_access_token","rolesSearchUrl":"/api/gatelin/roles/search"};',
     );
   });
 

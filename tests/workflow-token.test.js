@@ -49,17 +49,17 @@ describe("password policy checks", () => {
   });
 
   it("exposes form min/max length from the given policy shape", async () => {
-    const { getPasswordFormPolicy, getActivePwdPolicy } = await import(
+    const { getPasswordFormPolicy, getFirstActivePwdPolicy } = await import(
       "../src/services/pwd.js"
     );
-    // Without DB, getActivePwdPolicy fails or returns null → passken-aligned defaults.
+    // Without DB, getFirstActivePwdPolicy fails or returns null → passken-aligned defaults.
     const hints = await getPasswordFormPolicy().catch(() => null);
     if (hints) {
       expect(hints.minLength).toBeGreaterThanOrEqual(6);
       expect(hints.maxLength).toBe(64);
     }
     // Explicit policy path is covered by passwordMeetsPolicy above; assert export exists.
-    expect(typeof getActivePwdPolicy).toBe("function");
+    expect(typeof getFirstActivePwdPolicy).toBe("function");
     expect(typeof getPasswordFormPolicy).toBe("function");
   });
 });

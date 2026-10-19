@@ -153,6 +153,18 @@ export default new SQLEntity("pwd_policy", [
     readOnly: false,
   },
   {
+    key: "roleIds",
+    type: "array",
+    min: null,
+    max: null,
+    isTypeChecked: true,
+    isFilterable: false,
+    requiredFor: [],
+    operations: ["SELECT", "INSERT", "UPDATE"],
+    isPrivate: false,
+    readOnly: false,
+  },
+  {
     key: "archived",
     type: "boolean",
     isTypeChecked: true,

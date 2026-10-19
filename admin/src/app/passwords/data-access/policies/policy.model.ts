@@ -18,6 +18,7 @@ export interface Policy extends ArchiveInfo {
   expiryDays: number;
   maxFailedAttempts: number;
   lockoutMinutes: number;
+  roleIds: number[];
 }
 
 /**
@@ -41,5 +42,6 @@ export const policyFactory = (): Policy => ({
   expiryDays: 0,
   maxFailedAttempts: 5,
   lockoutMinutes: 15,
+  roleIds: [],
   ...new ArchiveInfo(),
 });

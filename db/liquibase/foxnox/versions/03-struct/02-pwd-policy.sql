@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS pwd_policy (
   "expiryDays" INT DEFAULT 90,
   "maxFailedAttempts" INT DEFAULT 5 NOT NULL,
   "lockoutMinutes" INT DEFAULT 15 NOT NULL,
+  -- Gatelin role ids this policy applies to (roles live in Gatelin, hence no FK).
+  "roleIds" INT[] DEFAULT '{}' NOT NULL,
   archived BOOLEAN DEFAULT FALSE,  
   "archivedAt" TIMESTAMPTZ DEFAULT NULL,  
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
