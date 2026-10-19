@@ -2,6 +2,7 @@
 
 import {
   getPasswordFormPolicy,
+  getPwdPolicyForUser,
   passwordMeetsPolicy,
   rotatePassword,
 } from "../../services/pwd.js";
@@ -75,7 +76,7 @@ export async function getRecoverReset(req, res) {
     "recover/reset",
     buildViewContext(req, "recoverReset", {
       form: { token },
-      policy: await getPasswordFormPolicy(),
+      policy: await getPasswordFormPolicy(valid.userId),
     }),
   );
 }
@@ -87,7 +88,6 @@ export async function postRecoverReset(req, res) {
   const token = String(req.body?.token ?? "").trim();
   const password = String(req.body?.password ?? "");
   const confirm = String(req.body?.confirm ?? "");
-  const policy = await getPasswordFormPolicy();
 
   if (isSuspiciousForm(req) || !token) {
     return res
@@ -105,6 +105,8 @@ export async function postRecoverReset(req, res) {
       .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
   }
 
+  const policy = await getPasswordFormPolicy(valid.userId);
+
   if (password !== confirm) {
     return res.status(400).render(
       "recover/reset",
@@ -116,7 +118,8 @@ export async function postRecoverReset(req, res) {
     );
   }
 
-  if (!(await passwordMeetsPolicy(password))) {
+  const userPolicy = await getPwdPolicyForUser(valid.userId);
+  if (!(await passwordMeetsPolicy(password, userPolicy))) {
     return res.status(400).render(
       "recover/reset",
       buildViewContext(req, page, {

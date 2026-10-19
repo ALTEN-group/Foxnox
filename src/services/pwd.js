@@ -1,5 +1,6 @@
 // @ts-check
 import { execute } from "@dwtechs/antity-pgsql";
+import { isArray } from "@dwtechs/checkard";
 import { compare, encrypt } from "@dwtechs/hashitaka";
 import { isValidPassword } from "@dwtechs/passken";
 import { init as initPasskenGenerator } from "@dwtechs/passken-express";
@@ -7,6 +8,7 @@ import { log } from "@dwtechs/winstan";
 import pEnt from "../entities/pwd.js";
 import ppEnt from "../entities/pwd-policy.js";
 import { tokenSecret } from "./token-crypto.js";
+import { findUserRoleIds } from "./users.js";
 
 const SYSTEM_CONSUMER = Object.freeze({ userId: -1, nickname: "system" });
 
@@ -32,19 +34,15 @@ const DEFAULT_LOCKOUT_MINUTES = 15;
  *   expiryDays: number,
  *   maxFailedAttempts: number,
  *   lockoutMinutes: number,
+ *   roleIds: number[],
  * }} PwdPolicy
  */
 
 /**
- * The password policy used to validate user-chosen passwords.
- * There is only ever one non-archived `pwd_policy` row.
- * @returns {Promise<PwdPolicy|null>}
+ * @param {Record<string, any>} row
+ * @returns {PwdPolicy}
  */
-export async function getActivePwdPolicy() {
-  // getCache always ANDs `archived IS FALSE` and orders by id ASC.
-  const rows = await ppEnt.getCache();
-  const row = rows[0];
-  if (!row) return null;
+function toPwdPolicy(row) {
   return {
     id: Number(row.id),
     length: Number(row.length) || 12,
@@ -57,7 +55,71 @@ export async function getActivePwdPolicy() {
     maxFailedAttempts:
       Number(row.maxFailedAttempts) || DEFAULT_MAX_FAILED_ATTEMPTS,
     lockoutMinutes: Number(row.lockoutMinutes) || DEFAULT_LOCKOUT_MINUTES,
+    roleIds: isArray(row.roleIds) ? row.roleIds.map(Number) : [],
   };
+}
+
+/**
+ * Default password policy: the first non-archived `pwd_policy` row. Applies
+ * when a user has no role mapped to a policy (see `getPwdPolicyForUser`) and
+ * to password generation, which has no user context.
+ * @returns {Promise<PwdPolicy|null>}
+ */
+export async function getFirstActivePwdPolicy() {
+  // getCache always ANDs `archived IS FALSE` and orders by id ASC.
+  const rows = await ppEnt.getCache();
+  return rows[0] ? toPwdPolicy(rows[0]) : null;
+}
+
+/**
+ * The policies that apply to a set of roles, merged into the strictest one:
+ * longest length, every character class any of them requires, shortest expiry
+ * (0 = never, so ignored unless all are 0), fewest failed attempts, longest
+ * lockout. Roles are not ranked: Gatelin grants the union of a user's roles,
+ * so the user must satisfy every policy attached to them.
+ *
+ * @param {PwdPolicy[]} policies the policies attached to the user's roles
+ * @returns {PwdPolicy|null} null when `policies` is empty
+ */
+export function mergeStrictestPolicies(policies) {
+  if (!policies.length) return null;
+  const expiries = policies.map((p) => p.expiryDays).filter((d) => d > 0);
+  return {
+    // Only used in logs: the lowest id stands for the merged policy.
+    id: Math.min(...policies.map((p) => p.id)),
+    length: Math.max(...policies.map((p) => p.length)),
+    number: policies.some((p) => p.number),
+    symbol: policies.some((p) => p.symbol),
+    lowerCase: policies.some((p) => p.lowerCase),
+    upperCase: policies.some((p) => p.upperCase),
+    strict: policies.some((p) => p.strict),
+    expiryDays: expiries.length ? Math.min(...expiries) : 0,
+    maxFailedAttempts: Math.min(...policies.map((p) => p.maxFailedAttempts)),
+    lockoutMinutes: Math.max(...policies.map((p) => p.lockoutMinutes)),
+    roleIds: [...new Set(policies.flatMap((p) => p.roleIds))].sort(
+      (a, b) => a - b,
+    ),
+  };
+}
+
+/**
+ * The password policy governing a user: the strictest of the policies attached
+ * to any of their roles, else the default policy.
+ *
+ * @param {number} userId
+ * @returns {Promise<PwdPolicy|null>}
+ */
+export async function getPwdPolicyForUser(userId) {
+  const rows = await ppEnt.getCache();
+  const policies = rows.map(toPwdPolicy);
+  // Skip the user lookup while no policy is attached to any role.
+  if (!policies.some((p) => p.roleIds.length)) return policies[0] ?? null;
+
+  const roleIds = await findUserRoleIds(userId);
+  const matching = policies.filter((p) =>
+    p.roleIds.some((id) => roleIds.includes(id)),
+  );
+  return mergeStrictestPolicies(matching) ?? policies[0] ?? null;
 }
 
 /**
@@ -82,7 +144,7 @@ export async function initPwdGeneration() {
   /** @type {PwdPolicy|null} */
   let policy = null;
   try {
-    policy = await getActivePwdPolicy();
+    policy = await getFirstActivePwdPolicy();
   } catch (err) {
     log.error(
       `initPwdGeneration: cannot read pwd_policy, keeping passken defaults (no symbols) - caused by: ${err.message || err}`,
@@ -121,14 +183,18 @@ export async function initPwdGeneration() {
 }
 
 /**
- * HTML form constraints and checklist rules from the active policy (browser
- * hints only — server still enforces via `passwordMeetsPolicy`). Without an
- * active policy, passken's defaults apply: every character class is required.
+ * HTML form constraints and checklist rules from the policy (browser hints
+ * only — server still enforces via `passwordMeetsPolicy`). Without a policy,
+ * passken's defaults apply: every character class is required.
  *
+ * @param {number} [userId] policy of this user's role; the default policy when omitted
  * @returns {Promise<{ minLength: number, maxLength: number, lowerCase: boolean, upperCase: boolean, number: boolean, symbol: boolean }>}
  */
-export async function getPasswordFormPolicy() {
-  const p = await getActivePwdPolicy();
+export async function getPasswordFormPolicy(userId) {
+  const p =
+    userId == null
+      ? await getFirstActivePwdPolicy()
+      : await getPwdPolicyForUser(userId);
   return {
     minLength: p?.length ?? 12,
     maxLength: 64,
@@ -145,7 +211,7 @@ export async function getPasswordFormPolicy() {
  * @returns {Promise<boolean>}
  */
 export async function passwordMeetsPolicy(plaintext, policy) {
-  const p = policy ?? (await getActivePwdPolicy());
+  const p = policy ?? (await getFirstActivePwdPolicy());
   if (!p) {
     return isValidPassword(plaintext);
   }
@@ -189,7 +255,7 @@ async function findActivePwdId(userId) {
  * @returns {Promise<{ updated: boolean }>}
  */
 export async function rotatePassword(userId, plaintext) {
-  const policy = await getActivePwdPolicy();
+  const policy = await getPwdPolicyForUser(userId);
   if (!(await passwordMeetsPolicy(plaintext, policy))) {
     const err = new Error("Password does not meet the security policy");
     // @ts-expect-error
@@ -243,14 +309,14 @@ export async function rotatePassword(userId, plaintext) {
 
 /**
  * Bump the failed-attempt counter after a wrong password, locking the account
- * once the active policy's maxFailedAttempts is reached.
+ * once the user's policy maxFailedAttempts is reached.
  * @param {number} userId
  * @returns {Promise<void>}
  */
 export async function recordFailedAttempt(userId) {
   const pwdId = await findActivePwdId(userId);
   if (pwdId == null) return;
-  const policy = await getActivePwdPolicy();
+  const policy = await getPwdPolicyForUser(userId);
   const maxFailedAttempts =
     policy?.maxFailedAttempts ?? DEFAULT_MAX_FAILED_ATTEMPTS;
   const lockoutMinutes = policy?.lockoutMinutes ?? DEFAULT_LOCKOUT_MINUTES;

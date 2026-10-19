@@ -3,6 +3,7 @@ import { aclGuard } from "@core/acl/acl.guard";
 import { ADMIN_ENTITIES, AdminEntity } from "@core/app-config/app.entities";
 import { loginGuard } from "@core/auth/login.guard";
 import { NotFoundComponent } from "@core/pages/not-found/not-found.component";
+import { policyRolesResolver } from "app/passwords/data-access/policies/policy-roles.resolver";
 
 type EntityPaths = { readonly [K in AdminEntity as Uppercase<K>]: K };
 
@@ -52,6 +53,9 @@ export const ROUTES: Routes = [
     data: {
       breadcrumb: $localize`:@@Admin_PoliciesNav:Policies`,
       functionality: AppPaths.POLICIES,
+    },
+    resolve: {
+      roles: policyRolesResolver,
     },
   },
   {

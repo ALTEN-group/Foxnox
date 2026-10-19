@@ -8,6 +8,7 @@ import {
 import {
   getPasswordFormPolicy,
   getPwdAuthState,
+  getPwdPolicyForUser,
   passwordMeetsPolicy,
   rotatePassword,
 } from "../../services/pwd.js";
@@ -53,7 +54,7 @@ export async function getPasswordExpired(req, res) {
     "password/expired",
     buildViewContext(req, "passwordExpired", {
       form: { challenge },
-      policy,
+      policy: await getPasswordFormPolicy(valid.userId),
     }),
   );
 }
@@ -65,7 +66,7 @@ export async function postPasswordExpired(req, res) {
   const challenge = String(req.body?.challenge ?? "").trim();
   const password = String(req.body?.password ?? "");
   const confirm = String(req.body?.confirm ?? "");
-  const policy = await getPasswordFormPolicy();
+  let policy = await getPasswordFormPolicy();
 
   if (isSuspiciousForm(req) || !challenge) {
     return res.status(400).render(
@@ -93,6 +94,8 @@ export async function postPasswordExpired(req, res) {
     );
   }
 
+  policy = await getPasswordFormPolicy(valid.userId);
+
   if (password !== confirm) {
     return res.status(400).render(
       "password/expired",
@@ -104,7 +107,8 @@ export async function postPasswordExpired(req, res) {
     );
   }
 
-  if (!(await passwordMeetsPolicy(password))) {
+  const userPolicy = await getPwdPolicyForUser(valid.userId);
+  if (!(await passwordMeetsPolicy(password, userPolicy))) {
     return res.status(400).render(
       "password/expired",
       buildViewContext(req, page, {

@@ -15,7 +15,9 @@ jest.unstable_mockModule("@dwtechs/winstan", () => ({
   },
 }));
 
-const { findUserByEmail } = await import("../../src/services/users.js");
+const { findUserByEmail, findUserRoleIds } = await import(
+  "../../src/services/users.js"
+);
 
 const SEARCH_URL = "https://users.example.test/users/search";
 const EMAIL = "ada@example.com";
@@ -160,5 +162,51 @@ describe("findUserByEmail", () => {
     expect(message).toContain("USER_SEARCH_URL request failed");
     expect(message).toContain("network down");
     expect(message).not.toContain(EMAIL);
+  });
+});
+
+describe("findUserRoleIds", () => {
+  /** @type {string | undefined} */
+  let previousUrl;
+  /** @type {typeof fetch} */
+  let previousFetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    previousUrl = process.env.USER_SEARCH_URL;
+    previousFetch = globalThis.fetch;
+    process.env.USER_SEARCH_URL = SEARCH_URL;
+  });
+
+  afterEach(() => {
+    if (previousUrl === undefined) {
+      delete process.env.USER_SEARCH_URL;
+    } else {
+      process.env.USER_SEARCH_URL = previousUrl;
+    }
+    globalThis.fetch = previousFetch;
+  });
+
+  it("should search by id and return the numeric role ids", async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(200, { rows: [{ id: 7, roles: [2, "3"] }] }),
+      );
+
+    await expect(findUserRoleIds(7)).resolves.toEqual([2, 3]);
+    expect(JSON.parse(globalThis.fetch.mock.calls[0][1].body)).toEqual({
+      filters: { id: { value: 7, matchMode: "equals" } },
+    });
+  });
+
+  it("should return an empty list when the user or its roles are unknown", async () => {
+    globalThis.fetch = jest.fn().mockResolvedValue(jsonResponse(404, {}));
+    await expect(findUserRoleIds(7)).resolves.toEqual([]);
+
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse(200, { rows: [{ id: 7 }] }));
+    await expect(findUserRoleIds(7)).resolves.toEqual([]);
   });
 });

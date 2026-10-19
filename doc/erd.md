@@ -41,6 +41,7 @@ erDiagram
     int expiryDays
     int maxFailedAttempts
     int lockoutMinutes
+    int[] roleIds
     boolean archived
     timestamp archivedAt
   }

@@ -328,6 +328,7 @@ services:
       # so Traefik's loadbalancer.server.port target actually has a listener.
       PORT: ${ADMIN_PORT}
       ADMIN_SSO_TOKEN_KEY: ${ADMIN_SSO_TOKEN_KEY:-}
+      ADMIN_ROLES_SEARCH_URL: ${ADMIN_ROLES_SEARCH_URL:-}
     networks:
       - internal
     volumes:

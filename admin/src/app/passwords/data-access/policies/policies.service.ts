@@ -5,10 +5,13 @@ import {
   Injector,
   runInInjectionContext,
 } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
+import { ActivatedRouteSnapshot } from "@angular/router";
 import { AclService } from "@core/acl/acl.service";
 import { ENTITY_API_PATHS } from "@core/app-config/app.api-paths";
 import { AdminEntity } from "@core/app-config/app.entities";
 import { Calls, CrudRepository } from "@dwtechs/ngx-crud-builder";
+import { PolicyRole } from "app/passwords/data-access/policies/policy-role.model";
 import { POLICY_COLUMNS } from "app/passwords/data-access/policies/policy.conf";
 import {
   Policy,
@@ -26,6 +29,7 @@ const policiesEntity: AdminEntity = "policies";
 export class PoliciesService {
   private readonly aclsService = inject(AclService);
   private readonly injector = inject(Injector);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly acls = computed(() =>
     this.aclsService.getEntityAcls(policiesEntity),
   );
@@ -41,8 +45,15 @@ export class PoliciesService {
     getHistory: this.crud.getHistory,
   };
 
-  public readonly config = computed(() =>
-    runInInjectionContext(this.injector, () => POLICY_COLUMNS(this.acls())),
-  );
+  public readonly config = (payload: ActivatedRouteSnapshot) =>
+    computed(() =>
+      runInInjectionContext(this.injector, () =>
+        POLICY_COLUMNS(
+          this.acls(),
+          (payload.data["roles"] as PolicyRole[] | undefined) ?? [],
+          this.sanitizer,
+        ),
+      ),
+    );
   public readonly entityFactory = policyFactory;
 }
