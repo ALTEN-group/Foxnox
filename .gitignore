@@ -5,6 +5,8 @@ website/node_modules/*
 Thumbs.db
 src/public/*
 tests/coverage/
+web/test-results/
+web/playwright-report/
 docker/conf/.env.dev
 docker/conf/.env.prod
 website/docs/.vitepress/cache

@@ -198,6 +198,25 @@ npm run e2e:ui            # Playwright's interactive UI mode
 
 Prefer this when iterating on a specific test — the UI mode and Playwright inspector need a display, which the containerized flow doesn't provide.
 
+### Web workflow end-to-end tests (Playwright)
+
+The suite in `web/e2e/` drives the public workflow pages served by Foxnox (`/api/foxnox/web/…`) in a real browser: forgot password, 2FA setup and verification (real TOTP computed from the secret, like an authenticator app), trusted devices, security questions, lost-authenticator recovery, account unlock, and expired password. Emails are read from Mailpit.
+
+```sh
+./scripts/e2e-web.sh                      # full suite
+./scripts/e2e-web.sh --grep "unlock"      # forward flags to `playwright test`
+./scripts/e2e-web.sh e2e/twofa.spec.ts    # one spec
+```
+
+Always go through the script. It resets the dedicated e2e accounts (userId 6–9, `e2e-*@example.com` in `mocks/ms_user`: pwd rows, tokens, trusted devices, security answers), restarts Gatelin to refill its `/sessions` rate limit (20 per 15 min — a full run spends most of it), then runs the `web-e2e` container (same image as `admin-e2e`). Each spec owns one account, so specs don't share 2FA or lockout state. Artifacts land in `web/test-results/`.
+
+Notes:
+
+- Protected pages (`/2fa/setup`, `/security-questions`, `/trusted-devices`) need Gatelin's `Authorization` header, which a browser doesn't send on navigation; the helpers inject it with a route handler.
+- A real *expired* login can't be staged (the `pwd_expiry_guard` trigger refuses past dates), so the expired-password spec mints the challenge the way the BFF does after `pwdExpiry < now`.
+- Workflows end by redirecting to the admin login (`WEB_LOGIN_RESUME_URL`), which trades the ticket for a session; specs assert that session where it matters, and stop earlier elsewhere to save rate-limit budget.
+- Deep links use `WEB_PUBLIC_ORIGIN` (`http://localhost:8100`); inside the container Chromium remaps it to Traefik via `E2E_HOST_RULES`.
+
 The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, mocks, scripts, swagger, or the workflow itself.
 
 ## Production

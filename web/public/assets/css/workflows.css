@@ -310,6 +310,11 @@ body {
   cursor: pointer;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn--primary {
   background: var(--accent);
   color: var(--brand-button-text, #fff);
