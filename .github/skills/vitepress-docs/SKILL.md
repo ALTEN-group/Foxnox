@@ -1,10 +1,9 @@
 ---
 name: vitepress-docs
 description: "Scaffold or update a VitePress product docs site in a user-named folder. Use when the user wants a documentation website."
-agent: VitePress Docs
+disable-model-invocation: true
 argument-hint: "docs root, e.g. website"
 ---
-
 Slash command for the **VitePress Docs** agent.
 
 ## Resolve the docs root
