@@ -5,6 +5,7 @@ import { csrfProtection } from "./csrf.js";
 import {
   getAccountRecoverChallenge,
   getAccountRecoverRequest,
+  getAccountRecoverSent,
   postAccountRecoverChallenge,
   postAccountRecoverRequest,
 } from "./handlers/account-recover.js";
@@ -21,6 +22,7 @@ import {
 import {
   getRecoverRequest,
   getRecoverReset,
+  getRecoverSent,
   postRecoverRequest,
   postRecoverReset,
 } from "./handlers/recover.js";
@@ -37,6 +39,7 @@ import {
 import {
   getUnlockConfirm,
   getUnlockRequest,
+  getUnlockSent,
   postUnlockRequest,
 } from "./handlers/unlock.js";
 
@@ -56,6 +59,7 @@ router.use(csrfProtection);
 // Password recovery
 router.get("/recover", getRecoverRequest);
 router.post("/recover", postRecoverRequest);
+router.get("/recover/sent", getRecoverSent);
 router.get("/recover/reset", getRecoverReset);
 router.post("/recover/reset", postRecoverReset);
 
@@ -68,6 +72,7 @@ router.post("/2fa/setup", postTwofaSetup);
 // Lost-2FA / account recovery (security questions)
 router.get("/account-recover", getAccountRecoverRequest);
 router.post("/account-recover", postAccountRecoverRequest);
+router.get("/account-recover/sent", getAccountRecoverSent);
 router.get("/account-recover/challenge", getAccountRecoverChallenge);
 router.post("/account-recover/challenge", postAccountRecoverChallenge);
 
@@ -88,6 +93,7 @@ router.post("/password/expired", postPasswordExpired);
 // Account unlock after lockout
 router.get("/unlock", getUnlockRequest);
 router.post("/unlock", postUnlockRequest);
+router.get("/unlock/sent", getUnlockSent);
 router.get("/unlock/confirm", getUnlockConfirm);
 
 export default router;

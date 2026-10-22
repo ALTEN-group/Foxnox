@@ -262,9 +262,10 @@ describe("password recover", () => {
     expect(issueWorkflowNotification).not.toHaveBeenCalled();
   });
 
-  it("POST /recover issues notification and shows sent page", async () => {
+  it("POST /recover issues notification and redirects to sent page", async () => {
     const res = await post("/recover", { email: "user@example.com" });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(303);
+    expect(res.headers.location).toMatch(/\/recover\/sent$/);
     expect(issueWorkflowNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         email: "user@example.com",
@@ -273,6 +274,12 @@ describe("password recover", () => {
         template: "pwd-reset",
       }),
     );
+  });
+
+  it("GET /recover/sent shows sent page without sending email", async () => {
+    const res = await request(app).get(`${base}/recover/sent`);
+    expect(res.status).toBe(200);
+    expect(issueWorkflowNotification).not.toHaveBeenCalled();
   });
 
   it("GET /recover/reset rejects missing/invalid token", async () => {
@@ -321,7 +328,8 @@ describe("password recover", () => {
 describe("unlock", () => {
   it("POST /unlock issues unlock notification", async () => {
     const res = await post("/unlock", { email: "locked@example.com" });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(303);
+    expect(res.headers.location).toMatch(/\/unlock\/sent$/);
     expect(issueWorkflowNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         typeName: "Account unlock",
@@ -351,7 +359,8 @@ describe("account recover", () => {
     const res = await post("/account-recover", {
       email: "lost2fa@example.com",
     });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(303);
+    expect(res.headers.location).toMatch(/\/account-recover\/sent$/);
     expect(issueWorkflowNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         typeName: "Account recovery",

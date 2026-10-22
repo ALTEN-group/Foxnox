@@ -21,7 +21,7 @@ import { issueWorkflowNotification } from "../issue-notification.js";
 
 /** @type {import('express').RequestHandler} */
 export function getRecoverRequest(req, res) {
-  res.render("recover/request", buildViewContext(req, "recoverRequest"));
+  return res.render("recover/request", buildViewContext(req, "recoverRequest"));
 }
 
 /** @type {import('express').RequestHandler} */
@@ -49,7 +49,13 @@ export async function postRecoverRequest(req, res) {
     lang: resolveLang(req),
   });
 
-  // Always the same page — no account enumeration.
+  // Always the same page — no account enumeration. Redirect (PRG) so a refresh
+  // does not resubmit the form and send another email.
+  return res.redirect(303, `${ctx.assetBase}/recover/sent`);
+}
+
+/** @type {import('express').RequestHandler} */
+export function getRecoverSent(req, res) {
   return res.render("recover/sent", buildViewContext(req, "recoverSent"));
 }
 

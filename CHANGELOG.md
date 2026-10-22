@@ -1,15 +1,13 @@
 # Changelog
 
-# Unreleased
+# 0.1.0-alpha.4 (Oct 19th 2026)
 
-  - **Password policy per role:** a password policy can now be attached to Gatelin roles (`pwd_policy.roleIds`, picked with a roles multiselect on the admin Policies page). The recover and expired-password pages, password rotation, expiry and lockout use the policies of all the user's roles (roles read from the user service), merged into the strictest rules (longest length, every required character class, shortest expiry, fewest failed attempts, longest lockout); users with no mapped role keep using the first non-archived policy. The admin lists the roles through the new `ADMIN_ROLES_SEARCH_URL` runtime variable (default `/api/gatelin/roles/search`)
-  - **Breaking (schema):** `pwd_policy` gains the `roleIds` column (and the seeded policies their roles) in the `02-pwd-policy.sql` / `01-pwd-policy.sql` changesets; recreate the DB (`./scripts/reset-db.sh`) if it was already applied
-  - **Branding favicon:** the favicon can be a URL (`faviconUrl`) or an uploaded PNG, JPEG, WebP or script-free SVG image (`faviconFile`, read-only). New `PUT`/`DELETE /foxnox/branding/:id/favicon` routes (multipart upload, ACL-protected, branding cache invalidated). Uploading clears the URL; a URL typed afterwards wins over the stored file. Fallback order: stored URL, stored file, `WEB_BRAND_FAVICON_URL`, packaged `favicon.svg`
-  - **Branding colors:** new `brandNameColor`, `cardTitleColor`, `labelColor` and `buttonTextColor` fields (hex, validated by DB `CHECK` constraints) styling the header brand name, card titles, form labels and primary button text of the workflow pages. Matching `WEB_BRAND_*_COLOR` / `WEB_BRAND_BUTTON_TEXT_COLOR` / `WEB_BRAND_FAVICON_URL` env variables apply when no branding row is active. The server logs a warning when the primary color contrast against the button text color is below 3
-  - **Branding live preview:** the admin Branding page shows a preview card that re-renders a chosen workflow page as you type, using unsaved form values. Rendered by Foxnox from the real templates through the new `POST /foxnox/branding/preview` route (admin only). Pending logo/favicon uploads are not previewed
-  - Branding CSS variables are now served from `/assets/brand.css` instead of an inline `<style>` (blocked by the edge CSP `style-src 'self'`)
-  - Gatelin routes: added `updateBrandingFavicon`, `deleteBrandingFavicon` and `previewBranding` in `gatelin-data/03-route.sql`; re-run Liquibase
-  - **Breaking (schema):** `branding` table gains the favicon and color columns above in the `07-branding.sql` changeset; recreate the DB (`./scripts/reset-db.sh`) if it was already applied
+  - **Password policy per role:** a password policy can be attached to Gatelin roles (`roleIds`, selectable on the admin Policies page). Password rotation, expiry, lockout and the recover/expired-password pages apply the policies of all the user's roles, merged into the strictest rules. Users with no mapped role keep using the first non-archived policy. The admin lists roles through the new `ADMIN_ROLES_SEARCH_URL` variable (default `/api/gatelin/roles/search`)
+  - **Branding favicon:** the favicon can be a URL (`faviconUrl`) or an uploaded PNG, JPEG, WebP or SVG image. New `PUT`/`DELETE /foxnox/branding/:id/favicon` routes. Fallback order: stored URL, stored file, `WEB_BRAND_FAVICON_URL`, default favicon
+  - **Branding colors:** new `brandNameColor`, `cardTitleColor`, `labelColor` and `buttonTextColor` fields (hex) to style the header brand name, card titles, form labels and primary button text of the workflow pages. `WEB_BRAND_*_COLOR`, `WEB_BRAND_BUTTON_TEXT_COLOR` and `WEB_BRAND_FAVICON_URL` env variables apply when no branding is active
+  - **Branding live preview:** the admin Branding page previews a workflow page as you edit, using unsaved values (new admin-only `POST /foxnox/branding/preview` route). Pending logo/favicon uploads are not previewed
+  - **Fix:** refreshing the page after submitting a request form (`/recover`, `/account-recover`, `/unlock`) no longer asks to resubmit the form nor sends another email. The form now redirects to a confirmation page (`/recover/sent`, `/account-recover/sent`, `/unlock/sent`)
+  - **Feat:** `pwd_policy` gains `roleIds` and `branding` gains the favicon and color columns.
 
 # 0.1.0-alpha.3 (Oct 7th 2026)
 

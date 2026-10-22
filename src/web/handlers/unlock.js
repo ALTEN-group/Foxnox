@@ -16,7 +16,7 @@ import { issueWorkflowNotification } from "../issue-notification.js";
 
 /** @type {import('express').RequestHandler} */
 export function getUnlockRequest(req, res) {
-  res.render("unlock/request", buildViewContext(req, "unlockRequest"));
+  return res.render("unlock/request", buildViewContext(req, "unlockRequest"));
 }
 
 /** @type {import('express').RequestHandler} */
@@ -42,6 +42,11 @@ export async function postUnlockRequest(req, res) {
     lang: resolveLang(req),
   });
 
+  return res.redirect(303, `${ctx.assetBase}/unlock/sent`);
+}
+
+/** @type {import('express').RequestHandler} */
+export function getUnlockSent(req, res) {
   return res.render("unlock/sent", buildViewContext(req, "unlockSent"));
 }
 
