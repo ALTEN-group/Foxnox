@@ -1,10 +1,9 @@
 ---
 name: performance-tests
 description: "Design, scaffold, adapt, or extend a performance-test suite for a named service or application."
-agent: Performance Tester
+disable-model-invocation: true
 argument-hint: "application root and optional scenario, e.g. services/my-api login"
 ---
-
 Slash command for the **Performance Tester** agent.
 
 ## Resolve The Target

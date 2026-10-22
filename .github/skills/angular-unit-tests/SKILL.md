@@ -1,10 +1,9 @@
 ---
 name: angular-unit-tests
 description: "Generate or update a Vitest Angular unit spec (src/**/*.spec.ts). Use when the user wants tests for an open admin file, a selection, or a src/app path."
-agent: Unit Tester
+disable-model-invocation: true
 argument-hint: "optional path, e.g. src/app/features/user/user.component.ts"
 ---
-
 Slash command for the **Unit Tester** agent on one Angular `src/` module (Vitest unit spec, not Playwright e2e).
 
 ## Resolve the target

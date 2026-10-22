@@ -1,10 +1,9 @@
 ---
 name: angular-e2e-tests
 description: "Generate or update a Playwright e2e spec under e2e/ for the Angular admin app. Use when the user wants browser tests for a flow, page, or entity."
-agent: E2E Tester
+disable-model-invocation: true
 argument-hint: "optional flow, e.g. login or consumers table"
 ---
-
 Slash command for the **E2E Tester** agent on one Angular admin **Playwright** flow (not Vitest `src/**/*.spec.ts`).
 
 ## Resolve the target

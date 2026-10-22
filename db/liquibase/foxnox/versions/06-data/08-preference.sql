@@ -283,6 +283,50 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
   {"key":"updaterName",     "isVisible":true},
   {"key":"archived",        "isVisible":false, "defaultWidth":"60px"},
   {"key":"archivedAt",      "isVisible":false}
+]', -1, 'system'),
+
+-- security questions
+('securityQuestions', 'Default', '[
+  {"key":"id",          "isVisible":false},
+  {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":true},
+  {"key":"transFr",     "isVisible":true},
+  {"key":"categoryId",  "isVisible":true},
+  {"key":"active",      "isVisible":true,  "defaultWidth":"60px"},
+  {"key":"createdAt",   "isVisible":false},
+  {"key":"creatorName", "isVisible":false},
+  {"key":"updatedAt",   "isVisible":false},
+  {"key":"updaterName", "isVisible":false},
+  {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
+  {"key":"archivedAt",  "isVisible":false}
+]', -1, 'system'),
+('securityQuestions', 'Archives', '[
+  {"key":"id",          "isVisible":false},
+  {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":false},
+  {"key":"transFr",     "isVisible":false},
+  {"key":"categoryId",  "isVisible":true},
+  {"key":"active",      "isVisible":false, "defaultWidth":"60px"},
+  {"key":"createdAt",   "isVisible":false},
+  {"key":"creatorName", "isVisible":false},
+  {"key":"updatedAt",   "isVisible":false},
+  {"key":"updaterName", "isVisible":false},
+  {"key":"archived",    "isVisible":true,  "defaultWidth":"60px"},
+  {"key":"archivedAt",  "isVisible":true}
+]', -1, 'system'),
+('securityQuestions', 'Audit', '[
+  {"key":"id",          "isVisible":false},
+  {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":false},
+  {"key":"transFr",     "isVisible":false},
+  {"key":"categoryId",  "isVisible":false},
+  {"key":"active",      "isVisible":false, "defaultWidth":"60px"},
+  {"key":"createdAt",   "isVisible":true},
+  {"key":"creatorName", "isVisible":true},
+  {"key":"updatedAt",   "isVisible":true},
+  {"key":"updaterName", "isVisible":true},
+  {"key":"archived",    "isVisible":false, "defaultWidth":"60px"},
+  {"key":"archivedAt",  "isVisible":false}
 ]', -1, 'system')
 
 ON CONFLICT DO NOTHING;

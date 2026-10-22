@@ -51,6 +51,13 @@ const RESOURCES = [
     historyTable: "user_trusted_device",
     privateProps: ["deviceTokenHash"],
   },
+  {
+    name: "questions",
+    mount: "/foxnox/questions",
+    entityFile: "security-question.js",
+    historyTable: "security_question",
+    privateProps: [],
+  },
 ];
 
 /** @type {Record<string, import("@jest/globals").Mock>} */
@@ -159,6 +166,15 @@ for (const resource of RESOURCES) {
     }),
   );
 }
+
+jest.unstable_mockModule(
+  path.join(__dirname, "../../src/services/security-question-trans.js"),
+  () => ({
+    TRANSLATION_LANGS: { en: "transEn", fr: "transFr" },
+    getTranslations: jest.fn(async () => new Map()),
+    saveTranslations: jest.fn(async () => {}),
+  }),
+);
 
 jest.unstable_mockModule("@dwtechs/passken-express", () => ({
   compare: jest.fn((_req, _res, next) => next()),

@@ -1,10 +1,9 @@
 ---
 name: node-api-tests
 description: "Generate or update a Supertest HTTP API test file for a Node.js Express route. Use when the user wants API endpoint tests for an open route file, a selection, or a src/routes path."
-agent: API Tester
+disable-model-invocation: true
 argument-hint: "optional route path, e.g. src/routes/application.js"
 ---
-
 Slash command for the **API Tester** agent on one Node.js Express route module.
 
 ## Resolve the target

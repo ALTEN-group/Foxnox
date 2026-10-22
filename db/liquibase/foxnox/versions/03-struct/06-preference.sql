@@ -1,10 +1,10 @@
 -- "userId" NULL = template (built-in, shared) row; NOT NULL = a specific user's own preference.
--- No resource/service registry here (unlike Gatelin): Foxnox only ever exposes these 4
+-- No resource/service registry here (unlike Gatelin): Foxnox only ever exposes these 5
 -- admin table resources, so resourceName is a plain CHECK-constrained column.
 CREATE TABLE preference (
   id              SERIAL      PRIMARY KEY,
   "userId"        INT         NULL,
-  "resourceName"  VARCHAR(20) NOT NULL CHECK ("resourceName" IN ('passwords', 'policies', 'tokens', 'trustedDevices')),
+  "resourceName"  VARCHAR(20) NOT NULL CHECK ("resourceName" IN ('passwords', 'policies', 'tokens', 'trustedDevices', 'securityQuestions')),
   name            VARCHAR(60) NOT NULL,
   conf            JSONB       NOT NULL,
   "createdAt"     TIMESTAMPTZ DEFAULT NOW(),

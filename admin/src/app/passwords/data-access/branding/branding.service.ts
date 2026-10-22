@@ -20,6 +20,7 @@ import { BRANDING_COLUMNS } from "app/passwords/data-access/branding/branding.co
 import {
   Branding,
   brandingFactory,
+  BrandingPreviewLang,
   BrandingPreviewPage,
 } from "app/passwords/data-access/branding/branding.model";
 
@@ -68,11 +69,12 @@ export class BrandingService {
   /** Server-rendered workflow page (HTML) with the given unsaved branding laid over the stored one. */
   public readonly preview = (
     page: BrandingPreviewPage,
+    lang: BrandingPreviewLang,
     branding: Partial<Record<keyof Branding, string>>,
   ) =>
     this.http.post<{ html: string }>(
       `${this.appConfig.foxnoxApi}${ENTITY_API_PATHS[brandingEntity]}/preview`,
-      { page, branding },
+      { page, lang, branding },
     );
 
   public readonly httpCalls: Calls<Branding> = {

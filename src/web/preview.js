@@ -2,28 +2,92 @@
 import { getBranding, pickBrandingOverrides } from "./branding.js";
 import { buildViewContext } from "./context.js";
 
-/** Workflow pages the admin can preview, rendered with placeholder data. */
+const POLICY = Object.freeze({
+  minLength: 12,
+  maxLength: 64,
+  lowerCase: true,
+  upperCase: true,
+  number: true,
+  symbol: true,
+});
+
+const QUESTIONS = Object.freeze([
+  { id: 1, label: "What was the name of your first pet?" },
+  { id: 2, label: "In which city were you born?" },
+  { id: 3, label: "What was your first school called?" },
+]);
+
+/**
+ * Workflow pages the admin can preview, keyed by view path and rendered with
+ * placeholder data (`key` is the locale entry under `pages`).
+ */
 const PAGES = Object.freeze({
-  recover: { view: "recover/request", key: "recoverRequest" },
-  twofa: { view: "twofa/verify", key: "twofaVerify" },
-  expired: {
-    view: "password/expired",
-    key: "passwordExpired",
+  "recover/request": { key: "recoverRequest" },
+  "recover/sent": { key: "recoverSent" },
+  "recover/reset": {
+    key: "recoverReset",
+    extra: { form: { token: "preview" }, policy: POLICY },
+  },
+  "recover/done": { key: "recoverDone" },
+  "recover/invalid": { key: "recoverInvalid" },
+  "twofa/verify": { key: "twofaVerify" },
+  "twofa/setup": {
+    key: "twofaSetup",
+    extra: { form: { secret: "JBSWY3DPEHPK3PXP", setupToken: "" } },
+  },
+  "twofa/done": { key: "twofaDone" },
+  "twofa/disabled": { key: "twofaDisabled" },
+  "twofa/invalid": { key: "twofaInvalid" },
+  "account-recover/request": { key: "accountRecoverRequest" },
+  "account-recover/sent": { key: "accountRecoverSent" },
+  "account-recover/challenge": {
+    key: "accountRecoverChallenge",
+    extra: { form: { token: "preview", questions: QUESTIONS } },
+  },
+  "account-recover/done": { key: "accountRecoverDone" },
+  "security-questions/setup": {
+    key: "securityQuestionsSetup",
     extra: {
-      policy: {
-        minLength: 12,
-        maxLength: 64,
-        lowerCase: true,
-        upperCase: true,
-        number: true,
-        symbol: true,
+      form: {
+        slots: [{ slot: 1 }, { slot: 2 }, { slot: 3 }],
+        catalog: QUESTIONS,
+        replacing: false,
       },
     },
   },
-  unlock: { view: "unlock/request", key: "unlockRequest" },
-  devices: { view: "devices/prompt", key: "trustedDevicePrompt" },
-  success: { view: "recover/done", key: "recoverDone" },
-  invalid: { view: "recover/invalid", key: "recoverInvalid" },
+  "security-questions/done": { key: "securityQuestionsDone" },
+  "devices/prompt": { key: "trustedDevicePrompt" },
+  "devices/done": { key: "trustedDeviceDone" },
+  "devices/skipped": { key: "trustedDeviceSkipped" },
+  "devices/manage": {
+    key: "trustedDevicesManage",
+    extra: {
+      form: {
+        devices: [
+          {
+            id: 1,
+            deviceName: "Laptop",
+            lastUsedAt: "2026-01-15",
+            expiresAt: "2026-02-14",
+          },
+          {
+            id: 2,
+            deviceName: "",
+            lastUsedAt: "2026-01-10",
+            expiresAt: "2026-02-09",
+          },
+        ],
+      },
+    },
+  },
+  "devices/revoked": { key: "trustedDeviceRevoked" },
+  "devices/invalid": { key: "trustedDeviceInvalid" },
+  "password/expired": { key: "passwordExpired", extra: { policy: POLICY } },
+  "password/expired-done": { key: "passwordExpiredDone" },
+  "unlock/request": { key: "unlockRequest" },
+  "unlock/sent": { key: "unlockSent" },
+  "unlock/done": { key: "unlockDone" },
+  "unlock/invalid": { key: "unlockInvalid" },
 });
 
 /**
@@ -46,7 +110,7 @@ export function previewBranding(req, res, next) {
     "extra" in page ? page.extra : {},
   );
   res.render(
-    page.view,
+    name,
     {
       ...ctx,
       brand,

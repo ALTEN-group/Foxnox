@@ -1,5 +1,7 @@
 /** @jest-environment node */
 // @ts-check
+import fs from "node:fs";
+import path from "node:path";
 import { jest } from "@jest/globals";
 
 process.env.WEB_PUBLIC_ORIGIN = "https://auth.example.test";
@@ -27,7 +29,7 @@ const run = (body) => {
 
 describe("previewBranding", () => {
   it("should render the chosen template and answer with its html", () => {
-    const { res, next } = run({ page: "recover", branding: {} });
+    const { res, next } = run({ page: "recover/request", branding: {} });
 
     expect(next).not.toHaveBeenCalled();
     expect(res.render).toHaveBeenCalledWith(
@@ -40,7 +42,7 @@ describe("previewBranding", () => {
 
   it("should render with the unsaved branding and carry its css vars inline", () => {
     const { res } = run({
-      page: "unlock",
+      page: "unlock/request",
       branding: {
         name: "Draft Co",
         primaryColor: "#123456",
@@ -56,7 +58,7 @@ describe("previewBranding", () => {
   });
 
   it("should give the expired-password page a policy so its inputs render", () => {
-    const { res } = run({ page: "expired" });
+    const { res } = run({ page: "password/expired" });
 
     expect(res.render.mock.calls[0][1].policy).toEqual({
       minLength: 12,
@@ -66,6 +68,27 @@ describe("previewBranding", () => {
       number: true,
       symbol: true,
     });
+  });
+
+  it("should render the page in the requested language", () => {
+    const { res } = run({ page: "recover/request", lang: "fr" });
+
+    expect(res.render.mock.calls[0][1].lang).toBe("fr");
+  });
+
+  it("should preview every workflow page template", () => {
+    const root = path.resolve("web/views/pages");
+    const views = fs
+      .readdirSync(root, { recursive: true, encoding: "utf8" })
+      .filter((f) => f.endsWith(".hbs"))
+      .map((f) => f.slice(0, -4));
+
+    expect(views.length).toBeGreaterThan(0);
+    for (const view of views) {
+      const { res, next } = run({ page: view });
+      expect(next).not.toHaveBeenCalled();
+      expect(res.render.mock.calls[0][0]).toBe(view);
+    }
   });
 
   it.each([
@@ -91,7 +114,7 @@ describe("previewBranding", () => {
 
     previewBranding(
       /** @type {any} */ ({
-        body: { page: "recover" },
+        body: { page: "recover/request" },
         headers: {},
         query: {},
       }),

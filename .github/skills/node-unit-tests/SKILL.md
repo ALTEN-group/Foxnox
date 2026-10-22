@@ -1,10 +1,9 @@
 ---
 name: node-unit-tests
 description: "Generate or update a Jest unit test file for a Node.js module (services, utils, controllers, middlewares). Use when the user wants isolated unit tests for an open file, a selection, or a src/ path."
-agent: Unit Tester
+disable-model-invocation: true
 argument-hint: "optional src path, e.g. src/services/user.service.js"
 ---
-
 Slash command for the **Unit Tester** agent on one Node.js `src/` module.
 
 ## Resolve the target

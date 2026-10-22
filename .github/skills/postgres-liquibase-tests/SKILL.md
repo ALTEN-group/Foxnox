@@ -1,10 +1,9 @@
 ---
 name: postgres-liquibase-tests
 description: "Generate or update a SQL test file under tests/db for a Liquibase/Postgres schema area. Use when the user wants tests for a changelog SQL file, a selection, or a db/ path."
-agent: Unit Tester
+disable-model-invocation: true
 argument-hint: "optional path, e.g. db/liquibase/myservice/versions/04-view/01-users.sql"
 ---
-
 Slash command for the **Unit Tester** agent on one PostgreSQL / Liquibase schema area.
 
 ## Resolve the target

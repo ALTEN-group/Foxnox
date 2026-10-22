@@ -379,6 +379,44 @@ services:
       - ${PWD}/admin/test-results:/repo/admin/test-results
       - ${PWD}/admin/playwright-report:/repo/admin/playwright-report
 
+  # Playwright suite for the public web workflows (web/e2e), on demand only
+  # (`scripts/e2e-web.sh`). Reuses the admin-e2e image. Foxnox emits deep links on
+  # WEB_PUBLIC_ORIGIN (http://localhost:8100), which does not exist inside this
+  # container, so Chromium remaps it to Traefik (E2E_HOST_RULES). FOXNOX/MAILPIT URLs
+  # are in-network shortcuts used only to prepare state and read emails.
+  web-e2e:
+    profiles: ["e2e"]
+    build:
+      context: ${PWD}/admin
+      dockerfile: e2e-dockerfile
+      args:
+        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION}
+        TZ: ${TZ}
+    container_name: ${APP_NAME}-web-e2e-${ENV_NAME}
+    hostname: ${APP_NAME}-web-e2e-${ENV_NAME}
+    working_dir: /repo/web
+    entrypoint: ["playwright"]
+    command: ["test"]
+    environment:
+      E2E_BASE_URL: ${WEB_E2E_BASE_URL:-${SERVER_SCHEME}${SERVER_URL}:${TRAEFIK_PORT}/api/foxnox/web/}
+      E2E_HOST_RULES: MAP ${SERVER_URL}:${TRAEFIK_PORT} traefik:80
+      E2E_FOXNOX_URL: http://${FOXNOX_HOST}:${DEFAULT_PORT}
+      E2E_MAILPIT_URL: http://${MAILPIT_HOST}:${MAILPIT_UI_PORT}
+      CI: "1"
+      TZ: ${TZ}
+    networks:
+      - internal
+    depends_on:
+      - foxnox
+      - gatelin
+      - traefik
+      - mailpit
+    volumes:
+      - ${PWD}/web/e2e:/repo/web/e2e:ro
+      - ${PWD}/web/playwright.config.ts:/repo/web/playwright.config.ts:ro
+      - ${PWD}/web/test-results:/repo/web/test-results
+      - ${PWD}/web/playwright-report:/repo/web/playwright-report
+
   adminer:
     image: ${ADMINER_VERSION}
     container_name: ${ADMINER_HOST}

@@ -6,6 +6,7 @@ const TABLE_PAGES = [
   { path: "policies", title: "Password policies" },
   { path: "tokens", title: "Tokens" },
   { path: "trustedDevices", title: "Trusted devices" },
+  { path: "securityQuestions", title: "Security questions" },
 ] as const;
 
 test.describe("Authenticated navigation", () => {

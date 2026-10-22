@@ -9,6 +9,7 @@ export const ADMIN_ENTITIES = [
   "tokens",
   "trustedDevices",
   "branding",
+  "securityQuestions",
   "auditLogs",
 ] as const;
 
