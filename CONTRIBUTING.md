@@ -216,6 +216,7 @@ Notes:
 - A real *expired* login can't be staged (the `pwd_expiry_guard` trigger refuses past dates), so the expired-password spec mints the challenge the way the BFF does after `pwdExpiry < now`.
 - Workflows end by redirecting to the admin login (`WEB_LOGIN_RESUME_URL`), which trades the ticket for a session; specs assert that session where it matters, and stop earlier elsewhere to save rate-limit budget.
 - Deep links use `WEB_PUBLIC_ORIGIN` (`http://localhost:8100`); inside the container Chromium remaps it to Traefik via `E2E_HOST_RULES`.
+- CI: `.github/workflows/web-e2e.yml` runs the same script on pull requests to `main` that touch `web/`, `src/`, `db/`, `docker/`, `mocks/` or `scripts/` (the admin suite has its own `admin-e2e.yml`).
 
 The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, mocks, scripts, swagger, or the workflow itself.
 
