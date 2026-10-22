@@ -97,6 +97,7 @@ export const BRANDING_COLUMNS: (
           multiple: false,
           maxFileSize: 10 * 1024 * 1024,
           uploadSize: "small",
+          hidden: hiddenUnlessSource("logoSource", "file"),
         },
       },
       {
@@ -157,6 +158,7 @@ export const BRANDING_COLUMNS: (
           multiple: false,
           maxFileSize: 10 * 1024 * 1024,
           uploadSize: "small",
+          hidden: hiddenUnlessSource("faviconSource", "file"),
         },
       },
       {
