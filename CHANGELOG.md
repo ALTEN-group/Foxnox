@@ -1,5 +1,9 @@
 # Changelog
 
+# Unreleased
+
+  - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog. Gatelin routes 122–127 and the `foxnox/questions` resource are added to the Foxnox seed, so existing databases must be recreated
+
 # 0.1.0-alpha.4 (Oct 19th 2026)
 
   - **Password policy per role:** a password policy can be attached to Gatelin roles (`roleIds`, selectable on the admin Policies page). Password rotation, expiry, lockout and the recover/expired-password pages apply the policies of all the user's roles, merged into the strictest rules. Users with no mapped role keep using the first non-archived policy. The admin lists roles through the new `ADMIN_ROLES_SEARCH_URL` variable (default `/api/gatelin/roles/search`)

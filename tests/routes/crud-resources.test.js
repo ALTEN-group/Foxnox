@@ -51,6 +51,13 @@ const RESOURCES = [
     historyTable: "user_trusted_device",
     privateProps: ["deviceTokenHash"],
   },
+  {
+    name: "questions",
+    mount: "/foxnox/questions",
+    entityFile: "security-question.js",
+    historyTable: "security_question",
+    privateProps: [],
+  },
 ];
 
 /** @type {Record<string, import("@jest/globals").Mock>} */

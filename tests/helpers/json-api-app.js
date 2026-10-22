@@ -17,6 +17,9 @@ export async function createJsonApiApp() {
   const login = (await import("../../src/routes/password.js")).default;
   const token = (await import("../../src/routes/token.js")).default;
   const pwdPolicy = (await import("../../src/routes/pwd-policy.js")).default;
+  const securityQuestion = (
+    await import("../../src/routes/security-question.js")
+  ).default;
   const trustedDevice = (await import("../../src/routes/user-device.js"))
     .default;
   const trustedDeviceVerify = (
@@ -27,6 +30,8 @@ export async function createJsonApiApp() {
     .default;
 
   const ppEnt = (await import("../../src/entities/pwd-policy.js")).default;
+  const sqEnt = (await import("../../src/entities/security-question.js"))
+    .default;
   const tEnt = (await import("../../src/entities/token.js")).default;
   const tdEnt = (await import("../../src/entities/user-device.js"))
     .default;
@@ -38,6 +43,7 @@ export async function createJsonApiApp() {
   const s = "/foxnox/";
   app.use(`${s}tokens`, token, send(tEnt));
   app.use(`${s}policies`, pwdPolicy, send(ppEnt));
+  app.use(`${s}questions`, securityQuestion, send(sqEnt));
   app.use(`${s}devices/verify`, trustedDeviceVerify);
   app.use(`${s}devices`, trustedDevice, send(tdEnt));
   app.use(`${s}challenges`, challenge);

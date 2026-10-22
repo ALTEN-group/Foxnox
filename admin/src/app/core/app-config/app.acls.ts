@@ -21,6 +21,8 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
  *   112-115=preferences 116=searchAudit
  *   117=updateBrandingLogo 118=deleteBrandingLogo
  *   119=updateBrandingFavicon 120=deleteBrandingFavicon 121=previewBranding
+ *   122=searchQuestions 123=getQuestionHistory 124=addQuestions
+ *   125=updateQuestions 126=archiveQuestions 127=getQuestionSchema
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
@@ -56,6 +58,13 @@ export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
     update: 109, // updateBranding
     archive: 110, // archiveBranding
     updateFiles: 117, // updateBrandingLogo
+  },
+  securityQuestions: {
+    get: 122, // searchQuestions
+    getHistory: 123, // getQuestionHistory
+    create: 124, // addQuestions
+    update: 125, // updateQuestions
+    archive: 126, // archiveQuestions
   },
   auditLogs: {
     get: 116, // searchAudit (db/liquibase/gatelin-data/03-route.sql)

@@ -98,6 +98,19 @@ export const ROUTES: Routes = [
     },
   },
   {
+    path: AppPaths.SECURITYQUESTIONS,
+    loadComponent: () =>
+      import("./passwords/features/questions/questions.component").then(
+        (m) => m.SecurityQuestionsComponent,
+      ),
+    title: "Security questions",
+    canActivate: [aclGuard()],
+    data: {
+      breadcrumb: $localize`:@@Admin_SecurityQuestionsNav:Security questions`,
+      functionality: AppPaths.SECURITYQUESTIONS,
+    },
+  },
+  {
     path: AppPaths.AUDITLOGS,
     loadComponent: () =>
       import("./audit/features/audit-logs/audit-logs.component").then(
