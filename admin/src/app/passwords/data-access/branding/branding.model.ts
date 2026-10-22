@@ -46,27 +46,97 @@ export type BrandingForm = Omit<
   radius: number;
 };
 
-export type BrandingPreviewPage =
-  | "recover"
-  | "twofa"
-  | "expired"
-  | "unlock"
-  | "devices"
-  | "success"
-  | "invalid";
+/** View path of a workflow page, a key known by src/web/preview.js. */
+export type BrandingPreviewPage = string;
 
-/** Workflow pages the preview can show; values are the keys known by src/web/preview.js. */
-export const BRANDING_PREVIEW_PAGES: {
+export type BrandingPreviewLang = "en" | "fr";
+
+export const BRANDING_PREVIEW_LANGS: {
   label: string;
-  value: BrandingPreviewPage;
+  value: BrandingPreviewLang;
 }[] = [
-  { label: "Password recovery", value: "recover" },
-  { label: "Two-factor verification", value: "twofa" },
-  { label: "Expired password", value: "expired" },
-  { label: "Account unlock", value: "unlock" },
-  { label: "Trusted device prompt", value: "devices" },
-  { label: "Success page", value: "success" },
-  { label: "Invalid link", value: "invalid" },
+  { label: "English", value: "en" },
+  { label: "Français", value: "fr" },
+];
+
+export type BrandingPreviewCategory = {
+  label: string;
+  value: string;
+  pages: { label: string; value: BrandingPreviewPage }[];
+};
+
+/** Workflow pages the preview can show, grouped by workflow. */
+export const BRANDING_PREVIEW_CATEGORIES: BrandingPreviewCategory[] = [
+  {
+    label: "Password recovery",
+    value: "recover",
+    pages: [
+      { label: "Request", value: "recover/request" },
+      { label: "Email sent", value: "recover/sent" },
+      { label: "New password", value: "recover/reset" },
+      { label: "Password updated", value: "recover/done" },
+      { label: "Invalid link", value: "recover/invalid" },
+    ],
+  },
+  {
+    label: "Two-factor authentication",
+    value: "twofa",
+    pages: [
+      { label: "Verification", value: "twofa/verify" },
+      { label: "Setup", value: "twofa/setup" },
+      { label: "Enabled", value: "twofa/done" },
+      { label: "Disabled", value: "twofa/disabled" },
+      { label: "Invalid step", value: "twofa/invalid" },
+    ],
+  },
+  {
+    label: "Account recovery",
+    value: "account-recover",
+    pages: [
+      { label: "Request", value: "account-recover/request" },
+      { label: "Email sent", value: "account-recover/sent" },
+      { label: "Security questions", value: "account-recover/challenge" },
+      { label: "Access restored", value: "account-recover/done" },
+    ],
+  },
+  {
+    label: "Security questions",
+    value: "security-questions",
+    pages: [
+      { label: "Setup", value: "security-questions/setup" },
+      { label: "Saved", value: "security-questions/done" },
+    ],
+  },
+  {
+    label: "Trusted devices",
+    value: "devices",
+    pages: [
+      { label: "Prompt", value: "devices/prompt" },
+      { label: "Device trusted", value: "devices/done" },
+      { label: "Trust skipped", value: "devices/skipped" },
+      { label: "Manage devices", value: "devices/manage" },
+      { label: "Trust revoked", value: "devices/revoked" },
+      { label: "Invalid step", value: "devices/invalid" },
+    ],
+  },
+  {
+    label: "Expired password",
+    value: "password",
+    pages: [
+      { label: "New password", value: "password/expired" },
+      { label: "Password updated", value: "password/expired-done" },
+    ],
+  },
+  {
+    label: "Account unlock",
+    value: "unlock",
+    pages: [
+      { label: "Request", value: "unlock/request" },
+      { label: "Email sent", value: "unlock/sent" },
+      { label: "Account unlocked", value: "unlock/done" },
+      { label: "Invalid link", value: "unlock/invalid" },
+    ],
+  },
 ];
 
 /**
