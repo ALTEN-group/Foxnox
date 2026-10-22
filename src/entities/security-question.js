@@ -45,6 +45,32 @@ export default new SQLEntity("security_question", [
     isPrivate: false,
     readOnly: false,
   },
+  // Virtual fields: stored in security_question_trans, not in this table (operations: []).
+  // Read and written by middlewares/mappers/question-trans.js. Keep in sync with TRANSLATION_LANGS.
+  {
+    key: "transEn",
+    type: "string",
+    min: 0,
+    max: 255,
+    isTypeChecked: true,
+    isFilterable: false,
+    requiredFor: [],
+    operations: [],
+    isPrivate: false,
+    readOnly: false,
+  },
+  {
+    key: "transFr",
+    type: "string",
+    min: 0,
+    max: 255,
+    isTypeChecked: true,
+    isFilterable: false,
+    requiredFor: [],
+    operations: [],
+    isPrivate: false,
+    readOnly: false,
+  },
   {
     key: "archived",
     type: "boolean",

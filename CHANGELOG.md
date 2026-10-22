@@ -2,7 +2,7 @@
 
 # Unreleased
 
-  - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog. Gatelin routes 122–127 and the `foxnox/questions` resource are added to the Foxnox seed, so existing databases must be recreated
+  - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog, including its English and French translations (`transEn`, `transFr`). Translation changes are recorded in the question history, and the database user can now delete rows of `security_question_trans`. Gatelin routes 122–127 and the `foxnox/questions` resource are added to the Foxnox seed, so existing databases must be recreated
 
 # 0.1.0-alpha.4 (Oct 19th 2026)
 

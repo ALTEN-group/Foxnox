@@ -36,6 +36,45 @@ BEGIN
     RAISE EXCEPTION 'security_question changes were not recorded in log.history';
   END IF;
 
+  -- Same statements as src/services/security-question-trans.js
+  INSERT INTO security_question_trans ("questionId", lang, trans)
+  SELECT * FROM unnest(ARRAY[question_id, question_id], ARRAY['en', 'fr'], ARRAY['Pet?', 'Animal ?'])
+  ON CONFLICT ("questionId", lang) DO UPDATE SET trans = EXCLUDED.trans;
+
+  INSERT INTO security_question_trans ("questionId", lang, trans)
+  SELECT * FROM unnest(ARRAY[question_id], ARRAY['en'], ARRAY['Pet name?'])
+  ON CONFLICT ("questionId", lang) DO UPDATE SET trans = EXCLUDED.trans;
+
+  IF (SELECT trans FROM security_question_trans WHERE "questionId" = question_id AND lang = 'en') <> 'Pet name?' THEN
+    RAISE EXCEPTION 'security_question_trans upsert did not update the existing translation';
+  END IF;
+
+  DELETE FROM security_question_trans t
+  USING unnest(ARRAY[question_id], ARRAY['fr']) AS d("questionId", lang)
+  WHERE t."questionId" = d."questionId" AND t.lang = d.lang;
+
+  IF EXISTS (SELECT 1 FROM security_question_trans WHERE "questionId" = question_id AND lang = 'fr') THEN
+    RAISE EXCEPTION 'security_question_trans delete did not remove the translation';
+  END IF;
+
+  -- The service then touches the question so its history snapshot carries the translations
+  UPDATE security_question
+  SET "updatedAt" = NOW(), "updaterId" = 9003, "updaterName" = 'db-test-trans'
+  WHERE id = question_id;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM log.history
+    WHERE "tableName" = 'security_question'
+      AND operation = 'UPDATE'
+      AND "userId" = 9003
+      AND (record->>'id')::integer = question_id
+      AND record->>'transEn' = 'Pet name?'
+      AND record->>'transFr' = ''
+  ) THEN
+    RAISE EXCEPTION 'security_question history snapshot does not carry the translations';
+  END IF;
+
   BEGIN
     INSERT INTO security_question (question, "categoryId", "creatorId", "creatorName")
     VALUES ('dbContractQuestionOrphan', 9999, 9001, 'db-test');

@@ -289,6 +289,8 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
 ('securityQuestions', 'Default', '[
   {"key":"id",          "isVisible":false},
   {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":true},
+  {"key":"transFr",     "isVisible":true},
   {"key":"categoryId",  "isVisible":true},
   {"key":"active",      "isVisible":true,  "defaultWidth":"60px"},
   {"key":"createdAt",   "isVisible":false},
@@ -301,6 +303,8 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
 ('securityQuestions', 'Archives', '[
   {"key":"id",          "isVisible":false},
   {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":false},
+  {"key":"transFr",     "isVisible":false},
   {"key":"categoryId",  "isVisible":true},
   {"key":"active",      "isVisible":false, "defaultWidth":"60px"},
   {"key":"createdAt",   "isVisible":false},
@@ -313,6 +317,8 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
 ('securityQuestions', 'Audit', '[
   {"key":"id",          "isVisible":false},
   {"key":"question",    "isVisible":true},
+  {"key":"transEn",     "isVisible":false},
+  {"key":"transFr",     "isVisible":false},
   {"key":"categoryId",  "isVisible":false},
   {"key":"active",      "isVisible":false, "defaultWidth":"60px"},
   {"key":"createdAt",   "isVisible":true},

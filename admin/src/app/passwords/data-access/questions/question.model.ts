@@ -9,6 +9,8 @@ export interface SecurityQuestion extends ArchiveInfo {
   question: string;
   categoryId: number;
   active: boolean;
+  transEn: string;
+  transFr: string;
 }
 
 /**
@@ -22,5 +24,7 @@ export const securityQuestionFactory = (): SecurityQuestion => ({
   question: "",
   categoryId: 1,
   active: true,
+  transEn: "",
+  transFr: "",
   ...new ArchiveInfo(),
 });

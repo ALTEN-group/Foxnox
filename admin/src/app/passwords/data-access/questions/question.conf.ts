@@ -22,6 +22,12 @@ const QUESTION_CATEGORIES = [
   { label: "Education", value: 5 },
 ];
 
+// Languages served by the web workflows; keep in sync with TRANSLATION_LANGS in src/services/security-question-trans.js
+const TRANSLATION_LANGS = [
+  { prop: "transEn", label: "Translation (English)" },
+  { prop: "transFr", label: "Translation (French)" },
+] as const;
+
 export const SECURITY_QUESTION_COLUMNS: (
   acls: Acls | undefined,
 ) => StrictCrudItemOptions<SecurityQuestion>[] = (acls) =>
@@ -35,12 +41,25 @@ export const SECURITY_QUESTION_COLUMNS: (
         type: INPUT_TYPES.TEXT,
         columnOptions: {
           headerTooltip:
-            "Default text. Seeded questions also have per-language translations that take precedence over it on the recovery pages.",
+            "Identifier and fallback text, shown when the user's language has no translation below.",
         },
         controlOptions: {
           validators: [required, minlength(1), maxlength(255)],
         },
       },
+      ...TRANSLATION_LANGS.map(({ prop, label }) => ({
+        key: prop,
+        label,
+        controlType: CONTROL_TYPES.INPUT,
+        type: INPUT_TYPES.TEXT,
+        columnOptions: {
+          sortable: false,
+          filterable: false,
+        },
+        controlOptions: {
+          validators: [maxlength(255)],
+        },
+      })),
       {
         key: "categoryId",
         label: "Category",

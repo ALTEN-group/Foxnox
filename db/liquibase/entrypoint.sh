@@ -59,7 +59,7 @@ function createUser()
   psql -h ${DB_HOST} -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname = '${DB_JOB_USER}'" | grep -q 1 || psql -h ${DB_HOST} -d ${DB_NAME} -c "CREATE USER ${DB_JOB_USER} WITH PASSWORD '${DB_JOB_PWD}';"
 
   # App: DML except hard-delete of archivable rows (and log.history purge).
-  # Job: same plus DELETE on those rows. Preference deletes stay on the app.
+  # Job: same plus DELETE on those rows. Preference and question translation deletes stay on the app.
   # delete() is SECURITY DEFINER, so EXECUTE is what actually gates the helper.
   psql -h ${DB_HOST} -d ${DB_NAME} -v ON_ERROR_STOP=1 <<EOF
 CREATE SCHEMA IF NOT EXISTS log;
@@ -75,13 +75,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${DB_JOB_
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA log TO ${DB_JOB_USER};
 
 GRANT DELETE ON TABLE
-  preference, preference_selection, preferences
+  preference, preference_selection, preferences, security_question_trans
 TO ${DB_USER};
 
 REVOKE DELETE ON TABLE
   pwd, pwd_policy, token, token_type, user_trusted_device,
   security_question_category, security_question_category_trans,
-  security_question, security_question_trans, user_security_answer, branding
+  security_question, user_security_answer, branding
 FROM ${DB_USER};
 REVOKE DELETE ON TABLE log.history FROM ${DB_USER};
 
