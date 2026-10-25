@@ -3,6 +3,7 @@ import { execute } from "@dwtechs/antity-pgsql";
 import { isArray, isValidInteger } from "@dwtechs/checkard";
 import { compare, encrypt } from "@dwtechs/hashitaka";
 import { log } from "@dwtechs/winstan";
+import sqEnt from "../entities/security-question.js";
 import { tokenSecret } from "./token-crypto.js";
 
 /**
@@ -14,10 +15,9 @@ import { tokenSecret } from "./token-crypto.js";
  * generic entity CRUD (src/entities/security-question.js wired in
  * src/routes/security-question.js).
  *
- * The reads below use raw SQL on purpose: an entity only selects its own
- * columns, while these queries resolve the localized label in SQL
- * (COALESCE on the `trans` jsonb) and one of them joins
- * user_security_answer. Same approach as services/devices.js and token.js.
+ * The catalog reads go through the entity. The queries on
+ * user_security_answer stay raw SQL (no entity for that table), and
+ * listEnrolledSecurityQuestions joins it to security_question.
  */
 
 /**
@@ -37,6 +37,18 @@ function normalizeLang(lang) {
 }
 
 /**
+ * Localized label of a question row (fallback: en, then the internal key).
+ *
+ * @param {{ question: string, trans?: Record<string, string> | null }} row
+ * @param {"en"|"fr"} locale
+ * @returns {string}
+ */
+function localizedLabel(row, locale) {
+  const trans = row.trans ?? {};
+  return String(trans[locale] || trans.en || row.question);
+}
+
+/**
  * Active, non-archived questions with localized labels (fallback: en, then key).
  * Web setup page: catalog the user picks from.
  *
@@ -45,21 +57,22 @@ function normalizeLang(lang) {
  */
 export async function listSecurityQuestionCatalog(lang = "en") {
   const locale = normalizeLang(lang);
-  const res = await execute(
-    `SELECT q.id,
-            q."categoryId" AS "categoryId",
-            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
-     FROM security_question q
-     WHERE q.archived IS NOT TRUE
-       AND q.active IS TRUE
-     ORDER BY q.id ASC`,
-    [locale],
+  const { query, args } = sqEnt.query.select(
+    0,
     null,
+    "id",
+    "ASC",
+    {
+      active: { value: true, matchMode: "equals" },
+      archived: { value: false, matchMode: "equals" },
+    },
+    "AND",
   );
+  const res = await execute(query, args, null);
   return (res.rows ?? []).map((row) => ({
     id: Number(row.id),
     categoryId: Number(row.categoryId),
-    label: String(row.label),
+    label: localizedLabel(row, locale),
   }));
 }
 
@@ -82,19 +95,20 @@ export async function getSecurityQuestionsByIds(ids, lang = "en") {
   if (unique.length === 0) return [];
 
   const locale = normalizeLang(lang);
-  const res = await execute(
-    `SELECT q.id,
-            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
-     FROM security_question q
-     WHERE q.id = ANY($2::int[])
-     ORDER BY array_position($2::int[], q.id)`,
-    [locale, unique],
+  const { query, args } = sqEnt.query.select(
+    0,
     null,
+    null,
+    null,
+    { id: { value: unique, matchMode: "in" } },
+    "AND",
   );
-  return (res.rows ?? []).map((row) => ({
-    id: Number(row.id),
-    label: String(row.label),
-  }));
+  const res = await execute(query, args, null);
+  const byId = new Map((res.rows ?? []).map((row) => [Number(row.id), row]));
+  return unique.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [{ id, label: localizedLabel(row, locale) }] : [];
+  });
 }
 
 /**

@@ -15,6 +15,10 @@ jest.unstable_mockModule("@dwtechs/antity-pgsql", () => ({
   query: { select: jest.fn(), update: jest.fn(), insert: jest.fn() },
 }));
 
+jest.unstable_mockModule("../src/entities/security-question.js", () => ({
+  default: { query: { select: (...args) => db.sqSelect(...args) } },
+}));
+
 const {
   listSecurityQuestionCatalog,
   getSecurityQuestionsByIds,
