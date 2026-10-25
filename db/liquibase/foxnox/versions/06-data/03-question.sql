@@ -1,49 +1,45 @@
--- Insert default categories
-INSERT INTO security_question_category (id, name, "creatorId", "creatorName") VALUES
-(1, 'personal', -1, 'system'),
-(2, 'family', -1, 'system'),
-(3, 'work', -1, 'system'),
-(4, 'favorites', -1, 'system'),
-(5, 'education', -1, 'system')
-;
-
--- Insert translations for categories
-INSERT INTO security_question_category_trans ("categoryId", lang, trans) VALUES
--- Personal
-(1, 'en', 'Personal'),
-(1, 'fr', 'Personnel'),
-(1, 'es', 'Personal'),
-(1, 'de', 'Persönlich'),
-(1, 'it', 'Personale'),
-(1, 'pt', 'Pessoal'),
--- Family
-(2, 'en', 'Family'),
-(2, 'fr', 'Famille'),
-(2, 'es', 'Familia'),
-(2, 'de', 'Familie'),
-(2, 'it', 'Famiglia'),
-(2, 'pt', 'Família'),
--- Work
-(3, 'en', 'Work'),
-(3, 'fr', 'Travail'),
-(3, 'es', 'Trabajo'),
-(3, 'de', 'Arbeit'),
-(3, 'it', 'Lavoro'),
-(3, 'pt', 'Trabalho'),
--- Favorites
-(4, 'en', 'Favorites'),
-(4, 'fr', 'Favoris'),
-(4, 'es', 'Favoritos'),
-(4, 'de', 'Favoriten'),
-(4, 'it', 'Preferiti'),
-(4, 'pt', 'Favoritos'),
--- Education
-(5, 'en', 'Education'),
-(5, 'fr', 'Éducation'),
-(5, 'es', 'Educación'),
-(5, 'de', 'Bildung'),
-(5, 'it', 'Formazione'),
-(5, 'pt', 'Educação')
+-- Insert default categories. `name` is the internal key, `trans` the localized names.
+INSERT INTO security_question_category (id, name, trans, "creatorId", "creatorName") VALUES
+(1, 'personal', '{
+    "en": "Personal",
+    "fr": "Personnel",
+    "es": "Personal",
+    "de": "Persönlich",
+    "it": "Personale",
+    "pt": "Pessoal"
+  }', -1, 'system'),
+(2, 'family', '{
+    "en": "Family",
+    "fr": "Famille",
+    "es": "Familia",
+    "de": "Familie",
+    "it": "Famiglia",
+    "pt": "Família"
+  }', -1, 'system'),
+(3, 'work', '{
+    "en": "Work",
+    "fr": "Travail",
+    "es": "Trabajo",
+    "de": "Arbeit",
+    "it": "Lavoro",
+    "pt": "Trabalho"
+  }', -1, 'system'),
+(4, 'favorites', '{
+    "en": "Favorites",
+    "fr": "Favoris",
+    "es": "Favoritos",
+    "de": "Favoriten",
+    "it": "Preferiti",
+    "pt": "Favoritos"
+  }', -1, 'system'),
+(5, 'education', '{
+    "en": "Education",
+    "fr": "Éducation",
+    "es": "Educación",
+    "de": "Bildung",
+    "it": "Formazione",
+    "pt": "Educação"
+  }', -1, 'system')
 ;
 
 

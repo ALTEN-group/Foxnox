@@ -118,7 +118,6 @@ One row per remembered browser. `deviceTokenHash` is the HMAC of the cookie valu
 
 ```mermaid
 erDiagram
-  security_question_category ||--o{ security_question_category_trans : ""
   security_question_category ||--o{ security_question : ""
   security_question ||--o{ user_security_answer : ""
   user_security_answer }o--|| user : "(external)"
@@ -126,14 +125,9 @@ erDiagram
   security_question_category {
     int id PK
     varchar name UK
+    jsonb trans
     boolean archived
     timestamp archivedAt
-  }
-
-  security_question_category_trans {
-    int categoryId PK, FK
-    varchar lang PK
-    varchar trans
   }
 
   security_question {
@@ -159,7 +153,7 @@ erDiagram
   }
 ```
 
-`security_question.trans` maps a language tag to the localized text (`{"en": "…", "fr": "…"}`). Keeping the texts on the row makes the question a plain entity — standard CRUD, history and archival — while the numeric ID stays stable, so an answer enrolled in one language still matches when the user recovers in another. Categories still use a `_trans` table; nothing reads it yet.
+`trans` maps a language tag to the localized text (`{"en": "…", "fr": "…"}`), on the question and on its category alike. Keeping the texts on the row makes both plain entities — standard CRUD, history and archival — while the numeric ID stays stable, so an answer enrolled in one language still matches when the user recovers in another.
 
 `user_security_answer` stores only `answerHash`. Answers cannot be read back, which means a user who forgets them can only re-enroll.
 

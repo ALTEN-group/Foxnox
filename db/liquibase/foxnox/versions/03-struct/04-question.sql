@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS security_question_category (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'personal', 'family', 'education', 'work'
+  -- Localized category names keyed by language, like security_question.trans below.
+  trans JSONB NOT NULL DEFAULT '{}'::jsonb,
   archived BOOLEAN DEFAULT FALSE,
   "archivedAt" TIMESTAMPTZ,
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
@@ -9,21 +11,8 @@ CREATE TABLE IF NOT EXISTS security_question_category (
   "creatorName" TEXT,
   "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
-  "updaterName" TEXT
-);
-
--- Security question category translations
-CREATE TABLE IF NOT EXISTS security_question_category_trans (
-  "categoryId" INT NOT NULL,
-  lang VARCHAR(5) NOT NULL, -- BCP 47-ish: 'en', 'fr', 'pt-BR', …
-  trans VARCHAR(255) NOT NULL,
-  PRIMARY KEY ("categoryId", lang),
-  CONSTRAINT chk_security_question_category_trans_lang
-    CHECK (lang ~ '^[a-z]{2}(-[A-Za-z]{2})?$'),
-  CONSTRAINT fk_security_question_category_trans
-    FOREIGN KEY ("categoryId") REFERENCES security_question_category (id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
+  "updaterName" TEXT,
+  CONSTRAINT chk_security_question_category_trans CHECK (is_lang_map(trans))
 );
 
 -- Security questions for account recovery

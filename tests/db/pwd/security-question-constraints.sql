@@ -30,9 +30,11 @@ BEGIN
   END;
 
   BEGIN
-    INSERT INTO security_question_category_trans ("categoryId", lang, trans)
-    VALUES (1, 'eng', 'invalid lang tag');
-    RAISE EXCEPTION 'non BCP 47 security_question_category_trans lang was accepted';
+    UPDATE security_question_category
+    SET trans = '{"eng": "invalid lang tag"}',
+        "updaterId" = 9001, "updaterName" = 'db-test'
+    WHERE id = 1;
+    RAISE EXCEPTION 'non BCP 47 security_question_category.trans lang was accepted';
   EXCEPTION
     WHEN check_violation THEN
       NULL;

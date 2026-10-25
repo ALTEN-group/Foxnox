@@ -80,8 +80,7 @@ TO ${DB_USER};
 
 REVOKE DELETE ON TABLE
   pwd, pwd_policy, token, token_type, user_trusted_device,
-  security_question_category, security_question_category_trans,
-  security_question, user_security_answer, branding
+  security_question_category, security_question, user_security_answer, branding
 FROM ${DB_USER};
 REVOKE DELETE ON TABLE log.history FROM ${DB_USER};
 
