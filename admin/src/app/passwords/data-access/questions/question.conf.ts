@@ -33,6 +33,14 @@ const TRANSLATION_LANGS = [
   { lang: "pt", label: "Portuguese" },
 ] as const;
 
+// The cell renderer output is bound with [innerHTML], so escape the stored texts.
+const escapeHtml = (text: string) =>
+  text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
 export const SECURITY_QUESTION_COLUMNS: (
   acls: Acls | undefined,
 ) => StrictCrudItemOptions<SecurityQuestion>[] = (acls) =>
@@ -68,14 +76,20 @@ export const SECURITY_QUESTION_COLUMNS: (
         columnOptions: {
           sortable: false,
           filterable: false,
-          defaultWidth: "120px",
-          headerTooltip:
-            "Languages this question is translated into. Texts are edited in the form.",
+          // One line per language, so the history dialog shows which text changed.
+          // Hidden in the grid by default (restore it from the column management)
+          // because those lines would make every row six lines tall.
+          isSoftHidden: true,
+          defaultWidth: "400px",
+          headerTooltip: "Texts shown to users, one line per language.",
           customCellRenderer: (value) =>
             Object.entries((value ?? {}) as Record<string, string>)
               .filter(([, text]) => text)
-              .map(([lang]) => lang)
-              .join(", "),
+              .map(([lang, text]) => {
+                const escaped = escapeHtml(text);
+                return `<div title="${escaped}">${lang} : ${escaped}</div>`;
+              })
+              .join(""),
         },
       },
       {

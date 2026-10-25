@@ -289,7 +289,7 @@ INSERT INTO preferences ("resourceName", name, conf, "creatorId", "creatorName")
 ('securityQuestions', 'Default', '[
   {"key":"id",          "isVisible":false},
   {"key":"question",    "isVisible":true},
-  {"key":"trans",       "isVisible":true,  "defaultWidth":"120px"},
+  {"key":"trans",       "isVisible":false},
   {"key":"categoryId",  "isVisible":true},
   {"key":"active",      "isVisible":true,  "defaultWidth":"60px"},
   {"key":"createdAt",   "isVisible":false},
