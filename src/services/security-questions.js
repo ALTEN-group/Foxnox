@@ -13,6 +13,11 @@ import { tokenSecret } from "./token-crypto.js";
  * The admin never calls this service: it manages the catalog through the
  * generic entity CRUD (src/entities/security-question.js wired in
  * src/routes/security-question.js).
+ *
+ * The reads below use raw SQL on purpose: an entity only selects its own
+ * columns, while these queries resolve the localized label in SQL
+ * (COALESCE on the `trans` jsonb) and one of them joins
+ * user_security_answer. Same approach as services/devices.js and token.js.
  */
 
 /**
