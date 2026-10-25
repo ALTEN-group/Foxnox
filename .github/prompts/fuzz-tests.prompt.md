@@ -1,9 +1,10 @@
 ---
 name: fuzz-tests
 description: "Design, scaffold, adapt, or extend a fuzz-testing suite for a named service or application."
-disable-model-invocation: true
+agent: Fuzz Tester
 argument-hint: "application root and optional mode, e.g. services/my-api fuzz-lean"
 ---
+
 Slash command for the **Fuzz Tester** agent.
 
 ## Resolve The Target
