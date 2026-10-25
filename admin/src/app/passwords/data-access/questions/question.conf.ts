@@ -71,6 +71,7 @@ export const SECURITY_QUESTION_COLUMNS: (
           type: INPUT_TYPES.TEXT,
           controlOptions: {
             validators: [maxlength(255)],
+            width: "100%",
           },
         })),
         columnOptions: {
