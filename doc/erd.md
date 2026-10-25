@@ -95,7 +95,6 @@ erDiagram
 
   security_question_category ||--o{ security_question_category_trans : ""
   security_question_category ||--o{ security_question : ""
-  security_question ||--o{ security_question_trans : ""
   security_question ||--o{ user_security_answer : ""
   user_security_answer }o--|| user : "(external)"
 
@@ -115,16 +114,11 @@ erDiagram
   security_question {
     int id PK
     varchar question
+    jsonb trans
     int categoryId FK
     boolean active
     boolean archived
     timestamp archivedAt
-  }
-
-  security_question_trans {
-    int questionId PK, FK
-    varchar lang PK
-    varchar trans
   }
 
   user_security_answer {

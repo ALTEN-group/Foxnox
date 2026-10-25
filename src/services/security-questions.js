@@ -6,6 +6,16 @@ import { log } from "@dwtechs/winstan";
 import { tokenSecret } from "./token-crypto.js";
 
 /**
+ * Serves the public web workflows only — the setup page
+ * (src/web/handlers/security-questions.js) and the account recovery challenge
+ * (src/web/handlers/account-recover.js). Each export below says which one.
+ *
+ * The admin never calls this service: it manages the catalog through the
+ * generic entity CRUD (src/entities/security-question.js wired in
+ * src/routes/security-question.js).
+ */
+
+/**
  * @typedef {{ id: number, label: string, categoryId?: number }} SecurityQuestion
  */
 
@@ -23,6 +33,7 @@ function normalizeLang(lang) {
 
 /**
  * Active, non-archived questions with localized labels (fallback: en, then key).
+ * Web setup page: catalog the user picks from.
  *
  * @param {string} [lang]
  * @returns {Promise<SecurityQuestion[]>}
@@ -32,12 +43,8 @@ export async function listSecurityQuestionCatalog(lang = "en") {
   const res = await execute(
     `SELECT q.id,
             q."categoryId" AS "categoryId",
-            COALESCE(t.trans, te.trans, q.question) AS label
+            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
      FROM security_question q
-     LEFT JOIN security_question_trans t
-       ON t."questionId" = q.id AND t.lang = $1
-     LEFT JOIN security_question_trans te
-       ON te."questionId" = q.id AND te.lang = 'en'
      WHERE q.archived IS NOT TRUE
        AND q.active IS TRUE
      ORDER BY q.id ASC`,
@@ -53,6 +60,7 @@ export async function listSecurityQuestionCatalog(lang = "en") {
 
 /**
  * Resolve labels for known question ids (any active/archived state for display).
+ * Web recovery challenge: labels of the questions being asked.
  *
  * @param {Array<string|number>} ids
  * @param {string} [lang]
@@ -71,12 +79,8 @@ export async function getSecurityQuestionsByIds(ids, lang = "en") {
   const locale = normalizeLang(lang);
   const res = await execute(
     `SELECT q.id,
-            COALESCE(t.trans, te.trans, q.question) AS label
+            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
      FROM security_question q
-     LEFT JOIN security_question_trans t
-       ON t."questionId" = q.id AND t.lang = $1
-     LEFT JOIN security_question_trans te
-       ON te."questionId" = q.id AND te.lang = 'en'
      WHERE q.id = ANY($2::int[])
      ORDER BY array_position($2::int[], q.id)`,
     [locale, unique],
@@ -90,6 +94,7 @@ export async function getSecurityQuestionsByIds(ids, lang = "en") {
 
 /**
  * Questions the user has enrolled answers for (challenge UI).
+ * Web recovery challenge: questions to ask.
  *
  * @param {number} userId
  * @param {string} [lang]
@@ -99,13 +104,9 @@ export async function listEnrolledSecurityQuestions(userId, lang = "en") {
   const locale = normalizeLang(lang);
   const res = await execute(
     `SELECT q.id,
-            COALESCE(t.trans, te.trans, q.question) AS label
+            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
      FROM user_security_answer a
      JOIN security_question q ON q.id = a."questionId"
-     LEFT JOIN security_question_trans t
-       ON t."questionId" = q.id AND t.lang = $1
-     LEFT JOIN security_question_trans te
-       ON te."questionId" = q.id AND te.lang = 'en'
      WHERE a."userId" = $2
        AND a.archived IS NOT TRUE
      ORDER BY a.id ASC`,
@@ -119,6 +120,8 @@ export async function listEnrolledSecurityQuestions(userId, lang = "en") {
 }
 
 /**
+ * Web setup page: tells whether the user is replacing an existing set.
+ *
  * @param {number} userId
  * @returns {Promise<boolean>}
  */
@@ -136,6 +139,8 @@ export async function hasEnrolledSecurityAnswers(userId) {
 }
 
 /**
+ * Web setup page: empty rows of the enrollment form.
+ *
  * @param {number} [count]
  * @returns {{ slot: number }[]}
  */
@@ -144,6 +149,8 @@ export function emptyQuestionSlots(count = 3) {
 }
 
 /**
+ * Used by the save and verify helpers below; exported for the tests.
+ *
  * @param {string} answer
  * @returns {Promise<string>}
  */
@@ -157,6 +164,7 @@ export async function hashSecurityAnswer(answer) {
 
 /**
  * Replace the user's enrolled answers (archives previous rows).
+ * Web setup page: form submission.
  *
  * @param {number} userId
  * @param {Array<{ questionId: number, answer: string }>} pairs
@@ -195,6 +203,7 @@ export async function saveSecurityAnswers(userId, pairs) {
 /**
  * True only when `pairs` is exactly the user's enrolled set and every answer
  * matches. A subset (even with correct answers) must not succeed.
+ * Web recovery challenge: answer verification.
  *
  * @param {number} userId
  * @param {Array<{ questionId: number, answer: string }>} pairs

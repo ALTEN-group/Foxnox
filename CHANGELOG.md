@@ -2,7 +2,12 @@
 
 # Unreleased
 
-  - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog, including its English and French translations (`transEn`, `transFr`). Translation changes are recorded in the question history, and the database user can now delete rows of `security_question_trans`. Gatelin routes 122–127 and the `foxnox/questions` resource are added to the Foxnox seed, so existing databases must be recreated
+  - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog, including its translations. These live in the `trans` column of `security_question`, a map of language tag to text (`{"en": "…", "fr": "…"}`), so a question is a plain entity: standard create, update, archive and history, with no translation table to keep in sync. Adding a language needs no migration.
+  - **Branding preview:** the admin Branding page can now preview every workflow page (recover, 2FA, account recovery, security questions, trusted devices, expired password, unlock), including the confirmation, success and invalid-link pages, instead of a few. `POST /foxnox/branding/preview` accepts the page path (e.g. `recover/sent`) rather than a short alias
+  - **Fix:** the branding logo and favicon file inputs are now hidden unless the matching source (`logoSource` / `faviconSource`) is set to `file`
+  - **Fix:** workflow forms: submit buttons are disabled during the anti-bot minimum fill time (including row forms such as device revoke) so a fast click is no longer silently ignored. The trusted devices revoke form now sends the CSRF token of the page
+  - **Tests:** Playwright end-to-end suite for the public workflow pages (`web/e2e`, run with `scripts/e2e-web.sh`; recover, unlock, 2FA, account recover, expired password, trusted devices) with dedicated `e2e-*` mock users, a `web-e2e` Docker Compose service and a `Web E2E` GitHub workflow on pull requests. Also adds unit, route and database tests for security questions
+  - **Feat:** `preference.resourceName` accepts `securityQuestions`
 
 # 0.1.0-alpha.4 (Oct 19th 2026)
 

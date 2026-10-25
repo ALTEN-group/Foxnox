@@ -6,9 +6,9 @@ Security questions are the catalog users pick from when they set up recovery ans
 
 Only questions that are `active` and not archived are offered to users. Archiving a question hides it from the setup page; answers users already saved keep working.
 
-`question` is the identifier of the question. The text users see comes from `security_question_trans` (requested language, then `en`); when neither exists, `question` is shown as is.
+`question` is the identifier of the question. The text users see comes from `trans`, a map of language code to text stored on the question itself (requested language, then `en`); when neither is filled, `question` is shown as is.
 
-The API exposes the `en` and `fr` translations (the languages served by the workflow pages) as the virtual fields `transEn` and `transFr`. They are returned by the search, and written to `security_question_trans` on create and update: a non-empty value is inserted or updated, an empty or `null` value deletes the translation, and an omitted field is left untouched. Other languages present in `security_question_trans` are not touched by this API. `GET /foxnox/questions/schema` lists `transEn` and `transFr` as selectable, insertable and updatable even though they are not columns of `security_question`.
+`trans` is a plain column, read and written like any other field: an update replaces the whole map, so send every language you want to keep. Keys must be language tags (`en`, `fr`, `pt-BR`, …) and values are 255 characters at most; the database rejects anything else. Adding a language needs no schema or API change, but the workflow pages only serve the languages they have locales for (`en`, `fr`).
 
 Categories are not managed by this API: `categoryId` must reference a `security_question_category` row (seeded: `1` personal, `2` family, `3` work, `4` favorites, `5` education).
 
@@ -33,7 +33,7 @@ GET /foxnox/questions/:id/history
 Authorization: ******
 ```
 
-Each snapshot carries `transEn` and `transFr`. A save writes the question and then its translations, which produces several raw entries; entries of the same author less than 2 seconds apart are merged so one save shows as one modification.
+Each snapshot carries `trans`, so translation changes show up in the history like any other field. One save is one entry.
 
 ## Create Security Questions
 
@@ -44,7 +44,15 @@ Authorization: ******
 
 {
   "rows": [
-    { "question": "Last school name", "categoryId": 5, "active": true, "transEn": "What was the name of your last school?", "transFr": "Quel était le nom de votre dernière école ?" }
+    {
+      "question": "Last school name",
+      "categoryId": 5,
+      "active": true,
+      "trans": {
+        "en": "What was the name of your last school?",
+        "fr": "Quel était le nom de votre dernière école ?"
+      }
+    }
   ]
 }
 ```
@@ -54,8 +62,7 @@ Authorization: ******
 | Field | Range | Description |
 |---|---|---|
 | `question` | 1–255 chars | Identifier and fallback text of the question |
-| `transEn` | 0–255 chars | English text shown to users. Empty deletes it |
-| `transFr` | 0–255 chars | French text shown to users. Empty deletes it |
+| `trans` | object | Localized texts keyed by language tag, 255 chars max per value |
 | `categoryId` | integer ≥ 1 | Existing `security_question_category` id |
 | `active` | boolean | Offered to users when `true` (database default: `false`) |
 

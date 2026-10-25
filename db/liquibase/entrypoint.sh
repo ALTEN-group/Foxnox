@@ -75,7 +75,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${DB_JOB_
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA log TO ${DB_JOB_USER};
 
 GRANT DELETE ON TABLE
-  preference, preference_selection, preferences, security_question_trans
+  preference, preference_selection, preferences
 TO ${DB_USER};
 
 REVOKE DELETE ON TABLE

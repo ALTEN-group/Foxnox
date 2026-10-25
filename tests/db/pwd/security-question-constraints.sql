@@ -2,16 +2,28 @@ BEGIN;
 
 DO $$
 BEGIN
-  INSERT INTO security_question_trans ("questionId", lang, trans)
-  VALUES (1, 'nl', 'Wat was de naam van je eerste huisdier?');
-
-  INSERT INTO security_question_trans ("questionId", lang, trans)
-  VALUES (1, 'pt-BR', 'Qual era o nome do seu primeiro animal de estimação?');
+  UPDATE security_question
+  SET trans = trans || '{"nl": "Wat was de naam van je eerste huisdier?", "pt-BR": "Qual era o nome do seu primeiro animal de estimação?"}',
+      "updaterId" = 9001, "updaterName" = 'db-test'
+  WHERE id = 1;
 
   BEGIN
-    INSERT INTO security_question_trans ("questionId", lang, trans)
-    VALUES (1, 'EN', 'invalid uppercase lang');
-    RAISE EXCEPTION 'uppercase security_question_trans lang was accepted';
+    UPDATE security_question
+    SET trans = '{"EN": "invalid uppercase lang"}',
+        "updaterId" = 9001, "updaterName" = 'db-test'
+    WHERE id = 1;
+    RAISE EXCEPTION 'uppercase security_question.trans lang was accepted';
+  EXCEPTION
+    WHEN check_violation THEN
+      NULL;
+  END;
+
+  BEGIN
+    UPDATE security_question
+    SET trans = jsonb_build_object('en', repeat('x', 256)),
+        "updaterId" = 9001, "updaterName" = 'db-test'
+    WHERE id = 1;
+    RAISE EXCEPTION 'over long security_question.trans value was accepted';
   EXCEPTION
     WHEN check_violation THEN
       NULL;

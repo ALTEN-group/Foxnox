@@ -22,10 +22,15 @@ const QUESTION_CATEGORIES = [
   { label: "Education", value: 5 },
 ];
 
-// Languages served by the web workflows; keep in sync with TRANSLATION_LANGS in src/services/security-question-trans.js
+// Keys of security_question.trans. Adding a language is a single entry here:
+// the API stores the map as it is sent.
 const TRANSLATION_LANGS = [
-  { prop: "transEn", label: "Translation (English)" },
-  { prop: "transFr", label: "Translation (French)" },
+  { lang: "en", label: "English" },
+  { lang: "fr", label: "French" },
+  { lang: "es", label: "Spanish" },
+  { lang: "de", label: "German" },
+  { lang: "it", label: "Italian" },
+  { lang: "pt", label: "Portuguese" },
 ] as const;
 
 export const SECURITY_QUESTION_COLUMNS: (
@@ -47,19 +52,32 @@ export const SECURITY_QUESTION_COLUMNS: (
           validators: [required, minlength(1), maxlength(255)],
         },
       },
-      ...TRANSLATION_LANGS.map(({ prop, label }) => ({
-        key: prop,
-        label,
-        controlType: CONTROL_TYPES.INPUT,
-        type: INPUT_TYPES.TEXT,
+      {
+        key: "trans",
+        label: "Translations",
+        controlType: CONTROL_TYPES.GROUP,
+        children: TRANSLATION_LANGS.map(({ lang, label }) => ({
+          key: lang,
+          label,
+          controlType: CONTROL_TYPES.INPUT,
+          type: INPUT_TYPES.TEXT,
+          controlOptions: {
+            validators: [maxlength(255)],
+          },
+        })),
         columnOptions: {
           sortable: false,
           filterable: false,
+          defaultWidth: "120px",
+          headerTooltip:
+            "Languages this question is translated into. Texts are edited in the form.",
+          customCellRenderer: (value) =>
+            Object.entries((value ?? {}) as Record<string, string>)
+              .filter(([, text]) => text)
+              .map(([lang]) => lang)
+              .join(", "),
         },
-        controlOptions: {
-          validators: [maxlength(255)],
-        },
-      })),
+      },
       {
         key: "categoryId",
         label: "Category",
