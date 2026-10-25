@@ -22,15 +22,13 @@ const QUESTION_CATEGORIES = [
   { label: "Education", value: 5 },
 ];
 
-// Keys of security_question.trans. Adding a language is a single entry here:
-// the API stores the map as it is sent.
+// Keys of security_question.trans, limited to the languages the workflow pages
+// serve (web/locales). Adding one is a single entry here, the API stores the map
+// as it is sent — but a language missing from this list is dropped from the row
+// on the next save, since the form replaces the whole map.
 const TRANSLATION_LANGS = [
   { lang: "en", label: "English" },
   { lang: "fr", label: "French" },
-  { lang: "es", label: "Spanish" },
-  { lang: "de", label: "German" },
-  { lang: "it", label: "Italian" },
-  { lang: "pt", label: "Portuguese" },
 ] as const;
 
 // The cell renderer output is bound with [innerHTML], so escape the stored texts.
