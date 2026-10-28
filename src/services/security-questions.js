@@ -3,6 +3,7 @@ import { execute } from "@dwtechs/antity-pgsql";
 import { isArray, isValidInteger } from "@dwtechs/checkard";
 import { compare, encrypt } from "@dwtechs/hashitaka";
 import { log } from "@dwtechs/winstan";
+import esaEnt from "../entities/enrolled-security-answer.js";
 import sqEnt from "../entities/security-question.js";
 import { tokenSecret } from "./token-crypto.js";
 
@@ -15,9 +16,10 @@ import { tokenSecret } from "./token-crypto.js";
  * generic entity CRUD (src/entities/security-question.js wired in
  * src/routes/security-question.js).
  *
- * The catalog reads go through the entity. The queries on
- * user_security_answer stay raw SQL (no entity for that table), and
- * listEnrolledSecurityQuestions joins it to security_question.
+ * Every read goes through an entity: the catalog through security_question,
+ * the enrolled answers through the enrolled_security_answer view (answer joined
+ * to its question). Only the writes in saveSecurityAnswers stay raw SQL: a bulk
+ * archive and an upsert, which an entity cannot express.
  */
 
 /**
@@ -112,6 +114,21 @@ export async function getSecurityQuestionsByIds(ids, lang = "en") {
 }
 
 /**
+ * Non-archived answers the user has enrolled, oldest first.
+ *
+ * @param {number} userId
+ * @param {number|null} [limit]
+ * @returns {Promise<object[]>}
+ */
+async function selectEnrolled(userId, limit = null) {
+  const { query, args } = esaEnt.query.select(0, limit, "id", "ASC", {
+    userId: { value: userId, matchMode: "equals" },
+  });
+  const res = await execute(query, args, null);
+  return res.rows ?? [];
+}
+
+/**
  * Questions the user has enrolled answers for (challenge UI).
  * Web recovery challenge: questions to ask.
  *
@@ -121,20 +138,10 @@ export async function getSecurityQuestionsByIds(ids, lang = "en") {
  */
 export async function listEnrolledSecurityQuestions(userId, lang = "en") {
   const locale = normalizeLang(lang);
-  const res = await execute(
-    `SELECT q.id,
-            COALESCE(NULLIF(q.trans->>$1, ''), NULLIF(q.trans->>'en', ''), q.question) AS label
-     FROM user_security_answer a
-     JOIN security_question q ON q.id = a."questionId"
-     WHERE a."userId" = $2
-       AND a.archived IS NOT TRUE
-     ORDER BY a.id ASC`,
-    [locale, userId],
-    null,
-  );
-  return (res.rows ?? []).map((row) => ({
-    id: Number(row.id),
-    label: String(row.label),
+  const rows = await selectEnrolled(userId);
+  return rows.map((row) => ({
+    id: Number(row.questionId),
+    label: localizedLabel(row, locale),
   }));
 }
 
@@ -145,16 +152,7 @@ export async function listEnrolledSecurityQuestions(userId, lang = "en") {
  * @returns {Promise<boolean>}
  */
 export async function hasEnrolledSecurityAnswers(userId) {
-  const res = await execute(
-    `SELECT 1
-     FROM user_security_answer
-     WHERE "userId" = $1
-       AND archived IS NOT TRUE
-     LIMIT 1`,
-    [userId],
-    null,
-  );
-  return (res.rows?.length ?? 0) > 0;
+  return (await selectEnrolled(userId, 1)).length > 0;
 }
 
 /**
@@ -238,16 +236,9 @@ export async function verifySecurityAnswers(userId, pairs) {
   )
     return false;
 
-  const res = await execute(
-    `SELECT "questionId", "answerHash"
-     FROM user_security_answer
-     WHERE "userId" = $1
-       AND archived IS NOT TRUE`,
-    [userId],
-    null,
-  );
+  const rows = await selectEnrolled(userId);
   const byId = new Map(
-    (res.rows ?? []).map((r) => [Number(r.questionId), String(r.answerHash)]),
+    rows.map((r) => [Number(r.questionId), String(r.answerHash)]),
   );
   if (byId.size === 0 || byId.size !== submittedIds.length) return false;
   for (const id of submittedIds) {

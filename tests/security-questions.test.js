@@ -19,6 +19,10 @@ jest.unstable_mockModule("../src/entities/security-question.js", () => ({
   default: { query: { select: (...args) => db.sqSelect(...args) } },
 }));
 
+jest.unstable_mockModule("../src/entities/enrolled-security-answer.js", () => ({
+  default: { query: { select: (...args) => db.esaSelect(...args) } },
+}));
+
 const {
   listSecurityQuestionCatalog,
   getSecurityQuestionsByIds,

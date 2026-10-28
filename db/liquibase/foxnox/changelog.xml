@@ -89,6 +89,10 @@
     <comment>Audit-log read model over log.history (previous snapshot, changed keys, routine flag)</comment>
     <sqlFile path="versions/04-view/02-audit.sql" splitStatements="false"/>
   </changeSet>
+  <changeSet id="04-view-03" author="lcluber">
+    <comment>Enrolled security answers joined to their question (web setup and recovery reads)</comment>
+    <sqlFile path="versions/04-view/03-security-answer.sql" splitStatements="false"/>
+  </changeSet>
   
   <!-- triggers -->
   <changeSet id="05-trig-01" author="lcluber">
