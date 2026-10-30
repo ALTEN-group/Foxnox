@@ -8,10 +8,21 @@ for (const field of document.querySelectorAll("#renderedAt")) {
 
 const MIN_FILL_TIME_MS = 1500;
 
-for (const form of document.querySelectorAll("form.form")) {
+// Every form stamped above (including row forms such as device revoke) refuses
+// submits during the first MIN_FILL_TIME_MS; the buttons are disabled meanwhile so
+// a fast click is not silently swallowed.
+for (const field of document.querySelectorAll("#renderedAt")) {
+  const form = field.form;
+  if (!form) continue;
+
+  const buttons = form.querySelectorAll('button[type="submit"]');
+  for (const button of buttons) button.disabled = true;
+  setTimeout(() => {
+    for (const button of buttons) button.disabled = false;
+  }, MIN_FILL_TIME_MS);
+
   form.addEventListener("submit", (event) => {
-    const renderedAtField = form.querySelector("#renderedAt");
-    const renderedAt = Number(renderedAtField?.value || 0);
+    const renderedAt = Number(field.value || 0);
     if (!renderedAt || Date.now() - renderedAt < MIN_FILL_TIME_MS) {
       event.preventDefault();
     }

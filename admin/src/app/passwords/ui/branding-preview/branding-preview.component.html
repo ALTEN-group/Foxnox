@@ -8,14 +8,31 @@
           Uploaded images appear in the preview only after saving.
         </span>
       }
-      <p-select
-          [options]="pages"
-          optionLabel="label"
-          optionValue="value"
-          [ngModel]="page()"
-          (ngModelChange)="page.set($event)"
-          ariaLabel="Preview page"
-      />
+      <div class="branding-preview__selects">
+        <p-select
+            [options]="categories"
+            optionLabel="label"
+            [ngModel]="category()"
+            (ngModelChange)="selectCategory($event)"
+            ariaLabel="Preview category"
+        />
+        <p-select
+            [options]="category().pages"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="page()"
+            (ngModelChange)="page.set($event)"
+            ariaLabel="Preview page"
+        />
+        <p-select
+            [options]="langs"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="lang()"
+            (ngModelChange)="lang.set($event)"
+            ariaLabel="Preview language"
+        />
+      </div>
     </div>
   </ng-template>
   @if (html(); as doc) {
@@ -24,6 +41,8 @@
         title="Workflow page preview"
         sandbox="allow-same-origin"
         [srcdoc]="doc"
+        (load)="lockLinks(frame)"
+        #frame
     ></iframe>
   }
 </p-card>

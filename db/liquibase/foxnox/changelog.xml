@@ -44,7 +44,11 @@
     <comment>Branding update guard function (updatedAt stamp, file replaces URL)</comment>
     <sqlFile path="versions/02-func/05-branding.sql" splitStatements="false"/>
   </changeSet>
-  
+  <changeSet id="02-func-06" author="lcluber">
+    <comment>Translations map validation function (jsonb lang → text)</comment>
+    <sqlFile path="versions/02-func/06-lang-map.sql" splitStatements="false"/>
+  </changeSet>
+
   <!-- structures -->
   <changeSet id="03-struct-01" author="lcluber">
     <comment>Password table structure</comment>
@@ -84,6 +88,10 @@
   <changeSet id="04-view-02" author="lcluber">
     <comment>Audit-log read model over log.history (previous snapshot, changed keys, routine flag)</comment>
     <sqlFile path="versions/04-view/02-audit.sql" splitStatements="false"/>
+  </changeSet>
+  <changeSet id="04-view-03" author="lcluber">
+    <comment>Enrolled security answers joined to their question (web setup and recovery reads)</comment>
+    <sqlFile path="versions/04-view/03-security-answer.sql" splitStatements="false"/>
   </changeSet>
   
   <!-- triggers -->

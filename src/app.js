@@ -15,6 +15,7 @@ import aEnt from "./entities/audit.js";
 import bEnt from "./entities/branding.js";
 import pEnt from "./entities/preference.js";
 import ppEnt from "./entities/pwd-policy.js";
+import sqEnt from "./entities/security-question.js";
 import tEnt from "./entities/token.js";
 import tdEnt from "./entities/user-device.js";
 // middlewares
@@ -29,6 +30,7 @@ import loginTicket from "./routes/login-ticket.js";
 import login from "./routes/password.js";
 import preference from "./routes/preference.js";
 import pwdPolicy from "./routes/pwd-policy.js";
+import securityQuestion from "./routes/security-question.js";
 import token from "./routes/token.js";
 import trustedDevice from "./routes/user-device.js";
 import { IMAGE_DIR } from "./services/branding-image.js";
@@ -74,6 +76,8 @@ app.use(WEB_MOUNT, webRoutes);
 app.use(`${s}audit`, audit, send(aEnt));
 app.use(`${s}tokens`, token, send(tEnt));
 app.use(`${s}policies`, pwdPolicy, send(ppEnt));
+// `questions` rather than `security-questions`: same Gatelin `resource.name` length limit as devices.
+app.use(`${s}questions`, securityQuestion, send(sqEnt));
 app.use(`${s}branding`, branding, send(bEnt));
 // `devices` rather than `trusted-devices`: Gatelin's `resource.name` is
 // varchar(20) and doubles as the literal URL segment, so `foxnox/trusted-devices`

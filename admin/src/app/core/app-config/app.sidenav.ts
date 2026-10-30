@@ -48,6 +48,15 @@ export const SIDENAV: MenuItem[] = [
     },
   },
   {
+    id: "securityQuestions",
+    label: $localize`:@@Admin_SecurityQuestionsNav:Security questions`,
+    routerLink: `/${AppPaths.SECURITYQUESTIONS}`,
+    icon: "pi pi-question-circle",
+    data: {
+      functionality: "securityQuestions",
+    },
+  },
+  {
     id: "auditLogs",
     label: $localize`:@@Admin_AuditLogsNav:Audit log`,
     routerLink: `/${AppPaths.AUDITLOGS}`,

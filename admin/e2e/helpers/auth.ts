@@ -38,6 +38,7 @@ const ENTITY_LINKS: Record<string, { label: RegExp; parent?: RegExp }> = {
   policies: { label: /Policies/ },
   tokens: { label: /Tokens/ },
   trustedDevices: { label: /Trusted devices/ },
+  securityQuestions: { label: /Security questions/ },
 };
 
 /**

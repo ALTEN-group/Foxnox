@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS security_question_category (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'personal', 'family', 'education', 'work'
+  -- Localized category names keyed by language, like security_question.trans below.
+  trans JSONB NOT NULL DEFAULT '{}'::jsonb,
   archived BOOLEAN DEFAULT FALSE,
   "archivedAt" TIMESTAMPTZ,
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
@@ -9,27 +11,18 @@ CREATE TABLE IF NOT EXISTS security_question_category (
   "creatorName" TEXT,
   "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
-  "updaterName" TEXT
-);
-
--- Security question category translations
-CREATE TABLE IF NOT EXISTS security_question_category_trans (
-  "categoryId" INT NOT NULL,
-  lang VARCHAR(5) NOT NULL, -- BCP 47-ish: 'en', 'fr', 'pt-BR', …
-  trans VARCHAR(255) NOT NULL,
-  PRIMARY KEY ("categoryId", lang),
-  CONSTRAINT chk_security_question_category_trans_lang
-    CHECK (lang ~ '^[a-z]{2}(-[A-Za-z]{2})?$'),
-  CONSTRAINT fk_security_question_category_trans
-    FOREIGN KEY ("categoryId") REFERENCES security_question_category (id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
+  "updaterName" TEXT,
+  CONSTRAINT chk_security_question_category_trans CHECK (is_lang_map(trans))
 );
 
 -- Security questions for account recovery
 CREATE TABLE IF NOT EXISTS security_question (
   id SERIAL PRIMARY KEY,
   question VARCHAR(255) NOT NULL,
+  -- Localized question texts keyed by language: {"en": "…", "fr": "…"}.
+  -- Kept on the row itself so the question stays a plain entity (standard CRUD,
+  -- history and archival); `question` is the fallback when a language is missing.
+  trans JSONB NOT NULL DEFAULT '{}'::jsonb,
   "categoryId" INT NOT NULL,
   active BOOLEAN DEFAULT FALSE,
   archived BOOLEAN DEFAULT FALSE,
@@ -40,23 +33,10 @@ CREATE TABLE IF NOT EXISTS security_question (
   "updatedAt" TIMESTAMPTZ NULL,
   "updaterId" INT,
   "updaterName" TEXT,
+  CONSTRAINT chk_security_question_trans CHECK (is_lang_map(trans)),
   CONSTRAINT fk_security_question_category
     FOREIGN KEY ("categoryId") REFERENCES security_question_category (id)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE
-);
-
--- Security question translations
-CREATE TABLE IF NOT EXISTS security_question_trans (
-  "questionId" INT NOT NULL,
-  lang VARCHAR(5) NOT NULL, -- BCP 47-ish: 'en', 'fr', 'pt-BR', …
-  trans VARCHAR(255) NOT NULL,
-  PRIMARY KEY ("questionId", lang),
-  CONSTRAINT chk_security_question_trans_lang
-    CHECK (lang ~ '^[a-z]{2}(-[A-Za-z]{2})?$'),
-  CONSTRAINT fk_security_question_trans
-    FOREIGN KEY ("questionId") REFERENCES security_question (id)
-    ON DELETE CASCADE
     ON UPDATE CASCADE
 );
 

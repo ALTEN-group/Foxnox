@@ -21,7 +21,7 @@ Answers are hashed before storage. Neither an administrator nor a database dump 
 
 ## Why the Catalog Is in the Database
 
-Questions live in `security_question` with translations in `security_question_trans`, rather than being hard-coded. Two things follow from that: you can adapt the question set to your audience without a deploy, and each question is presented in the user's language while still being identified by a stable numeric ID.
+Questions live in `security_question`, with their translations on the row itself (`trans`), rather than being hard-coded. Two things follow from that: you can adapt the question set to your audience without a deploy, and each question is presented in the user's language while still being identified by a stable numeric ID.
 
 That ID stability is what lets recovery match an answer given in French today against one enrolled in English last year.
 

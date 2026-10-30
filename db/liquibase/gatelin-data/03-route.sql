@@ -17,6 +17,8 @@
 --   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
 --   116=searchAudit     117=updateBrandingLogo 118=deleteBrandingLogo
 --   119=updateBrandingFavicon 120=deleteBrandingFavicon 121=previewBranding
+--   122=searchQuestions 123=getQuestionHistory 124=addQuestions
+--   125=updateQuestions 126=archiveQuestions 127=getQuestionSchema
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
@@ -81,5 +83,13 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/favicon',                'deleteBrandingFavicon',   'Delete branding favicon',        true, false, ARRAY[10], ARRAY[5], -1, 'system'),
 
   -- branding live preview (/foxnox/branding/preview, renders a workflow page with unsaved values)
-  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/preview',                           'previewBranding',         'Preview branding on a workflow page', true, false, ARRAY[2],  ARRAY[2], -1, 'system')
+  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/preview',                           'previewBranding',         'Preview branding on a workflow page', true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+
+  -- security questions (/foxnox/questions)
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/search',             'searchQuestions',  'Search security questions',                     true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/(?<id>\d+)/history', 'getQuestionHistory', 'Manage security question history',            true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '',                    'addQuestions',     'Add security questions',                        true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '',                    'updateQuestions',  'Update security questions',                     true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/archive',            'archiveQuestions', 'Archive security questions',                    true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/schema',             'getQuestionSchema', 'Get security question entity schema',          true, false, ARRAY[2],  ARRAY[1], -1, 'system')
 ;

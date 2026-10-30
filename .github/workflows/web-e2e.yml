@@ -1,0 +1,83 @@
+name: Web E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "docker/**"
+      - "mocks/**"
+      - "scripts/**"
+      - "src/**"
+      - "db/**"
+      - ".github/workflows/web-e2e.yml"
+
+concurrency:
+  group: web-e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure env
+        run: |
+          ./scripts/setup-env.sh
+          # Services run as ${UID}:${GID} and bind-mount the checkout; align them with
+          # the runner user (same reason as in admin-e2e.yml).
+          sed -i "s|^UID=.*|UID=$(id -u)|" docker/conf/.env.dev
+          sed -i "s|^GID=.*|GID=$(id -g)|" docker/conf/.env.dev
+
+      - name: Start docker stack
+        run: ./scripts/start-dev.sh
+
+      # The workflows are served by Foxnox through Gatelin and Traefik; wait for that
+      # path rather than for the admin, which this suite does not need up front.
+      - name: Wait for web workflows via Traefik
+        run: |
+          compose() {
+            docker compose -f docker/docker-compose.yml --env-file docker/conf/.env.dev "$@"
+          }
+          for i in $(seq 1 60); do
+            code=$(curl -o /dev/null -s -w '%{http_code}' --max-time 3 http://localhost:8100/api/foxnox/web/recover || echo 000)
+            if [[ "$code" =~ ^2 ]]; then echo "web ready after $((i * 2))s (HTTP $code)"; exit 0; fi
+            printf 'attempt %d/60: HTTP %s\n' "$i" "$code"
+            sleep 2
+          done
+          echo "::error::web workflows did not become ready"
+          compose ps
+          compose logs --tail=200 foxnox gatelin traefik
+          exit 1
+
+      # Resets the e2e accounts, restarts gatelin (fresh /sessions rate limit), then runs
+      # the `web-e2e` container. Same command devs run locally.
+      - name: Run e2e tests
+        run: ./scripts/e2e-web.sh --reporter=list
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playwright-report
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 7
+
+      - name: Dump docker logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker/docker-compose.yml --env-file docker/conf/.env.dev ps
+          docker compose -f docker/docker-compose.yml --env-file docker/conf/.env.dev logs --tail=300
+
+      - name: Stop docker stack
+        if: always()
+        run: ./scripts/stop-dev.sh || true

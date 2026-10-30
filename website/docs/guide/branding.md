@@ -77,9 +77,9 @@ The server logs a warning when the primary color has a contrast ratio below 3 ag
 
 ## Live Preview
 
-Below the form, the admin Branding page shows a preview card. Pick a workflow page and it re-renders as you type, using the current, unsaved form values.
+Below the form, the admin Branding page shows a preview card. Pick a category (recovery, two-factor, trusted devices, unlock...) then a page: every workflow page can be previewed, success, error and invalid-link pages included. It re-renders as you type, using the current, unsaved form values.
 
-The page is rendered by Foxnox itself (`POST /foxnox/branding/preview`) from the real Handlebars templates with placeholder data, so it matches what end users see and needs no token. Only an authenticated admin with access to the branding resource can call it, and nothing is stored. The result is shown in a script-less, non-interactive iframe.
+The page is rendered by Foxnox itself (`POST /foxnox/branding/preview`) from the real Handlebars templates with placeholder data, so it matches what end users see and needs no token. Only an authenticated admin with access to the branding resource can call it, and nothing is stored. The result is shown in a script-less sandboxed iframe: fields and drop-down lists can be tried, but nothing can be submitted and links do not navigate.
 
 A pending logo or favicon upload is not previewed: only the image already stored appears until you save.
 

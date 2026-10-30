@@ -13,6 +13,8 @@
  *   seedQuestion: (row: object) => object,
  *   getPolicyCache: () => Promise<object[]>,
  *   pwdSelect: (...args: unknown[]) => { query: string, args: unknown[] },
+ *   sqSelect: (...args: unknown[]) => { query: string, args: unknown[] },
+ *   esaSelect: (...args: unknown[]) => { query: string, args: unknown[] },
  *   pwdUpdate: (rows: object[]) => { query: string, args: unknown[] },
  *   pwds: object[],
  *   devices: object[],
@@ -35,8 +37,6 @@ export function createAuthDbMock() {
   /** @type {object[]} */
   let questions = [];
   /** @type {object[]} */
-  let translations = [];
-  /** @type {object[]} */
   let answers = [];
 
   function reset() {
@@ -48,7 +48,6 @@ export function createAuthDbMock() {
     policy = null;
     devices = [];
     questions = [];
-    translations = [];
     answers = [];
   }
 
@@ -102,16 +101,12 @@ export function createAuthDbMock() {
       question: row.question ?? `Q${row.id ?? nextQuestionId}`,
       active: row.active ?? true,
       archived: row.archived ?? false,
+      trans: {
+        ...(row.labelEn ? { en: row.labelEn } : {}),
+        ...(row.labelFr ? { fr: row.labelFr } : {}),
+      },
     };
     questions.push(q);
-    if (row.labelEn || row.labelFr) {
-      if (row.labelEn) {
-        translations.push({ questionId: q.id, lang: "en", trans: row.labelEn });
-      }
-      if (row.labelFr) {
-        translations.push({ questionId: q.id, lang: "fr", trans: row.labelFr });
-      }
-    }
     return q;
   }
 
@@ -131,6 +126,31 @@ export function createAuthDbMock() {
       query: "__PWD_SELECT__",
       args: [filters.userId?.value, filters.archived?.value],
     };
+  }
+
+  /**
+   * @param {unknown} _offset
+   * @param {unknown} _limit
+   * @param {unknown} _orderBy
+   * @param {unknown} _order
+   * @param {Record<string, { value: unknown }>} filters
+   */
+  function sqSelect(_offset, _limit, _orderBy, _order, filters) {
+    return {
+      query: "__SQ_SELECT__",
+      args: [filters.active?.value, filters.archived?.value, filters.id?.value],
+    };
+  }
+
+  /**
+   * @param {unknown} _offset
+   * @param {unknown} limit
+   * @param {unknown} _orderBy
+   * @param {unknown} _order
+   * @param {Record<string, { value: unknown }>} filters
+   */
+  function esaSelect(_offset, limit, _orderBy, _order, filters) {
+    return { query: "__ESA_SELECT__", args: [filters.userId?.value, limit] };
   }
 
   /**
@@ -294,90 +314,35 @@ export function createAuthDbMock() {
       return { rows: [], rowCount: row ? 1 : 0 };
     }
 
-    // listSecurityQuestionCatalog
-    if (
-      q.includes("FROM security_question q") &&
-      q.includes("q.active IS TRUE") &&
-      q.includes("q.archived IS NOT TRUE")
-    ) {
-      const locale = String(params[0]);
+    // listSecurityQuestionCatalog, getSecurityQuestionsByIds
+    if (sql === "__SQ_SELECT__") {
+      const [active, archived, ids] = params;
       const rows = questions
-        .filter((qq) => qq.active && !qq.archived)
-        .map((qq) => {
-          const local = translations.find(
-            (t) => t.questionId === qq.id && t.lang === locale,
-          );
-          const en = translations.find(
-            (t) => t.questionId === qq.id && t.lang === "en",
-          );
-          return {
-            id: qq.id,
-            categoryId: qq.categoryId,
-            label: local?.trans ?? en?.trans ?? qq.question,
-          };
-        });
+        .filter((qq) => active === undefined || qq.active === active)
+        .filter((qq) => archived === undefined || qq.archived === archived)
+        .filter((qq) => !ids || ids.includes(qq.id))
+        .map((qq) => ({ ...qq }));
       return { rows };
     }
 
-    // getSecurityQuestionsByIds
-    if (
-      q.includes("FROM security_question q") &&
-      q.includes("WHERE q.id = ANY($2::int[])")
-    ) {
-      const locale = String(params[0]);
-      const ids = /** @type {number[]} */ (params[1]);
-      const rows = ids
-        .map((id) => questions.find((qq) => qq.id === id))
-        .filter(Boolean)
-        .map((qq) => {
-          const local = translations.find(
-            (t) => t.questionId === qq.id && t.lang === locale,
-          );
-          const en = translations.find(
-            (t) => t.questionId === qq.id && t.lang === "en",
-          );
-          return {
-            id: qq.id,
-            label: local?.trans ?? en?.trans ?? qq.question,
-          };
-        });
-      return { rows };
-    }
-
-    // hasEnrolledSecurityAnswers
-    if (
-      q.includes("SELECT 1") &&
-      q.includes("FROM user_security_answer") &&
-      q.includes("LIMIT 1")
-    ) {
-      const userId = Number(params[0]);
-      const found = answers.some((a) => a.userId === userId && !a.archived);
-      return { rows: found ? [{ "?column?": 1 }] : [] };
-    }
-
-    // listEnrolledSecurityQuestions
-    if (
-      q.includes("FROM user_security_answer a") &&
-      q.includes('JOIN security_question q ON q.id = a."questionId"')
-    ) {
-      const locale = String(params[0]);
-      const userId = Number(params[1]);
+    // enrolled_security_answer view: hasEnrolledSecurityAnswers,
+    // listEnrolledSecurityQuestions, verifySecurityAnswers
+    if (sql === "__ESA_SELECT__") {
+      const [userId, limit] = params;
       const rows = answers
-        .filter((a) => a.userId === userId && !a.archived)
+        .filter((a) => a.userId === Number(userId) && !a.archived)
         .map((a) => {
           const qq = questions.find((qrow) => qrow.id === a.questionId);
-          const local = translations.find(
-            (t) => t.questionId === a.questionId && t.lang === locale,
-          );
-          const en = translations.find(
-            (t) => t.questionId === a.questionId && t.lang === "en",
-          );
           return {
-            id: a.questionId,
-            label: local?.trans ?? en?.trans ?? qq?.question ?? `Q${a.questionId}`,
+            id: a.id,
+            userId: a.userId,
+            questionId: a.questionId,
+            answerHash: a.answerHash,
+            question: qq?.question ?? `Q${a.questionId}`,
+            trans: qq?.trans ?? {},
           };
         });
-      return { rows };
+      return { rows: limit ? rows.slice(0, limit) : rows };
     }
 
     // saveSecurityAnswers — archive prior
@@ -421,21 +386,6 @@ export function createAuthDbMock() {
       return { rows: [], rowCount: 1 };
     }
 
-    // verifySecurityAnswers — every non-archived enrolled row for the user
-    if (
-      q.includes('SELECT "questionId", "answerHash"') &&
-      q.includes("FROM user_security_answer")
-    ) {
-      const userId = Number(params[0]);
-      const rows = answers
-        .filter((a) => a.userId === userId && !a.archived)
-        .map((a) => ({
-          questionId: a.questionId,
-          answerHash: a.answerHash,
-        }));
-      return { rows };
-    }
-
     throw new Error(`Unhandled SQL in auth db mock: ${q.slice(0, 180)}`);
   }
 
@@ -446,6 +396,8 @@ export function createAuthDbMock() {
     seedQuestion,
     getPolicyCache,
     pwdSelect,
+    sqSelect,
+    esaSelect,
     pwdUpdate,
     get pwds() {
       return pwds;

@@ -34,6 +34,7 @@ export default withMermaid(defineConfig({
           { text: 'Passwords', link: '/guide/api-passwords' },
           { text: 'Tokens', link: '/guide/api-tokens' },
           { text: 'Policies', link: '/guide/api-policies' },
+          { text: 'Security Questions', link: '/guide/api-questions' },
           { text: 'Trusted Devices', link: '/guide/api-devices' },
           { text: 'Login Challenges', link: '/guide/api-challenges' },
         ],
