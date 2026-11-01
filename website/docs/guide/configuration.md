@@ -81,7 +81,7 @@ Colour values are sanitized to `#RGB` / `#RRGGBB` before being applied as CSS va
 ## Database migration service
 
 These apply to the `foxnox-migration` container (for example,
-`ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.4`):
+`ghcr.io/alten-group/foxnox-migration:0.1.0-alpha.5`):
 
 | Variable | Required | Description |
 |---|---|---|

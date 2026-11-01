@@ -1,12 +1,14 @@
 # Changelog
 
-# Unreleased
+# 0.1.0-alpha.5 (Oct 30th 2026)
 
   - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog, including its translations. These live in the `trans` column of `security_question`, a map of language tag to text (`{"en": "…", "fr": "…"}`), so a question is a plain entity: standard create, update, archive and history, with no translation table to keep in sync. Question categories use the same `trans` column. Adding a language needs no migration.
   - **Branding preview:** the admin Branding page can now preview every workflow page (recover, 2FA, account recovery, security questions, trusted devices, expired password, unlock), including the confirmation, success and invalid-link pages, instead of a few. `POST /foxnox/branding/preview` accepts the page path (e.g. `recover/sent`) rather than a short alias
   - **Fix:** the branding logo and favicon file inputs are now hidden unless the matching source (`logoSource` / `faviconSource`) is set to `file`
   - **Fix:** workflow forms: submit buttons are disabled during the anti-bot minimum fill time (including row forms such as device revoke) so a fast click is no longer silently ignored. The trusted devices revoke form now sends the CSRF token of the page
   - **Tests:** Playwright end-to-end suite for the public workflow pages (`web/e2e`, run with `scripts/e2e-web.sh`; recover, unlock, 2FA, account recover, expired password, trusted devices) with dedicated `e2e-*` mock users, a `web-e2e` Docker Compose service and a `Web E2E` GitHub workflow on pull requests. Also adds unit, route and database tests for security questions
+  - **Admin login greeting:** after signing in, the admin shows a full-screen "Bonjour/Bonsoir, <firstName>" screen (at least 1s) while the app loads, instead of a "Bienvenue" snackbar. The login page now covers the app shell, which used to render over it as soon as the session was authenticated
+  - **Feat:** new read-only `enrolled_security_answer` view (a user's non-archived answers joined to their question) used by the security questions setup and recovery pages through the `enrolled-security-answer` entity instead of raw SQL. `answerHash` is never sent in responses
   - **Feat:** `preference.resourceName` accepts `securityQuestions`
 
 # 0.1.0-alpha.4 (Oct 19th 2026)
