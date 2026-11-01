@@ -11,7 +11,8 @@
     "test:coverage": "ng test --no-watch --coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "e2e:install": "playwright install chromium"
+    "e2e:install": "playwright install chromium",
+    "demos": "playwright test --config=demos/playwright.config.ts && node demos/to-mp4.mjs"
   },
   "private": true,
   "author": "ALTEN",
