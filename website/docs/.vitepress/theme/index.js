@@ -1,5 +1,6 @@
 import DefaultTheme from "vitepress/theme";
 import { h } from "vue";
+import AdminDemos from "./AdminDemos.vue";
 import FoxFace from "./FoxFace.vue";
 
 // The home hero takes its image from frontmatter, which can only name a file.
@@ -10,6 +11,7 @@ export default {
   Layout() {
     return h(DefaultTheme.Layout, null, {
       "home-hero-image": () => h(FoxFace),
+      "home-features-after": () => h(AdminDemos),
     });
   },
 };

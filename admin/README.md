@@ -54,6 +54,26 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Recording website demos
+
+Start the local development stack with `./scripts/start-dev.sh` from the repository
+root, then run from `admin/`:
+
+```bash
+npm run demos
+```
+
+This runs three Playwright recording scenarios and uses `ffmpeg` (required on
+`PATH`) to export H.264 MP4 videos and JPG posters to
+`../website/docs/public/videos/`. Install Playwright Chromium with
+`npm run e2e:install` if needed. Raw recordings and trim metadata remain in the
+ignored `demos/videos/` directory.
+
+Use only a disposable local stack with mock data. The scenarios change the
+Standard password policy and delete the signed-in user's saved table views.
+Login uses the existing e2e credentials helper; never record real accounts or
+sensitive data.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

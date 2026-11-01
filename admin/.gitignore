@@ -42,6 +42,8 @@ __screenshots__/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/demos/videos/
+/demos/.playwright/
 
 # System files
 .DS_Store
