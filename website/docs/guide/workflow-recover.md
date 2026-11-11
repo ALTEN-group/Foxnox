@@ -63,9 +63,33 @@ The token is checked again on submit, not just on render. A form left open past 
 
 ## What Changes
 
-On success, exactly two things happen: the `pwd` row's hash is rotated (with `pwdUpdatedAt` and a fresh `pwdExpiry` derived from the policy), and the token is consumed so the link cannot be reused.
+On success, the `pwd` row's hash is rotated (with `pwdUpdatedAt` and a fresh
+`pwdExpiry` derived from the policy), lockout counters are cleared, and the token
+is consumed so the link cannot be reused. The account must still be active and
+not archived when the reset is submitted. An unavailable user service blocks the
+reset rather than trusting an earlier lookup.
 
-Note what does *not* happen. Lockout state is untouched — a locked account is still locked after a password reset, and the user needs [Account unlock](./workflow-unlock) as well. 2FA is also untouched, so the next sign-in still asks for a code.
+2FA is untouched, so the next sign-in still asks for a code when enrolled.
+
+## Restored Users
+
+Restoring a profile in the user service does not restore its previous password
+or sessions and does not send an email automatically. The user selects
+**Forgot password** from the login page and follows this same recovery flow.
+
+If no active password exists, recovery selects the newest archived password row
+(highest id), replaces its hash with the newly chosen password, and unarchives
+that row in the same SQL update. Its 2FA enrollment is preserved, older password
+rows stay archived, and the old password is never reactivated. If an active
+password already exists, normal rotation applies without restoring older rows.
+
+A still-archived or inactive profile cannot complete recovery, even with an
+otherwise valid reset link. If all password rows have been permanently purged,
+recovery fails rather than silently creating a credential without its original
+2FA state; an administrator must provision the account separately.
+
+No session is created or restored by password recovery. The user must sign in
+again with the new password and complete any required 2FA.
 
 ## Linking to It
 

@@ -1,10 +1,11 @@
 // @ts-check
 
+import { log } from "@dwtechs/winstan";
 import {
   getPasswordFormPolicy,
   getPwdPolicyForUser,
   passwordMeetsPolicy,
-  rotatePassword,
+  recoverPassword,
 } from "../../services/pwd.js";
 import {
   consumeWorkflowToken,
@@ -137,7 +138,7 @@ export async function postRecoverReset(req, res) {
   }
 
   try {
-    await rotatePassword(valid.userId, password);
+    await recoverPassword(valid.userId, password);
     await consumeWorkflowToken(valid.id);
   } catch (err) {
     // @ts-expect-error
@@ -151,6 +152,14 @@ export async function postRecoverReset(req, res) {
         }),
       );
     }
+    log.error(
+      `Password recovery failed userId=${valid.userId}: ${err?.message || err}`,
+    );
+    // @ts-expect-error
+    if (err?.code === "USER_UNAVAILABLE" || err?.code === "PWD_NOT_FOUND")
+      return res
+        .status(400)
+        .render("recover/invalid", buildViewContext(req, "recoverInvalid"));
     return res
       .status(500)
       .render("recover/invalid", buildViewContext(req, "recoverInvalid"));

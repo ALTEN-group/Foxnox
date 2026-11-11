@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // @ts-check
 /**
  * Password service lifecycle: policy, rotate, unlock, auth state, 2FA —
@@ -122,7 +123,18 @@ describe("rotatePassword / unlockAccount", () => {
       pwdHash: "old-hash",
       failedAttempts: 4,
       lockedUntil: new Date(Date.now() + 60_000),
+      twoFactorEnabled: true,
+      twoFactorSecret: "existing-enrollment",
     });
+    const older = db.seedPwd({
+      userId: 42,
+      pwdHash: "older-archived-hash",
+      archived: true,
+      twoFactorEnabled: true,
+      twoFactorSecret: "older-enrollment",
+    });
+    const other = db.seedPwd({ userId: 43, pwdHash: "unrelated-hash" });
+    const untouched = [{ ...older }, { ...other }];
 
     await expect(rotatePassword(42, STRONG)).resolves.toEqual({
       updated: true,
@@ -135,6 +147,12 @@ describe("rotatePassword / unlockAccount", () => {
     expect(row.lockedUntil).toBeNull();
     expect(row.pwdExpiry).toBeInstanceOf(Date);
     expect(row.pwdExpiry.getTime()).toBeGreaterThan(Date.now());
+    expect(row).toMatchObject({
+      archived: false,
+      twoFactorEnabled: true,
+      twoFactorSecret: "existing-enrollment",
+    });
+    expect(db.pwds.slice(1)).toEqual(untouched);
   });
 
   it("rejects weak passwords", async () => {

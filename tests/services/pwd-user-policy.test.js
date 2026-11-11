@@ -19,6 +19,7 @@ jest.unstable_mockModule("../../src/entities/pwd.js", () => ({
 }));
 jest.unstable_mockModule("../../src/services/users.js", () => ({
   findUserRoleIds,
+  isActiveUser: jest.fn(),
 }));
 
 const { getPwdPolicyForUser, getPasswordFormPolicy, mergeStrictestPolicies } =

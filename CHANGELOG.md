@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Allow restored, active users to complete the existing manual password-recovery flow when all passwords are archived: replace the newest archived row's hash and unarchive it together, preserving 2FA and leaving older rows archived. Revalidate profile status at reset submission and keep ordinary password rotation restricted to active passwords.
 - Invalidate outstanding recovery links, login challenges, and login-resume tickets before archiving passwords. Token invalidation failures stop password archival so the operation can be retried.
 
 # 0.1.0-alpha.5 (Oct 30th 2026)

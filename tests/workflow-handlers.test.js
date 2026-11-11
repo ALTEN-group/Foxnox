@@ -1,12 +1,14 @@
+/** @jest-environment node */
 // @ts-check
 /**
  * HTTP integration for each workflow handler path (supertest + service mocks).
  * Asserts routing, token/challenge gates, form guards, and success/error views
  * without requiring Postgres or SMTP.
  */
+
+import { log } from "@dwtechs/winstan";
 import { jest } from "@jest/globals";
 import request from "supertest";
-import express from "express";
 import { csrfForm } from "./helpers/form.js";
 
 process.env.PWD_SECRET = "test-secret-for-unit-tests-only";
@@ -32,6 +34,7 @@ const createLoginChallenge = jest.fn(async () => ({
 }));
 
 const rotatePassword = jest.fn(async () => {});
+const recoverPassword = jest.fn(async () => {});
 const unlockAccount = jest.fn(async () => {});
 const passwordMeetsPolicy = jest.fn(async () => true);
 const userPolicy = { id: 3, length: 12 };
@@ -78,6 +81,7 @@ jest.unstable_mockModule("../src/services/token.js", () => ({
   bumpWorkflowTokenAttempts,
   createWorkflowToken: jest.fn(),
   hashToken: jest.fn(),
+  archiveTokensForPasswords: jest.fn(),
 }));
 
 jest.unstable_mockModule("../src/services/challenge.js", () => ({
@@ -93,6 +97,9 @@ jest.unstable_mockModule("../src/services/challenge.js", () => ({
 
 jest.unstable_mockModule("../src/services/pwd.js", () => ({
   rotatePassword,
+  recoverPassword,
+  recordFailedAttempt: jest.fn(async () => {}),
+  resetFailedAttempts: jest.fn(async () => {}),
   unlockAccount,
   passwordMeetsPolicy,
   getPasswordFormPolicy,
@@ -126,7 +133,9 @@ jest.unstable_mockModule("../src/services/security-questions.js", () => ({
 
 jest.unstable_mockModule("../src/services/totp.js", () => ({
   generateTotpSecret: jest.fn(() => "JBSWY3DPEHPK3PXP"),
-  buildOtpauthUri: jest.fn(() => "otpauth://totp/Foxnox:55?secret=JBSWY3DPEHPK3PXP"),
+  buildOtpauthUri: jest.fn(
+    () => "otpauth://totp/Foxnox:55?secret=JBSWY3DPEHPK3PXP",
+  ),
   verifyTotpCode: jest.fn(() => true),
 }));
 
@@ -158,30 +167,17 @@ jest.unstable_mockModule("../src/web/login-resume.js", () => ({
   redeemLoginResumeTicket: jest.fn(async () => ({ userId: 55 })),
 }));
 
-// antity is pulled in transitively by some modules; keep import safe.
-jest.unstable_mockModule("@dwtechs/antity-pgsql", () => ({
-  execute: jest.fn(async () => ({ rows: [] })),
-  getCache: jest.fn(),
-  query: { select: jest.fn(), update: jest.fn(), insert: jest.fn() },
-  SQLEntity: class MockSQLEntity {
-    constructor(name, fields) {
-      this.name = name;
-      this.fields = fields;
+// Keep the assembled app and its entities real; stop I/O at the pool boundary.
+jest.unstable_mockModule("pg-pool", () => ({
+  default: class {
+    async query() {
+      return { rows: [], rowCount: 0 };
     }
   },
 }));
 
-const { configureWebEngine, WEB_MOUNT } = await import("../src/web/engine.js");
-const webRoutes = (await import("../src/web/routes.js")).default;
-
-function buildApp() {
-  const app = express();
-  configureWebEngine(app);
-  app.use(WEB_MOUNT, webRoutes);
-  return app;
-}
-
-const app = buildApp();
+const { WEB_MOUNT } = await import("../src/web/engine.js");
+const { default: app } = await import("../src/app.js");
 const base = WEB_MOUNT;
 
 /**
@@ -209,6 +205,8 @@ const validToken = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  recoverPassword.mockReset().mockResolvedValue(undefined);
+  consumeWorkflowToken.mockReset().mockResolvedValue(undefined);
   findValidWorkflowToken.mockResolvedValue(validToken);
   findValidLoginChallenge.mockResolvedValue(validToken);
   passwordMeetsPolicy.mockResolvedValue(true);
@@ -248,7 +246,7 @@ describe("password recover", () => {
     const res = await request(app)
       .post(`${base}/recover`)
       .set("Content-Type", "application/x-www-form-urlencoded")
-      .send("email=user@example.com&rendered_at=" + (Date.now() - 2000));
+      .send(`email=user@example.com&rendered_at=${Date.now() - 2000}`);
     expect(res.status).toBe(403);
     expect(issueWorkflowNotification).not.toHaveBeenCalled();
   });
@@ -301,17 +299,23 @@ describe("password recover", () => {
     expect(getPasswordFormPolicy).toHaveBeenCalledWith(55);
   });
 
-  it("POST /recover/reset rotates password and consumes token", async () => {
+  it("POST /recover/reset recovers password before consuming token", async () => {
     const res = await post("/recover/reset", {
       token: "plain",
       password: "GoodPass1!",
       confirm: "GoodPass1!",
     });
     expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/text\/html/);
+    expect(res.text).toContain("Your password has been changed.");
     expect(getPwdPolicyForUser).toHaveBeenCalledWith(55);
     expect(passwordMeetsPolicy).toHaveBeenCalledWith("GoodPass1!", userPolicy);
-    expect(rotatePassword).toHaveBeenCalledWith(55, "GoodPass1!");
+    expect(recoverPassword).toHaveBeenCalledWith(55, "GoodPass1!");
+    expect(rotatePassword).not.toHaveBeenCalled();
     expect(consumeWorkflowToken).toHaveBeenCalledWith(10);
+    expect(recoverPassword.mock.invocationCallOrder[0]).toBeLessThan(
+      consumeWorkflowToken.mock.invocationCallOrder[0],
+    );
   });
 
   it("POST /recover/reset rejects mismatched passwords", async () => {
@@ -321,7 +325,61 @@ describe("password recover", () => {
       confirm: "other",
     });
     expect(res.status).toBe(400);
+    expect(res.headers["content-type"]).toMatch(/text\/html/);
+    expect(res.text).toContain("Passwords do not match.");
+    expect(recoverPassword).not.toHaveBeenCalled();
     expect(rotatePassword).not.toHaveBeenCalled();
+    expect(consumeWorkflowToken).not.toHaveBeenCalled();
+  });
+
+  it.each(["USER_UNAVAILABLE", "PWD_NOT_FOUND", "WEAK_PASSWORD", "UNEXPECTED"])(
+    "POST /recover/reset handles %s without consuming the token",
+    async (code) => {
+      const error = Object.assign(new Error("recovery boundary failed"), {
+        code,
+      });
+      recoverPassword.mockRejectedValueOnce(error);
+      const logged = jest.spyOn(log, "error").mockImplementation(() => {});
+      try {
+        const res = await post("/recover/reset", {
+          token: "plain",
+          password: "GoodPass1!",
+          confirm: "GoodPass1!",
+        });
+        expect(res.status).toBe(code === "UNEXPECTED" ? 500 : 400);
+        expect(res.headers["content-type"]).toMatch(/text\/html/);
+        expect(res.text).toContain(
+          code === "WEAK_PASSWORD"
+            ? "Password does not meet the security policy."
+            : "This link is no longer valid",
+        );
+        expect(recoverPassword).toHaveBeenCalledWith(55, "GoodPass1!");
+        expect(rotatePassword).not.toHaveBeenCalled();
+        expect(consumeWorkflowToken).not.toHaveBeenCalled();
+        if (code === "UNEXPECTED")
+          expect(logged).toHaveBeenCalledWith(
+            expect.stringContaining(
+              "Password recovery failed userId=55: recovery boundary failed",
+            ),
+          );
+      } finally {
+        logged.mockRestore();
+      }
+    },
+  );
+
+  it("POST /recover/reset rejects weak passwords before writing", async () => {
+    passwordMeetsPolicy.mockResolvedValueOnce(false);
+    const res = await post("/recover/reset", {
+      token: "plain",
+      password: "weak",
+      confirm: "weak",
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers["content-type"]).toMatch(/text\/html/);
+    expect(res.text).toContain("Password does not meet the security policy.");
+    expect(recoverPassword).not.toHaveBeenCalled();
+    expect(consumeWorkflowToken).not.toHaveBeenCalled();
   });
 });
 
