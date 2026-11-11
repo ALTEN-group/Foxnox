@@ -12,20 +12,6 @@ import schema from "../middlewares/schema.js";
 router.post("/search", enforceAcl(tEnt, "search"), tEnt.get);
 // Get version history of a specific row
 router.get("/:id/history", enforceAcl(tEnt, "existing"), tEnt.getHistory);
-// Add tokens
-router.post(
-  "/",
-  requireConsumer,
-  enforceAcl(tEnt, "insert"),
-  tEnt.addArraySubstack,
-);
-// Update fields
-router.put(
-  "/",
-  requireConsumer,
-  enforceAcl(tEnt, "existing"),
-  tEnt.updateArraySubstack,
-);
 // Bulk archive
 router.post(
   "/archive",

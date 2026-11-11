@@ -33,9 +33,7 @@ jest.unstable_mockModule("../../src/entities/branding.js", () => ({
   default: {
     get: noop,
     getHistory: noop,
-    addArraySubstack: noop,
     updateArraySubstack: noop,
-    archive: noop,
     privateProps: [],
     properties: props,
     getProp: (key) => props.find((p) => p.key === key),

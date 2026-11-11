@@ -35,7 +35,7 @@ Mock user passwords are **not** Liquibase seed data — they are created at runt
 ./scripts/setup-mocks.sh
 ```
 
-Waits for foxnox to be healthy, then calls `POST /foxnox/pwd` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user in `mocks/ms_user/src/data/users.js`. Plaintexts are:
+Waits for foxnox and megadex to be healthy, seeds mock users into megadex, then calls `POST /foxnox/pwd` (which uses `@dwtechs/passken-express` `create` to generate + hash server-side) to create a password for each mock user. Plaintexts are:
 
 - printed once to your terminal so you can save them for manual login;
 - substituted into `swagger/src/foxnox.openapi.json` (replacing the `__PWD_<userId>__` tokens from the checked-in `.example.json`), which is then reloaded by restarting the swagger container.
@@ -82,7 +82,7 @@ The workflow base comes from `WEB_PUBLIC_BASE` in `docker/conf/.env.dev`. Mailpi
 2. Open Mailpit and the message.
 3. Click the link (`…/recover/reset?token=…`, `…/unlock/confirm?token=…`, or `…/account-recover/challenge?token=…`).
 
-The user lookup goes through `USER_SEARCH_URL` (the `ms_user` mock in the dev stack). An unknown address shows the same "check your email" page but sends nothing. Submitting less than 1.5 seconds after the page rendered is treated as a bot and answered with `204`; wait a moment before clicking Submit.
+The user lookup goes through `USER_SEARCH_URL` (`megadex` in the dev stack). An unknown address shows the same "check your email" page but sends nothing. Submitting less than 1.5 seconds after the page rendered is treated as a bot and answered with `204`; wait a moment before clicking Submit.
 
 **Login-step pages** (`/2fa/verify`, `/password/expired`, `/trusted-devices/prompt`) need a `?challenge=…` minted by the BFF after a successful password check, so they cannot be opened with a hand-written URL. Sign in with a user whose account triggers the step (2FA enabled, or an expired password).
 
@@ -208,7 +208,7 @@ The suite in `web/e2e/` drives the public workflow pages served by Foxnox (`/api
 ./scripts/e2e-web.sh e2e/twofa.spec.ts    # one spec
 ```
 
-Always go through the script. It resets the dedicated e2e accounts (userId 6–9, `e2e-*@example.com` in `mocks/ms_user`: pwd rows, tokens, trusted devices, security answers), restarts Gatelin to refill its `/sessions` rate limit (20 per 15 min — a full run spends most of it), then runs the `web-e2e` container (same image as `admin-e2e`). Each spec owns one account, so specs don't share 2FA or lockout state. Artifacts land in `web/test-results/`.
+Always go through the script. It resets the dedicated e2e accounts (userId 6–9, `e2e-*@example.com` in `megadex`: pwd rows, tokens, trusted devices, security answers), restarts Gatelin to refill its `/sessions` rate limit (20 per 15 min — a full run spends most of it), then runs the `web-e2e` container (same image as `admin-e2e`). Each spec owns one account, so specs don't share 2FA or lockout state. Artifacts land in `web/test-results/`.
 
 Notes:
 
@@ -216,9 +216,9 @@ Notes:
 - A real *expired* login can't be staged (the `pwd_expiry_guard` trigger refuses past dates), so the expired-password spec mints the challenge the way the BFF does after `pwdExpiry < now`.
 - Workflows end by redirecting to the admin login (`WEB_LOGIN_RESUME_URL`), which trades the ticket for a session; specs assert that session where it matters, and stop earlier elsewhere to save rate-limit budget.
 - Deep links use `WEB_PUBLIC_ORIGIN` (`http://localhost:8100`); inside the container Chromium remaps it to Traefik via `E2E_HOST_RULES`.
-- CI: `.github/workflows/web-e2e.yml` runs the same script on pull requests to `main` that touch `web/`, `src/`, `db/`, `docker/`, `mocks/` or `scripts/` (the admin suite has its own `admin-e2e.yml`).
+- CI: `.github/workflows/web-e2e.yml` runs the same script on pull requests to `main` that touch `web/`, `src/`, `db/`, `docker/`, or `scripts/` (the admin suite has its own `admin-e2e.yml`).
 
-The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, mocks, scripts, swagger, or the workflow itself.
+The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, scripts, swagger, or the workflow itself.
 
 ## Production
 

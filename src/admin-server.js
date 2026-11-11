@@ -33,9 +33,11 @@ export function renderAdminIndex(indexHtml, env = process.env) {
   const basePath = normalizeAdminBasePath(env.ADMIN_BASE_PATH);
   const ssoTokenKey = env.ADMIN_SSO_TOKEN_KEY?.trim() || "";
   const rolesSearchUrl = env.ADMIN_ROLES_SEARCH_URL?.trim() || "";
+  const apiUsers = env.ADMIN_API_USERS?.trim() || "";
   const payload = JSON.stringify({
     ...(ssoTokenKey ? { ssoTokenKey } : {}),
     ...(rolesSearchUrl ? { rolesSearchUrl } : {}),
+    ...(apiUsers ? { apiUsers } : {}),
   }).replaceAll("<", "\\u003c");
 
   return indexHtml

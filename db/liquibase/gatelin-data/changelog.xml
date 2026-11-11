@@ -39,5 +39,9 @@
     <comment>Allowed browser Origins for the admin UI (CORS whitelist)</comment>
     <sqlFile path="08-cors.sql"/>
   </changeSet>
+  <changeSet id="foxnox-data-12" author="lcluber" runOnChange="true">
+    <comment>Dev/e2e user service (Megadex /me) registration</comment>
+    <sqlFile path="09-user-service.sql"/>
+  </changeSet>
 
 </databaseChangeLog>

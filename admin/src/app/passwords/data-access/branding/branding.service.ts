@@ -80,10 +80,8 @@ export class BrandingService {
   public readonly httpCalls: Calls<Branding> = {
     get: this.crud.get,
     getAll: this.crud.getAll,
-    create: this.crud.create,
     update: this.crud.update,
     updateFiles: this.uploadLogo,
-    archive: this.crud.archive,
     getHistory: this.crud.getHistory,
   };
 

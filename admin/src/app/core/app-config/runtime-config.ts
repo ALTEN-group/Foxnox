@@ -7,6 +7,7 @@ export interface FoxnoxAdminRuntime {
   ssoTokenKey?: string;
   /** Gatelin "search roles" route, used to pick the roles of a password policy. */
   rolesSearchUrl?: string;
+  apiUsers?: string;
 }
 
 declare global {

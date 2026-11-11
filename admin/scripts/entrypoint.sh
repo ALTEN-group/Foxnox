@@ -8,9 +8,11 @@ const fs = require("fs");
 const path = "src/index.html";
 const ssoTokenKey = (process.env.ADMIN_SSO_TOKEN_KEY || "").trim();
 const rolesSearchUrl = (process.env.ADMIN_ROLES_SEARCH_URL || "").trim();
+const apiUsers = (process.env.ADMIN_API_USERS || "").trim();
 const payload = {
   ...(ssoTokenKey ? { ssoTokenKey } : {}),
   ...(rolesSearchUrl ? { rolesSearchUrl } : {}),
+  ...(apiUsers ? { apiUsers } : {}),
 };
 const script =
   "<script id=\"foxnox-admin-runtime\">window.__FOXNOX_ADMIN__=" +

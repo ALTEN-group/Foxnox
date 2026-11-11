@@ -42,28 +42,12 @@ router.post("/search", enforceAcl(bEnt, "search"), bEnt.get);
 router.post("/preview", requireConsumer, previewBranding);
 // Get version history of a specific row
 router.get("/:id/history", enforceAcl(bEnt, "existing"), bEnt.getHistory);
-// Add branding rows
-router.post(
-  "/",
-  requireConsumer,
-  enforceAcl(bEnt, "insert"),
-  bEnt.addArraySubstack,
-  invalidateBrandingCache,
-);
 // Update fields
 router.put(
   "/",
   requireConsumer,
   enforceAcl(bEnt, "existing"),
   bEnt.updateArraySubstack,
-  invalidateBrandingCache,
-);
-// Bulk archive
-router.post(
-  "/archive",
-  requireConsumer,
-  enforceAcl(bEnt, "existing"),
-  bEnt.archive,
   invalidateBrandingCache,
 );
 // Upload the logo image (multipart, single `logo` file)

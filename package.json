@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/ALTEN-group/Foxnox#readme",
   "dependencies": {
-    "@dwtechs/antity-pgsql": "0.25.0",
+    "@dwtechs/antity-pgsql": "0.26.0",
     "@dwtechs/checkard": "3.7.0",
     "@dwtechs/errandler-express": "0.1.1",
     "@dwtechs/gatelin-express": "0.4.0",

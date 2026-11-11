@@ -3,70 +3,65 @@ import { EntityRouteMapping } from "@core/acl/acls.model";
 /**
  * Maps each admin CRUD operation to its Gatelin route id.
  *
- * IDs assume Gatelin 0.1.0-alpha.5 core seed (80 routes, last = getBasicUserInfo).
+ * IDs assume Gatelin core seed (90 routes, last = resumeSignIn).
  * Foxnox routes are inserted next by db/liquibase/gatelin-data/03-route.sql —
  * keep these comments in sync when adding/reordering that seed.
  *
  * Route IDs (Foxnox block):
- *   81=comparePwd       82=searchPwds       83=getPwdHistory
- *   84=addPwds          85=updatePwds       86=archivePwds      87=getPwdSchema
- *   88=searchTokens     89=getTokenHistory  90=addTokens
- *   91=updateTokens     92=archiveTokens    93=getTokenSchema
- *   94=searchPolicies   95=getPolicyHistory 96=addPolicies
- *   97=updatePolicies   98=archivePolicies  99=getPolicySchema
- *   100=searchDevices   101=getDeviceHistory 102=addDevices
- *   103=updateDevices   104=archiveDevices  105=getDeviceSchema
- *   106=searchBranding  107=getBrandingHistory 108=addBranding
- *   109=updateBranding  110=archiveBranding 111=getBrandingSchema
- *   112-115=preferences 116=searchAudit
- *   117=updateBrandingLogo 118=deleteBrandingLogo
- *   119=updateBrandingFavicon 120=deleteBrandingFavicon 121=previewBranding
- *   122=searchQuestions 123=getQuestionHistory 124=addQuestions
- *   125=updateQuestions 126=archiveQuestions 127=getQuestionSchema
+ *   91=comparePwd       92=searchPwds       93=getPwdHistory
+ *   94=addPwds          95=updatePwds       96=archivePwds      97=getPwdSchema
+ *   98=searchTokens     99=getTokenHistory  100=archiveTokens   101=getTokenSchema
+ *   102=searchPolicies  103=getPolicyHistory 104=addPolicies
+ *   105=updatePolicies  106=archivePolicies 107=restorePolicies 108=getPolicySchema
+ *   109=searchDevices   110=getDeviceHistory 111=getDeviceSchema
+ *   112=searchBranding  113=getBrandingHistory 114=updateBranding 115=getBrandingSchema
+ *   116-119=preferences 120=searchAudit
+ *   121=updateBrandingLogo 122=deleteBrandingLogo
+ *   123=updateBrandingFavicon 124=deleteBrandingFavicon 125=previewBranding
+ *   126=searchQuestions 127=getQuestionHistory 128=addQuestions
+ *   129=updateQuestions 130=archiveQuestions 131=restoreQuestions 132=getQuestionSchema
  */
 export const ENTITY_ROUTE_MAPPING: EntityRouteMapping = {
   passwords: {
-    get: 82, // searchPwds
-    getHistory: 83, // getPwdHistory
-    // create intentionally omitted: passwords can never be added from the admin UI
-    update: 85, // updatePwds
-    archive: 86, // archivePwds
+    get: 92, // searchPwds
+    getHistory: 93, // getPwdHistory
+    // create/archive intentionally omitted: passwords are provisioned and archived by the user service, never from the admin UI
+    update: 95, // updatePwds
   },
   tokens: {
-    get: 88, // searchTokens
-    getHistory: 89, // getTokenHistory
+    get: 98, // searchTokens
+    getHistory: 99, // getTokenHistory
     // create/update intentionally omitted: tokens are issued and consumed by Foxnox's own flows, never edited from the admin UI
-    archive: 92, // archiveTokens
+    archive: 100, // archiveTokens
   },
   policies: {
-    get: 94, // searchPolicies
-    getHistory: 95, // getPolicyHistory
-    create: 96, // addPolicies
-    update: 97, // updatePolicies
-    archive: 98, // archivePolicies
+    get: 102, // searchPolicies
+    getHistory: 103, // getPolicyHistory
+    create: 104, // addPolicies
+    update: 105, // updatePolicies
+    archive: 106, // archivePolicies
+    restore: 107, // restorePolicies
   },
   trustedDevices: {
-    get: 100, // searchDevices
-    getHistory: 101, // getDeviceHistory
-    // create/update intentionally omitted: trusted devices are issued and refreshed by Foxnox's login flow, never edited from the admin UI
-    archive: 104, // archiveDevices
+    get: 109, // searchDevices
+    getHistory: 110, // getDeviceHistory
+    // create/update/archive intentionally omitted: trusted devices are managed by Foxnox's login/user flows, read-only in the admin UI
   },
   branding: {
-    get: 106, // searchBranding
-    getHistory: 107, // getBrandingHistory
-    create: 108, // addBranding
-    update: 109, // updateBranding
-    archive: 110, // archiveBranding
-    updateFiles: 117, // updateBrandingLogo
+    get: 112, // searchBranding
+    getHistory: 113, // getBrandingHistory
+    update: 114, // updateBranding
+    updateFiles: 121, // updateBrandingLogo
   },
   securityQuestions: {
-    get: 122, // searchQuestions
-    getHistory: 123, // getQuestionHistory
-    create: 124, // addQuestions
-    update: 125, // updateQuestions
-    archive: 126, // archiveQuestions
+    get: 126, // searchQuestions
+    getHistory: 127, // getQuestionHistory
+    create: 128, // addQuestions
+    update: 129, // updateQuestions
+    archive: 130, // archiveQuestions
+    restore: 131, // restoreQuestions
   },
   auditLogs: {
-    get: 116, // searchAudit (db/liquibase/gatelin-data/03-route.sql)
+    get: 120, // searchAudit (db/liquibase/gatelin-data/03-route.sql)
   },
 };

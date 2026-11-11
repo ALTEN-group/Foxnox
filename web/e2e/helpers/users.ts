@@ -2,7 +2,7 @@ export type E2eUser = { id: number; email: string };
 
 /**
  * One account per spec so specs never depend on each other's 2FA / lockout state.
- * Keep in sync with mocks/ms_user/src/data/users.js and scripts/e2e-web.sh.
+ * Keep in sync with scripts/setup-mocks.sh and scripts/e2e-web.sh.
  */
 export const USERS = {
   passwords: { id: 6, email: "e2e-passwords@example.com" },
