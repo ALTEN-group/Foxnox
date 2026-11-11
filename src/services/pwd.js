@@ -322,32 +322,26 @@ async function replacePassword(userId, plaintext, restoreArchived) {
     pwdExpiry = new Date(now.getTime() + policy.expiryDays * 86_400_000);
   }
 
-  const { query, args } = restoring
-    ? {
-        query: `UPDATE pwd
-         SET "pwdHash" = $2, "pwdUpdatedAt" = $3, "pwdExpiry" = $4,
-             "failedAttempts" = 0, "lockedUntil" = NULL,
-             archived = FALSE, "archivedAt" = NULL, "updatedAt" = NOW(),
-             "updaterId" = -1, "updaterName" = 'system'
-         WHERE id = $1 AND "userId" = $5 AND archived = TRUE
-           AND NOT EXISTS (
-             SELECT 1 FROM pwd WHERE "userId" = $5 AND archived = FALSE
-           )`,
-        args: [pwdId, pwdHash, now, pwdExpiry, userId],
-      }
-    : pEnt.query.update(
-        [
-          {
-            id: pwdId,
-            pwdHash,
-            pwdUpdatedAt: now,
-            pwdExpiry,
-            failedAttempts: 0,
-            lockedUntil: null,
-          },
-        ],
-        SYSTEM_CONSUMER,
-      );
+  const patch = {
+    id: pwdId,
+    pwdHash,
+    pwdUpdatedAt: now,
+    pwdExpiry,
+    failedAttempts: 0,
+    lockedUntil: null,
+    ...(restoring ? { archived: false, archivedAt: null } : {}),
+  };
+  const updateQuery = pEnt.query.update([patch], SYSTEM_CONSUMER);
+  let query = updateQuery.query;
+  const args = updateQuery.args;
+  if (restoring) {
+    const userIdArg = args.length + 1;
+    query += ` AND "userId" = $${userIdArg} AND archived = TRUE
+      AND NOT EXISTS (
+        SELECT 1 FROM pwd WHERE "userId" = $${userIdArg} AND archived = FALSE
+      )`;
+    args.push(userId);
+  }
   const updated = await execute(query, args, null);
 
   if (Number(updated.rowCount ?? 0) < 1) {

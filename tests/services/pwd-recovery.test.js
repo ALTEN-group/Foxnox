@@ -195,7 +195,7 @@ describe("password recovery and rotation boundaries", () => {
     expect(tx).toBeNull();
   });
 
-  it("should restore only the newest archived row with a new hash in one guarded raw UPDATE", async () => {
+  it("should restore only the newest archived row with a guarded Antity UPDATE", async () => {
     const archived = {
       id: String(PWD_ID),
       pwdHash: "archived-old-hash",
@@ -224,20 +224,39 @@ describe("password recovery and rotation boundaries", () => {
     expect(encrypt.mock.invocationCallOrder[0]).toBeLessThan(
       execute.mock.invocationCallOrder[2],
     );
-    expect(update).not.toHaveBeenCalled();
+    expect(update).toHaveBeenCalledTimes(1);
+    const [patches, consumer] = update.mock.calls[0];
+    expect(consumer).toEqual({ userId: -1, nickname: "system" });
+    expect(patches).toEqual([
+      {
+        id: PWD_ID,
+        pwdHash: expect.any(String),
+        pwdUpdatedAt: expect.any(Date),
+        pwdExpiry: expect.any(Date),
+        failedAttempts: 0,
+        lockedUntil: null,
+        archived: false,
+        archivedAt: null,
+      },
+    ]);
     const [sql, args, tx] = execute.mock.calls[2];
-    expect(sql.replace(/\s+/g, " ").trim()).toBe(
-      'UPDATE pwd SET "pwdHash" = $2, "pwdUpdatedAt" = $3, "pwdExpiry" = $4, ' +
-        '"failedAttempts" = 0, "lockedUntil" = NULL, archived = FALSE, ' +
-        '"archivedAt" = NULL, "updatedAt" = NOW(), "updaterId" = -1, ' +
-        '"updaterName" = \'system\' WHERE id = $1 AND "userId" = $5 AND archived = TRUE ' +
-        'AND NOT EXISTS ( SELECT 1 FROM pwd WHERE "userId" = $5 AND archived = FALSE )',
+    expect(sql).toContain("UPDATE public.pwd SET");
+    expect(sql).toContain("WHERE id IN ($1)");
+    expect(sql).toContain('"userId" = $11 AND archived = TRUE');
+    expect(sql.replace(/\s+/g, " ")).toContain(
+      'NOT EXISTS ( SELECT 1 FROM pwd WHERE "userId" = $11 AND archived = FALSE )',
     );
     expect(args).toEqual([
       PWD_ID,
       expect.any(String),
       expect.any(Date),
       expect.any(Date),
+      0,
+      null,
+      false,
+      null,
+      -1,
+      "system",
       USER_ID,
     ]);
     const [, pwdHash, now, expiry] = args;
@@ -265,7 +284,7 @@ describe("password recovery and rotation boundaries", () => {
       await expect(recoverPassword(USER_ID, STRONG)).resolves.toEqual({
         updated: true,
       });
-      expect(update).not.toHaveBeenCalled();
+      expect(update).toHaveBeenCalledTimes(1);
       expect(execute.mock.calls[2][1][3]).toBeNull();
     },
   );
@@ -331,7 +350,7 @@ describe("password recovery and rotation boundaries", () => {
         code: "PWD_NOT_FOUND",
       });
       expect(execute).toHaveBeenCalledTimes(path === "active" ? 2 : 3);
-      expect(update).toHaveBeenCalledTimes(path === "active" ? 1 : 0);
+      expect(update).toHaveBeenCalledTimes(1);
       expect(encrypt).toHaveBeenCalledTimes(1);
       expect(execute.mock.calls.at(-1)[0]).toMatch(/^UPDATE /);
     },
@@ -360,7 +379,7 @@ describe("password recovery and rotation boundaries", () => {
 
       await expect(recoverPassword(USER_ID, STRONG)).rejects.toBe(error);
       expect(execute).toHaveBeenCalledTimes(expectedCalls);
-      if (stage !== "update") expect(update).not.toHaveBeenCalled();
+      expect(update).toHaveBeenCalledTimes(stage === "update" ? 1 : 0);
       if (!["hash", "update"].includes(stage)) {
         expect(encrypt).not.toHaveBeenCalled();
       }

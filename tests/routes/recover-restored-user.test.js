@@ -112,40 +112,26 @@ async function database(sql, args = []) {
       rowCount: Math.min(rows.length, 1),
     };
   }
-  if (text.startsWith("UPDATE pwd SET")) {
-    expect(text).toContain(
-      'WHERE id = $1 AND "userId" = $5 AND archived = TRUE',
-    );
-    expect(text).toContain(
-      'NOT EXISTS ( SELECT 1 FROM pwd WHERE "userId" = $5 AND archived = FALSE )',
-    );
-    expect(text).toContain("archived = FALSE");
-    expect(text).not.toMatch(/twoFactor/);
-    const [id, pwdHash, pwdUpdatedAt, pwdExpiry, userId] = args;
-    const row = passwords.find(
-      (item) => item.id === id && item.userId === userId && item.archived,
-    );
-    if (
-      !row ||
-      passwords.some((item) => item.userId === userId && !item.archived)
-    )
-      return { rows: [], rowCount: 0 };
-    Object.assign(row, {
-      pwdHash,
-      pwdUpdatedAt,
-      pwdExpiry,
-      failedAttempts: 0,
-      lockedUntil: null,
-      archived: false,
-      archivedAt: null,
-    });
-    return { rows: [], rowCount: 1 };
-  }
   if (text.startsWith("UPDATE public.pwd SET")) {
     const row = passwords.find((item) => item.id === args[0]);
     if (!row) return { rows: [], rowCount: 0 };
+    const restoring = text.includes("AND archived = TRUE");
+    if (restoring) {
+      const userId = args.at(-1);
+      expect(text).toContain(`"userId" = $${args.length} AND archived = TRUE`);
+      expect(text).toContain(
+        `NOT EXISTS ( SELECT 1 FROM pwd WHERE "userId" = $${args.length} AND archived = FALSE )`,
+      );
+      if (
+        row.userId !== userId ||
+        !row.archived ||
+        passwords.some((item) => item.userId === userId && !item.archived)
+      )
+        return { rows: [], rowCount: 0 };
+    }
+    expect(text).not.toMatch(/twoFactor/);
     for (const match of text.matchAll(
-      /"(\w+)" = CASE WHEN id = \$1 THEN \$(\d+) ELSE/g,
+      /"?([A-Za-z]\w*)"? = CASE WHEN id = \$1 THEN \$(\d+) ELSE/g,
     )) {
       row[match[1]] = args[Number(match[2]) - 1];
     }
@@ -252,9 +238,7 @@ describe("GET/POST /foxnox/web/recover/reset", () => {
       ).toBe(30 * 86_400_000);
       expect(writes("pwd")).toHaveLength(1);
       expect(writes("pwd")[0][1][0]).toBe(9);
-      expect(writes("pwd")[0][0]).toMatch(
-        state === "archived" ? /^UPDATE pwd\b/ : /^UPDATE public\.pwd\b/,
-      );
+      expect(writes("pwd")[0][0]).toMatch(/^UPDATE public\.pwd\b/);
       expect(token).toMatchObject({
         archived: true,
         verifiedAt: expect.any(Date),
@@ -342,7 +326,7 @@ describe("GET/POST /foxnox/web/recover/reset", () => {
   ])("should not consume the token when %s", async (_name, rejects, status) => {
     const before = structuredClone(passwords);
     query.mockImplementation(async (sql, args) => {
-      if (sql.trim().startsWith("UPDATE pwd")) {
+      if (sql.trim().startsWith("UPDATE public.pwd")) {
         if (rejects) throw new Error("password write unavailable");
         return { rows: [], rowCount: 0 };
       }
