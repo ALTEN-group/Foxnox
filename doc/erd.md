@@ -14,7 +14,7 @@ erDiagram
 
   pwd {
     int id PK
-    int userId FK "ms_user"
+    int userId FK "user service"
     varchar pwdHash
     timestamp pwdUpdatedAt
     timestamp pwdExpiry
@@ -60,7 +60,7 @@ erDiagram
     int id PK
     varchar hash UK
     int typeId FK
-    int userId FK "ms_user"
+    int userId FK "user service"
     int attempts
     timestamp expiresAt
     timestamp verifiedAt
@@ -70,7 +70,7 @@ erDiagram
 
   user_trusted_device {
     int id PK
-    int userId FK "ms_user"
+    int userId FK "user service"
     varchar deviceTokenHash UK
     varchar deviceName
     varchar ipAddress
@@ -117,7 +117,7 @@ erDiagram
 
   user_security_answer {
     int id PK
-    int userId FK "ms_user"
+    int userId FK "user service"
     int questionId FK
     varchar answerHash
     boolean archived

@@ -32,8 +32,10 @@ rm -f "$ENV_TMP"
 : "${POSTGRES_HOST:?POSTGRES_HOST missing from $ENV_FILE}"
 : "${FOXNOX_MIGRATION_HOST:?FOXNOX_MIGRATION_HOST missing from $ENV_FILE}"
 : "${GATELIN_MIGRATION_HOST:?GATELIN_MIGRATION_HOST missing from $ENV_FILE}"
+: "${MEGADEX_MIGRATION_HOST:?MEGADEX_MIGRATION_HOST missing from $ENV_FILE}"
 : "${FOXNOX_HOST:?FOXNOX_HOST missing from $ENV_FILE}"
 : "${GATELIN_HOST:?GATELIN_HOST missing from $ENV_FILE}"
+: "${MEGADEX_HOST:?MEGADEX_HOST missing from $ENV_FILE}"
 : "${APP_NAME:?APP_NAME missing from $ENV_FILE}"
 
 VOLUME_NAME="${APP_NAME}_postgres_data"
@@ -48,7 +50,7 @@ VOLUME_NAME="${APP_NAME}_postgres_data"
 # them again afterwards, which also rebuilds Gatelin's route/CORS caches from the
 # re-seeded database. They hold no state, so stopping is enough — no need to recreate.
 echo -e "🛑 Stopping app containers..."
-for c in "$FOXNOX_HOST" "$GATELIN_HOST"; do
+for c in "$FOXNOX_HOST" "$GATELIN_HOST" "$MEGADEX_HOST"; do
   if docker stop "$c" >/dev/null 2>&1; then
     echo -e "${GREEN}✓${NC} Stopped $c"
   else
@@ -60,7 +62,7 @@ done
 # detach from the volume, and the one-shot migration containers only re-run when
 # recreated (compose's service_completed_successfully is satisfied by a stale exit 0).
 echo -e "📦 Removing containers..."
-for c in "$FOXNOX_MIGRATION_HOST" "$GATELIN_MIGRATION_HOST" "$POSTGRES_HOST"; do
+for c in "$FOXNOX_MIGRATION_HOST" "$GATELIN_MIGRATION_HOST" "$MEGADEX_MIGRATION_HOST" "$POSTGRES_HOST"; do
   if docker rm -f "$c" 2>/dev/null; then
     echo -e "${GREEN}✓${NC} Removed $c"
   else

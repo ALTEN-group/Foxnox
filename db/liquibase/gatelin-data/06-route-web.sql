@@ -1,24 +1,24 @@
 --
 -- Foxnox web workflow routes (Handlebars SSR): recovery, 2FA, security
 -- questions, trusted devices, expired password, unlock, "request sent" pages.
--- Assigned IDs after the CRUD block in 03-route.sql (Gatelin alpha.5 core = 80,
--- Foxnox CRUD = 81-105) → this block starts at 106 on a fresh DB.
+-- Assigned IDs after the CRUD block in 03-route.sql (Gatelin core = 90,
+-- Foxnox CRUD = 91-132) → this block starts at 133 on a fresh DB.
 --
---   106=getRecoverRequest           107=postRecoverRequest
---   108=getRecoverReset             109=postRecoverReset
---   110=getTwofaVerify              111=postTwofaVerify
---   112=getTwofaSetup               113=postTwofaSetup
---   114=getWebAssets
---   115=getAccountRecoverRequest    116=postAccountRecoverRequest
---   117=getAccountRecoverChallenge  118=postAccountRecoverChallenge
---   119=getSecurityQuestionsSetup   120=postSecurityQuestionsSetup
---   121=getTrustedDevicePrompt      122=postTrustedDevicePrompt
---   123=getTrustedDevicesManage     124=postTrustedDevicesManage
---   125=getPasswordExpired          126=postPasswordExpired
---   127=getUnlockRequest            128=postUnlockRequest
---   129=getUnlockConfirm
---   130=getRecoverSent              131=getAccountRecoverSent
---   132=getUnlockSent
+--   133=getRecoverRequest           134=postRecoverRequest
+--   135=getRecoverReset             136=postRecoverReset
+--   137=getTwofaVerify              138=postTwofaVerify
+--   139=getTwofaSetup               140=postTwofaSetup
+--   141=getWebAssets
+--   142=getAccountRecoverRequest    143=postAccountRecoverRequest
+--   144=getAccountRecoverChallenge  145=postAccountRecoverChallenge
+--   146=getSecurityQuestionsSetup   147=postSecurityQuestionsSetup
+--   148=getTrustedDevicePrompt      149=postTrustedDevicePrompt
+--   150=getTrustedDevicesManage     151=postTrustedDevicesManage
+--   152=getPasswordExpired          153=postPasswordExpired
+--   154=getUnlockRequest            155=postUnlockRequest
+--   156=getUnlockConfirm
+--   157=getRecoverSent              158=getAccountRecoverSent
+--   159=getUnlockSent
 --
 -- operationIds: 1=read 2=list 6=create 13=execute
 -- methodIds:    1=GET  2=POST

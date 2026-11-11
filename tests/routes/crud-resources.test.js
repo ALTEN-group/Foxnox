@@ -31,7 +31,7 @@ const CONSUMER_HEADERS = {
   "x-consumer-name": "tester",
 };
 
-/** @typedef {{ name: string, mount: string, entityFile: string, historyTable: string, privateProps: string[] }} Resource */
+/** @typedef {{ name: string, mount: string, entityFile: string, historyTable: string, privateProps: string[], canAdd: boolean, canUpdate: boolean, canArchive: boolean, canRestore: boolean }} Resource */
 
 /** @type {Resource[]} */
 const RESOURCES = [
@@ -41,6 +41,10 @@ const RESOURCES = [
     entityFile: "pwd.js",
     historyTable: "pwd",
     privateProps: ["pwdHash", "twoFactorSecret"],
+    canAdd: true,
+    canUpdate: true,
+    canArchive: true,
+    canRestore: false,
   },
   {
     name: "tokens",
@@ -48,6 +52,10 @@ const RESOURCES = [
     entityFile: "token.js",
     historyTable: "token",
     privateProps: ["hash"],
+    canAdd: false,
+    canUpdate: false,
+    canArchive: true,
+    canRestore: false,
   },
   {
     name: "policies",
@@ -55,6 +63,10 @@ const RESOURCES = [
     entityFile: "pwd-policy.js",
     historyTable: "pwd_policy",
     privateProps: [],
+    canAdd: true,
+    canUpdate: true,
+    canArchive: true,
+    canRestore: true,
   },
   {
     name: "trusted-devices",
@@ -62,6 +74,10 @@ const RESOURCES = [
     entityFile: "user-device.js",
     historyTable: "user_trusted_device",
     privateProps: ["deviceTokenHash"],
+    canAdd: false,
+    canUpdate: false,
+    canArchive: false,
+    canRestore: false,
   },
   {
     name: "questions",
@@ -69,6 +85,10 @@ const RESOURCES = [
     entityFile: "security-question.js",
     historyTable: "security_question",
     privateProps: [],
+    canAdd: true,
+    canUpdate: true,
+    canArchive: true,
+    canRestore: true,
   },
 ];
 
@@ -80,6 +100,8 @@ const entityAdds = {};
 const entityUpdates = {};
 /** @type {Record<string, import("@jest/globals").Mock>} */
 const entityArchives = {};
+/** @type {Record<string, import("@jest/globals").Mock>} */
+const entityRestores = {};
 /** @type {Record<string, import("@jest/globals").Mock>} */
 const historyMiddlewares = {};
 
@@ -114,11 +136,17 @@ for (const resource of RESOURCES) {
     res.locals.total = res.locals.rows.length;
     next();
   });
+  const restore = jest.fn((req, res, next) => {
+    res.locals.rows = req.body.rows ?? [];
+    res.locals.total = res.locals.rows.length;
+    next();
+  });
 
   entityGets[tag] = get;
   entityAdds[tag] = addArraySubstack;
   entityUpdates[tag] = updateArraySubstack;
   entityArchives[tag] = archive;
+  entityRestores[tag] = restore;
 
   // SQLEntity.getHistory / history(options) come from @dwtechs/antity-pgsql
   const getHistory = jest.fn((_req, res, next) => {
@@ -149,6 +177,7 @@ for (const resource of RESOURCES) {
         addArraySubstack,
         updateArraySubstack,
         archive,
+        restore,
         getHistory,
         history: jest.fn(() => getHistory),
         privateProps: resource.privateProps,
@@ -252,71 +281,98 @@ describe.each(RESOURCES)(
   },
 );
 
-describe.each(RESOURCES)("POST $mount (add) ($name)", ({ name, mount }) => {
-  beforeEach(() => {
-    entityAdds[name].mockClear();
-  });
+describe.each(RESOURCES.filter((r) => r.canAdd))(
+  "POST $mount (add) ($name)",
+  ({ name, mount }) => {
+    beforeEach(() => {
+      entityAdds[name].mockClear();
+    });
 
-  it("routes to addArraySubstack", async () => {
-    const res = await request(app)
-      .post(`${mount}/`)
-      .set(CONSUMER_HEADERS)
-      .send({ rows: [{ id: 9, entity: name }] });
-    expect(res.status).toBe(200);
-    expect(res.body.rows[0].entity).toBe(name);
-    expect(entityAdds[name]).toHaveBeenCalledTimes(1);
-  });
+    it("routes to addArraySubstack", async () => {
+      const res = await request(app)
+        .post(`${mount}/`)
+        .set(CONSUMER_HEADERS)
+        .send({ rows: [{ id: 9, entity: name }] });
+      expect(res.status).toBe(200);
+      expect(res.body.rows[0].entity).toBe(name);
+      expect(entityAdds[name]).toHaveBeenCalledTimes(1);
+    });
 
-  it("rejects a write with no consumer headers", async () => {
-    const res = await request(app)
-      .post(`${mount}/`)
-      .send({ rows: [{ id: 9, entity: name }] });
-    expect(res.status).toBe(401);
-    expect(entityAdds[name]).not.toHaveBeenCalled();
-  });
-});
+    it("rejects a write with no consumer headers", async () => {
+      const res = await request(app)
+        .post(`${mount}/`)
+        .send({ rows: [{ id: 9, entity: name }] });
+      expect(res.status).toBe(401);
+      expect(entityAdds[name]).not.toHaveBeenCalled();
+    });
+  },
+);
 
-describe.each(RESOURCES)("PUT $mount (update) ($name)", ({ name, mount }) => {
-  beforeEach(() => {
-    entityUpdates[name].mockClear();
-  });
+describe.each(RESOURCES.filter((r) => r.canUpdate))(
+  "PUT $mount (update) ($name)",
+  ({ name, mount }) => {
+    beforeEach(() => {
+      entityUpdates[name].mockClear();
+    });
 
-  it("routes to updateArraySubstack", async () => {
-    const res = await request(app)
-      .put(`${mount}/`)
-      .set(CONSUMER_HEADERS)
-      .send({ rows: [{ id: 1, entity: name }] });
-    expect(res.status).toBe(200);
-    expect(entityUpdates[name]).toHaveBeenCalledTimes(1);
-  });
-});
+    it("routes to updateArraySubstack", async () => {
+      const res = await request(app)
+        .put(`${mount}/`)
+        .set(CONSUMER_HEADERS)
+        .send({ rows: [{ id: 1, entity: name }] });
+      expect(res.status).toBe(200);
+      expect(entityUpdates[name]).toHaveBeenCalledTimes(1);
+    });
+  },
+);
 
-describe.each(RESOURCES)("POST $mount/archive ($name)", ({ name, mount }) => {
-  beforeEach(() => {
-    entityArchives[name].mockClear();
-    execute.mockReset().mockResolvedValue({ rows: [], rowCount: 0 });
-  });
+describe.each(RESOURCES.filter((r) => r.canArchive))(
+  "POST $mount/archive ($name)",
+  ({ name, mount }) => {
+    beforeEach(() => {
+      entityArchives[name].mockClear();
+      execute.mockReset().mockResolvedValue({ rows: [], rowCount: 0 });
+    });
 
-  it("routes to archive", async () => {
-    const res = await request(app)
-      .post(`${mount}/archive`)
-      .set(CONSUMER_HEADERS)
-      .send({ rows: [{ id: 1 }] });
-    expect(res.status).toBe(200);
-    expect(res.headers["content-type"]).toMatch(/json/);
-    expect(entityArchives[name]).toHaveBeenCalledTimes(1);
-    if (name === "pwd") {
-      expect(execute).toHaveBeenCalledTimes(1);
-      expect(execute.mock.calls[0][0]).toMatch(/^\s*UPDATE token\b/);
-      expect(execute.mock.calls[0][1]).toEqual([[1], 1, "tester"]);
-      expect(execute.mock.invocationCallOrder[0]).toBeLessThan(
-        entityArchives[name].mock.invocationCallOrder[0],
-      );
-    } else {
-      expect(execute).not.toHaveBeenCalled();
-    }
-  });
-});
+    it("routes to archive", async () => {
+      const res = await request(app)
+        .post(`${mount}/archive`)
+        .set(CONSUMER_HEADERS)
+        .send({ rows: [{ id: 1 }] });
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toMatch(/json/);
+      expect(entityArchives[name]).toHaveBeenCalledTimes(1);
+      if (name === "pwd") {
+        expect(execute).toHaveBeenCalledTimes(1);
+        expect(execute.mock.calls[0][0]).toMatch(/^\s*UPDATE token\b/);
+        expect(execute.mock.calls[0][1]).toEqual([[1], 1, "tester"]);
+        expect(execute.mock.invocationCallOrder[0]).toBeLessThan(
+          entityArchives[name].mock.invocationCallOrder[0],
+        );
+      } else {
+        expect(execute).not.toHaveBeenCalled();
+      }
+    });
+  },
+);
+
+describe.each(RESOURCES.filter((r) => r.canRestore))(
+  "POST $mount/restore ($name)",
+  ({ name, mount }) => {
+    beforeEach(() => {
+      entityRestores[name].mockClear();
+    });
+
+    it("routes to restore", async () => {
+      const res = await request(app)
+        .post(`${mount}/restore`)
+        .set(CONSUMER_HEADERS)
+        .send({ rows: [{ id: 1 }] });
+      expect(res.status).toBe(200);
+      expect(entityRestores[name]).toHaveBeenCalledTimes(1);
+    });
+  },
+);
 
 describe.each(RESOURCES)("GET $mount/schema ($name)", ({ name, mount }) => {
   it("returns non-private property projections", async () => {

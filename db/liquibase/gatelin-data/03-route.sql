@@ -1,29 +1,26 @@
 --
 -- Foxnox route default inserts.
--- operationIds: 2=list 5=bulk update 7=bulk create 9=bulk archive 10=delete 13=execute (from Gatelin's core operation seed)
--- methodIds:    1=GET  2=POST        3=PUT                                    (from Gatelin's core method seed)
+-- operationIds: 2=list 5=bulk update 7=bulk create 9=bulk archive 10=delete 13=execute 15=bulk restore (from Gatelin's core operation seed)
+-- methodIds:    1=GET  2=POST        3=PUT         5=DELETE                                            (from Gatelin's core method seed)
 --
--- Assigned route IDs (Gatelin 0.1.0-alpha.5 core seed ends at 80 = getBasicUserInfo):
---   81=comparePwd       82=searchPwds       83=getPwdHistory
---   84=addPwds          85=updatePwds       86=archivePwds      87=getPwdSchema
---   88=searchTokens     89=getTokenHistory  90=addTokens
---   91=updateTokens     92=archiveTokens    93=getTokenSchema
---   94=searchPolicies   95=getPolicyHistory 96=addPolicies
---   97=updatePolicies   98=archivePolicies  99=getPolicySchema
---   100=searchDevices   101=getDeviceHistory 102=addDevices
---   103=updateDevices   104=archiveDevices  105=getDeviceSchema
---   106=searchBranding  107=getBrandingHistory 108=addBranding
---   109=updateBranding  110=archiveBranding 111=getBrandingSchema
---   112=getFoxnoxPreferences 113=addFoxnoxPreferences 114=updateFoxnoxPreferences 115=deleteFoxnoxPreference
---   116=searchAudit     117=updateBrandingLogo 118=deleteBrandingLogo
---   119=updateBrandingFavicon 120=deleteBrandingFavicon 121=previewBranding
---   122=searchQuestions 123=getQuestionHistory 124=addQuestions
---   125=updateQuestions 126=archiveQuestions 127=getQuestionSchema
+-- Assigned route IDs (Gatelin core seed ends at 90 = resumeSignIn):
+--   91=comparePwd       92=searchPwds       93=getPwdHistory
+--   94=addPwds          95=updatePwds       96=archivePwds      97=getPwdSchema
+--   98=searchTokens     99=getTokenHistory  100=archiveTokens   101=getTokenSchema
+--   102=searchPolicies  103=getPolicyHistory 104=addPolicies
+--   105=updatePolicies  106=archivePolicies 107=restorePolicies 108=getPolicySchema
+--   109=searchDevices   110=getDeviceHistory 111=getDeviceSchema
+--   112=searchBranding  113=getBrandingHistory 114=updateBranding 115=getBrandingSchema
+--   116=getFoxnoxPreferences 117=addFoxnoxPreferences 118=updateFoxnoxPreferences 119=deleteFoxnoxPreference
+--   120=searchAudit     121=updateBrandingLogo 122=deleteBrandingLogo
+--   123=updateBrandingFavicon 124=deleteBrandingFavicon 125=previewBranding
+--   126=searchQuestions 127=getQuestionHistory 128=addQuestions
+--   129=updateQuestions 130=archiveQuestions 131=restoreQuestions 132=getQuestionSchema
 -- Keep admin/src/app/core/app-config/app.acls.ts in sync with this order.
 --
 
 INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "operationId", "methodIds", "creatorId", "creatorName") VALUES
-  -- password (/foxnox/pwd, matches password.js exactly)
+  -- password (/foxnox/pwd, matches password.js)
   ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/compare',            'comparePwd',       'Compare a plaintext password against its hash', true, false, ARRAY[13], ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/search',             'searchPwds',       'Search passwords',                              true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/pwd'),                '/(?<id>\d+)/history', 'getPwdHistory',    'Manage password history',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
@@ -35,8 +32,6 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   -- tokens (/foxnox/tokens)
   ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '/search',             'searchTokens',     'Search tokens',                                 true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '/(?<id>\d+)/history', 'getTokenHistory',  'Manage token history',                          true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '',                    'addTokens',        'Add tokens',                                    true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '',                    'updateTokens',     'Update tokens',                                 true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '/archive',            'archiveTokens',    'Archive tokens',                                true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/tokens'),          '/schema',             'getTokenSchema',   'Get token entity schema',                       true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
@@ -46,22 +41,18 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/policies'),        '',                    'addPolicies',      'Add password policies',                         true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/policies'),        '',                    'updatePolicies',   'Update password policies',                      true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/policies'),        '/archive',            'archivePolicies',  'Archive password policies',                     true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/policies'),        '/restore',            'restorePolicies',  'Restore password policies',                     true, false, ARRAY[15], ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/policies'),        '/schema',             'getPolicySchema',   'Get password policy entity schema',             true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
   -- trusted devices (/foxnox/devices)
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/search',             'searchDevices',    'Search trusted devices',                        true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/(?<id>\d+)/history', 'getDeviceHistory', 'Manage trusted device history',                 true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '',                    'addDevices',       'Add trusted devices',                           true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '',                    'updateDevices',     'Update trusted devices',                        true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/archive',            'archiveDevices',    'Archive trusted devices',                       true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/devices'),         '/schema',             'getDeviceSchema',  'Get trusted device entity schema',              true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
   -- branding (/foxnox/branding)
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/search',             'searchBranding',   'Search branding',                               true, false, ARRAY[2],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/(?<id>\d+)/history', 'getBrandingHistory', 'Manage branding history',                     true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'addBranding',      'Add branding',                                   true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '',                    'updateBranding',   'Update branding',                                true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
-  ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/archive',            'archiveBranding',  'Archive branding',                               true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/branding'),        '/schema',             'getBrandingSchema', 'Get branding entity schema',                   true, false, ARRAY[2],  ARRAY[1], -1, 'system'),
 
   -- table-view preferences (/foxnox/preferences, served by Foxnox's own routes/preference.js)
@@ -91,5 +82,6 @@ INSERT INTO routes ("resourceId", pattern, name, description, protected, core, "
   ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '',                    'addQuestions',     'Add security questions',                        true, false, ARRAY[7],  ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '',                    'updateQuestions',  'Update security questions',                     true, false, ARRAY[5],  ARRAY[3], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/archive',            'archiveQuestions', 'Archive security questions',                    true, false, ARRAY[9],  ARRAY[2], -1, 'system'),
+  ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/restore',            'restoreQuestions', 'Restore security questions',                    true, false, ARRAY[15], ARRAY[2], -1, 'system'),
   ((SELECT id FROM resource WHERE name = 'foxnox/questions'),       '/schema',             'getQuestionSchema', 'Get security question entity schema',          true, false, ARRAY[2],  ARRAY[1], -1, 'system')
 ;

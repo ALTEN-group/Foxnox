@@ -3,8 +3,8 @@ import { isArray, isInteger } from "@dwtechs/checkard";
 import { log } from "@dwtechs/winstan";
 
 /**
- * First user matching the filters on the user-management search API
- * (ms_user mock in dev), or null when absent or unreachable.
+ * First user matching the filters on the user-management search API,
+ * or null when absent or unreachable.
  *
  * @param {Record<string, { value: unknown, matchMode: string }>} filters
  * @returns {Promise<Record<string, any> | null>}

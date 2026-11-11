@@ -48,7 +48,7 @@ export const CONFIG: AppConfig = {
   sidenavItems: SIDENAV,
   foxnoxApi: environment.foxnoxApi,
   gatelinApi: environment.gatelinApi,
-  apiUsers: environment.apiUsers,
+  apiUsers: runtime.apiUsers?.trim() || environment.apiUsers,
   webBase:
     environment.webBase ??
     `${environment.foxnoxApi.replace(/\/?$/, "/")}web`,

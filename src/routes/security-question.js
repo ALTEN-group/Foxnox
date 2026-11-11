@@ -33,6 +33,13 @@ router.post(
   enforceAcl(sqEnt, "existing"),
   sqEnt.archive,
 );
+// Bulk restore
+router.post(
+  "/restore",
+  requireConsumer,
+  enforceAcl(sqEnt, "existing"),
+  sqEnt.restore,
+);
 // Get entity schema
 router.get("/schema", enforceAcl(sqEnt, "output"), schema.get(sqEnt));
 

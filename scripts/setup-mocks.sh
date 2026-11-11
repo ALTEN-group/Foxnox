@@ -55,31 +55,68 @@ set +a
 rm -f "$ENV_TMP"
 
 : "${FOXNOX_HOST:?FOXNOX_HOST missing from $ENV_FILE}"
+: "${MEGADEX_HOST:?MEGADEX_HOST missing from $ENV_FILE}"
 : "${POSTGRES_HOST:?POSTGRES_HOST missing from $ENV_FILE}"
 : "${POSTGRES_ROOT_USER:?POSTGRES_ROOT_USER missing from $ENV_FILE}"
 : "${POSTGRES_ROOT_PWD:?POSTGRES_ROOT_PWD missing from $ENV_FILE}"
 : "${FOXNOX_DB_NAME:?FOXNOX_DB_NAME missing from $ENV_FILE}"
+: "${MEGADEX_DB_NAME:?MEGADEX_DB_NAME missing from $ENV_FILE}"
 : "${DEFAULT_PORT:?DEFAULT_PORT missing from $ENV_FILE}"
 : "${SWAGGER_HOST:?SWAGGER_HOST missing from $ENV_FILE}"
 
-# 1. Wait until the foxnox container is healthy (up to ~60s).
-echo -e "${YELLOW}⏳ Waiting for ${FOXNOX_HOST} to be healthy...${NC}"
-for i in {1..30}; do
-  status=$(docker inspect -f '{{.State.Health.Status}}' "$FOXNOX_HOST" 2>/dev/null || echo "missing")
-  if [[ "$status" == "healthy" ]]; then
-    echo -e "${GREEN}✓${NC} ${FOXNOX_HOST} is healthy"
-    break
-  fi
-  if [[ "$status" == "missing" ]]; then
-    echo -e "${RED}Error:${NC} container ${FOXNOX_HOST} not found. Run scripts/start-dev.sh first." >&2
-    exit 1
-  fi
-  sleep 2
-  if [[ $i -eq 30 ]]; then
-    echo -e "${RED}Error:${NC} timed out waiting for ${FOXNOX_HOST} to become healthy (last status: $status)." >&2
-    exit 1
-  fi
+# 1. Wait until the foxnox and megadex containers are healthy (up to ~60s).
+for HOST in "$FOXNOX_HOST" "$MEGADEX_HOST"; do
+  echo -e "${YELLOW}⏳ Waiting for ${HOST} to be healthy...${NC}"
+  for i in {1..30}; do
+    status=$(docker inspect -f '{{.State.Health.Status}}' "$HOST" 2>/dev/null || echo "missing")
+    if [[ "$status" == "healthy" ]]; then
+      echo -e "${GREEN}✓${NC} ${HOST} is healthy"
+      break
+    fi
+    if [[ "$status" == "missing" ]]; then
+      echo -e "${RED}Error:${NC} container ${HOST} not found. Run scripts/start-dev.sh first." >&2
+      exit 1
+    fi
+    sleep 2
+    if [[ $i -eq 30 ]]; then
+      echo -e "${RED}Error:${NC} timed out waiting for ${HOST} to become healthy (last status: $status)." >&2
+      exit 1
+    fi
+  done
 done
+
+# 1b. Ensure mock users (1..5) and web/e2e users (6..9) exist in megadex.
+echo -e "${YELLOW}🌱 Ensuring mock users exist in ${MEGADEX_DB_NAME}...${NC}"
+docker exec -i -e PGPASSWORD="$POSTGRES_ROOT_PWD" "$POSTGRES_HOST" \
+  psql -U "$POSTGRES_ROOT_USER" -d "$MEGADEX_DB_NAME" -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+INSERT INTO "user" (id, civility, gender, "firstName", "middleName", "lastName", nickname, email, address, "zipCode", city, country, language, phone, portrait, active, archived, "creatorId", "creatorName")
+VALUES
+  (1, 'Mr.', 'M', 'Admin',    NULL,       'User',        'Admin',           'admin@example.com',         '123 Admin Street',    '75001', 'Paris', 'FRA', 'en', '+33123456789', NULL, true, false, -1, 'system'),
+  (2, 'Ms.', 'F', 'Standard', NULL,       'User',        'StandardUser',    'standard@example.com',      '456 Standard Avenue', '75002', 'Paris', 'FRA', 'en', '+33987654321', NULL, true, false, -1, 'system'),
+  (3, 'Mr.', 'M', 'Coco',     'Cocouser', 'Lastico',     'CLastico',        'coco@example.com',          '789 Club Boulevard',  '75003', 'Paris', 'FRA', 'en', '+33112233445', NULL, true, false, -1, 'system'),
+  (4, 'Mr.', 'M', 'Guest',    NULL,       'User',        'GuestUser',       'guest@example.com',         '1 Guest Lane',        '75004', 'Paris', 'FRA', 'en', '+33600000004', NULL, true, false, -1, 'system'),
+  (5, 'Ms.', 'F', 'Service',  NULL,       'User',        'ServiceUser',     'service@example.com',       '2 Service Street',    '75005', 'Paris', 'FRA', 'en', '+33600000005', NULL, true, false, -1, 'system'),
+  (6, 'Ms.', 'F', 'Web',      NULL,       'E2E passwords','WebE2E-passwords','e2e-passwords@example.com','6 E2E Street',        '75006', 'Paris', 'FRA', 'en', '+33600000006', NULL, true, false, -1, 'system'),
+  (7, 'Ms.', 'F', 'Web',      NULL,       'E2E twofa',   'WebE2E-twofa',    'e2e-twofa@example.com',     '6 E2E Street',        '75006', 'Paris', 'FRA', 'en', '+33600000006', NULL, true, false, -1, 'system'),
+  (8, 'Ms.', 'F', 'Web',      NULL,       'E2E devices', 'WebE2E-devices',  'e2e-devices@example.com',   '6 E2E Street',        '75006', 'Paris', 'FRA', 'en', '+33600000006', NULL, true, false, -1, 'system'),
+  (9, 'Ms.', 'F', 'Web',      NULL,       'E2E recover', 'WebE2E-recover',  'e2e-recover@example.com',   '6 E2E Street',        '75006', 'Paris', 'FRA', 'en', '+33600000006', NULL, true, false, -1, 'system')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('"user"', 'id'), GREATEST((SELECT COALESCE(MAX(id), 1) FROM "user"), 9));
+
+INSERT INTO user_role ("userId", "roleId", "creatorId", "creatorName")
+VALUES
+  (1, 2, -1, 'system'),
+  (2, 3, -1, 'system'),
+  (3, 1, -1, 'system'),
+  (4, 4, -1, 'system'),
+  (5, 5, -1, 'system'),
+  (6, 1, -1, 'system'),
+  (7, 1, -1, 'system'),
+  (8, 1, -1, 'system'),
+  (9, 1, -1, 'system')
+ON CONFLICT ("userId", "roleId") DO NOTHING;
+SQL
 
 IDS_CSV=$(IFS=,; echo "${MOCK_USER_IDS[*]}")
 

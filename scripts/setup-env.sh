@@ -21,7 +21,10 @@ FOXNOX_DB_PWD=$(openssl rand -base64 24)
 FOXNOX_DB_JOB_USER="foxnox_job_$(openssl rand -hex 4)"
 FOXNOX_DB_JOB_PWD=$(openssl rand -base64 24)
 FOXNOX_PWD_SECRET=$(openssl rand 48 | base64 | tr -d '\n=' | tr '+/' '-_')
-MSUSER_TOKEN_SECRET=$(openssl rand 48 | base64 | tr -d '\n=' | tr '+/' '-_')
+MEGADEX_DB_USER="megadex_$(openssl rand -hex 4)"
+MEGADEX_DB_PWD=$(openssl rand -base64 24)
+MEGADEX_DB_JOB_USER="megadex_job_$(openssl rand -hex 4)"
+MEGADEX_DB_JOB_PWD=$(openssl rand -base64 24)
 GATELIN_DB_USER="gatelin_$(openssl rand -hex 4)"
 GATELIN_DB_PWD=$(openssl rand -base64 24)
 GATELIN_DB_JOB_USER="gatelin_job_$(openssl rand -hex 4)"
@@ -36,7 +39,10 @@ sedi \
   -e "s|^FOXNOX_DB_JOB_USER=.*|FOXNOX_DB_JOB_USER=${FOXNOX_DB_JOB_USER}|" \
   -e "s|^FOXNOX_DB_JOB_PWD=.*|FOXNOX_DB_JOB_PWD=${FOXNOX_DB_JOB_PWD}|" \
   -e "s|^FOXNOX_PWD_SECRET=.*|FOXNOX_PWD_SECRET=${FOXNOX_PWD_SECRET}|" \
-  -e "s|^MSUSER_TOKEN_SECRET=.*|MSUSER_TOKEN_SECRET=${MSUSER_TOKEN_SECRET}|" \
+  -e "s|^MEGADEX_DB_USER=.*|MEGADEX_DB_USER=${MEGADEX_DB_USER}|" \
+  -e "s|^MEGADEX_DB_PWD=.*|MEGADEX_DB_PWD=${MEGADEX_DB_PWD}|" \
+  -e "s|^MEGADEX_DB_JOB_USER=.*|MEGADEX_DB_JOB_USER=${MEGADEX_DB_JOB_USER}|" \
+  -e "s|^MEGADEX_DB_JOB_PWD=.*|MEGADEX_DB_JOB_PWD=${MEGADEX_DB_JOB_PWD}|" \
   -e "s|^GATELIN_DB_USER=.*|GATELIN_DB_USER=${GATELIN_DB_USER}|" \
   -e "s|^GATELIN_DB_PWD=.*|GATELIN_DB_PWD=${GATELIN_DB_PWD}|" \
   -e "s|^GATELIN_DB_JOB_USER=.*|GATELIN_DB_JOB_USER=${GATELIN_DB_JOB_USER}|" \
@@ -73,7 +79,10 @@ echo "  FOXNOX_DB_PWD        = ${FOXNOX_DB_PWD}"
 echo "  FOXNOX_DB_JOB_USER   = ${FOXNOX_DB_JOB_USER}"
 echo "  FOXNOX_DB_JOB_PWD    = ${FOXNOX_DB_JOB_PWD}"
 echo "  FOXNOX_PWD_SECRET    = ${FOXNOX_PWD_SECRET}"
-echo "  MSUSER_TOKEN_SECRET  = ${MSUSER_TOKEN_SECRET}"
+echo "  MEGADEX_DB_USER      = ${MEGADEX_DB_USER}"
+echo "  MEGADEX_DB_PWD       = ${MEGADEX_DB_PWD}"
+echo "  MEGADEX_DB_JOB_USER  = ${MEGADEX_DB_JOB_USER}"
+echo "  MEGADEX_DB_JOB_PWD   = ${MEGADEX_DB_JOB_PWD}"
 echo "  GATELIN_DB_USER      = ${GATELIN_DB_USER}"
 echo "  GATELIN_DB_PWD       = ${GATELIN_DB_PWD}"
 echo "  GATELIN_DB_JOB_USER  = ${GATELIN_DB_JOB_USER}"

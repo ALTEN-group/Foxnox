@@ -39,6 +39,18 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'set_archived did not set archived and archivedAt on pwd_policy';
   END IF;
+
+  PERFORM set_archived('pwd_policy', policy_id, false, true);
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pwd_policy
+    WHERE id = policy_id
+      AND archived = false
+      AND "archivedAt" IS NULL
+  ) THEN
+    RAISE EXCEPTION 'set_archived did not clear archived and archivedAt on pwd_policy restore';
+  END IF;
 END;
 $$;
 

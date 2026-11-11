@@ -9,9 +9,9 @@ describe("AclService", () => {
   let schemaService: { get: ReturnType<typeof vi.fn> };
 
   const permissions: Permission[] = [
-    { route: 82, operations: [1], fields: [] }, // passwords.get
-    { route: 96, operations: [1], fields: ["name"] }, // policies.create
-    { route: 97, operations: [1], fields: ["length"] }, // policies.update
+    { route: 92, operations: [1], fields: [] }, // passwords.get
+    { route: 104, operations: [1], fields: ["name"] }, // policies.create
+    { route: 105, operations: [1], fields: ["length"] }, // policies.update
   ];
 
   beforeEach(() => {
@@ -57,7 +57,7 @@ describe("AclService", () => {
 
   it("updates fields for a mapped route id", () => {
     service.storeAccessLevels(permissions);
-    service.updateFieldsForRoute(96, ["name", "description"]);
+    service.updateFieldsForRoute(104, ["name", "description"]);
 
     expect(service.getEntityAcls("policies")?.create?.fields).toEqual([
       "name",
@@ -67,8 +67,8 @@ describe("AclService", () => {
 
   it("enriches create/update fields from schema when permission fields are empty", () => {
     service.storeAccessLevels([
-      { route: 96, operations: [], fields: [] },
-      { route: 97, operations: [], fields: [] },
+      { route: 104, operations: [], fields: [] },
+      { route: 105, operations: [], fields: [] },
     ]);
     schemaService.get.mockReturnValue(
       of([
