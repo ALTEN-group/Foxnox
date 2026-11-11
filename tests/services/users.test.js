@@ -15,7 +15,7 @@ jest.unstable_mockModule("@dwtechs/winstan", () => ({
   },
 }));
 
-const { findUserByEmail, findUserRoleIds } = await import(
+const { findUserByEmail, findUserRoleIds, isActiveUser } = await import(
   "../../src/services/users.js"
 );
 
@@ -91,6 +91,7 @@ describe("findUserByEmail", () => {
       body: JSON.stringify({
         filters: {
           email: { value: EMAIL, matchMode: "equals" },
+          archived: { value: false, matchMode: "equals" },
         },
       }),
     });
@@ -108,6 +109,28 @@ describe("findUserByEmail", () => {
       nickname: undefined,
     });
   });
+
+  it.each([true, false])(
+    "should enforce archived=%p locally when upstream ignores the filter",
+    async (archived) => {
+      process.env.USER_SEARCH_URL = SEARCH_URL;
+      globalThis.fetch = jest.fn().mockResolvedValue(
+        jsonResponse(200, {
+          rows: [{ id: 7, email: EMAIL, archived }],
+        }),
+      );
+
+      await expect(findUserByEmail(EMAIL)).resolves.toEqual(
+        archived ? null : { id: 7, email: EMAIL, nickname: undefined },
+      );
+      expect(
+        JSON.parse(globalThis.fetch.mock.calls[0][1].body).filters,
+      ).toEqual({
+        email: { value: EMAIL, matchMode: "equals" },
+        archived: { value: false, matchMode: "equals" },
+      });
+    },
+  );
 
   it("should return null on 404 without logging", async () => {
     process.env.USER_SEARCH_URL = SEARCH_URL;
@@ -163,6 +186,137 @@ describe("findUserByEmail", () => {
     expect(message).toContain("network down");
     expect(message).not.toContain(EMAIL);
   });
+});
+
+describe("isActiveUser", () => {
+  let previousUrl;
+  let previousFetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    previousUrl = process.env.USER_SEARCH_URL;
+    previousFetch = globalThis.fetch;
+    process.env.USER_SEARCH_URL = SEARCH_URL;
+    globalThis.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    if (previousUrl === undefined) {
+      delete process.env.USER_SEARCH_URL;
+    } else {
+      process.env.USER_SEARCH_URL = previousUrl;
+    }
+    globalThis.fetch = previousFetch;
+  });
+
+  it.each([7, "7"])(
+    "should POST all eligibility filters and accept eligible id %p",
+    async (id) => {
+      globalThis.fetch.mockResolvedValue(
+        jsonResponse(200, {
+          rows: [{ id, active: true, archived: false }],
+        }),
+      );
+
+      await expect(isActiveUser(7)).resolves.toBe(true);
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      expect(globalThis.fetch).toHaveBeenCalledWith(SEARCH_URL, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          filters: {
+            id: { value: 7, matchMode: "equals" },
+            active: { value: true, matchMode: "equals" },
+            archived: { value: false, matchMode: "equals" },
+          },
+        }),
+      });
+    },
+  );
+
+  it.each([
+    ["null payload", null],
+    ["absent rows", {}],
+    ["null rows", { rows: null }],
+    ["empty rows", { rows: [] }],
+    ["non-array rows", { rows: "invalid" }],
+    ["null user", { rows: [null] }],
+    ["absent id", { rows: [{ active: true, archived: false }] }],
+    ["zero id", { rows: [{ id: 0, active: true, archived: false }] }],
+    ["different id", { rows: [{ id: 8, active: true, archived: false }] }],
+    [
+      "invalid id",
+      { rows: [{ id: "invalid", active: true, archived: false }] },
+    ],
+    ["inactive", { rows: [{ id: 7, active: false, archived: false }] }],
+    ["archived", { rows: [{ id: 7, active: true, archived: true }] }],
+    ["missing active", { rows: [{ id: 7, archived: false }] }],
+    ["missing archived", { rows: [{ id: 7, active: true }] }],
+    ["null active", { rows: [{ id: 7, active: null, archived: false }] }],
+    ["null archived", { rows: [{ id: 7, active: true, archived: null }] }],
+    ["string active", { rows: [{ id: 7, active: "true", archived: false }] }],
+    ["numeric active", { rows: [{ id: 7, active: 1, archived: false }] }],
+    ["string archived", { rows: [{ id: 7, active: true, archived: "false" }] }],
+    ["numeric archived", { rows: [{ id: 7, active: true, archived: 0 }] }],
+    [
+      "eligible user only after a mismatched first row",
+      {
+        rows: [
+          { id: 8, active: true, archived: false },
+          { id: 7, active: true, archived: false },
+        ],
+      },
+    ],
+  ])("should fail closed for %s", async (_label, payload) => {
+    globalThis.fetch.mockResolvedValue(jsonResponse(200, payload));
+
+    await expect(isActiveUser(7)).resolves.toBe(false);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("should fail closed without a configured search URL", async () => {
+    delete process.env.USER_SEARCH_URL;
+
+    await expect(isActiveUser(7)).resolves.toBe(false);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([404, 401, 503])(
+    "should fail closed on HTTP %i without reading the body",
+    async (status) => {
+      const response = jsonResponse(status, {
+        rows: [{ id: 7, active: true, archived: false }],
+      });
+      globalThis.fetch.mockResolvedValue(response);
+
+      await expect(isActiveUser(7)).resolves.toBe(false);
+      expect(response.json).not.toHaveBeenCalled();
+      expect(logError).toHaveBeenCalledTimes(status === 404 ? 0 : 1);
+    },
+  );
+
+  it.each(["network", "JSON"])(
+    "should fail closed on a %s error",
+    async (failure) => {
+      const error = new Error(`${failure} failed`);
+      if (failure === "network") {
+        globalThis.fetch.mockRejectedValue(error);
+      } else {
+        const response = jsonResponse(200, null);
+        response.json.mockRejectedValue(error);
+        globalThis.fetch.mockResolvedValue(response);
+      }
+
+      await expect(isActiveUser(7)).resolves.toBe(false);
+      expect(logError).toHaveBeenCalledWith(
+        `USER_SEARCH_URL request failed: ${error.message}`,
+      );
+    },
+  );
 });
 
 describe("findUserRoleIds", () => {

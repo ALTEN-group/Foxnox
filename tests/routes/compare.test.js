@@ -82,6 +82,7 @@ for (const [file, privateProps] of [
       addArraySubstack: jest.fn((_req, _res, next) => next()),
       updateArraySubstack: jest.fn((_req, _res, next) => next()),
       archive: jest.fn((_req, _res, next) => next()),
+      restore: jest.fn((_req, _res, next) => next()),
       getHistory: jest.fn((_req, _res, next) => next()),
       history: jest.fn(() => (_req, _res, next) => next()),
       privateProps,

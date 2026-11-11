@@ -52,14 +52,35 @@ async function searchUser(filters) {
 export async function findUserByEmail(email) {
   const user = await searchUser({
     email: { value: email, matchMode: "equals" },
+    archived: { value: false, matchMode: "equals" },
   });
-  if (!user) return null;
+  if (!user || user.archived === true) return null;
 
   return {
     id: Number(user.id),
     email: String(user.email ?? email),
     nickname: user.nickname ? String(user.nickname) : undefined,
   };
+}
+
+/**
+ * Revalidate account eligibility when a password-reset link is submitted.
+ * The profile can have been archived or deactivated after the link was issued.
+ *
+ * @param {number} userId
+ * @returns {Promise<boolean>}
+ */
+export async function isActiveUser(userId) {
+  const user = await searchUser({
+    id: { value: userId, matchMode: "equals" },
+    active: { value: true, matchMode: "equals" },
+    archived: { value: false, matchMode: "equals" },
+  });
+  return (
+    Number(user?.id) === userId &&
+    user.active === true &&
+    user.archived === false
+  );
 }
 
 /**

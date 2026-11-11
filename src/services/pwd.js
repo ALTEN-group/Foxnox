@@ -8,7 +8,7 @@ import { log } from "@dwtechs/winstan";
 import pEnt from "../entities/pwd.js";
 import ppEnt from "../entities/pwd-policy.js";
 import { tokenSecret } from "./token-crypto.js";
-import { findUserRoleIds } from "./users.js";
+import { findUserRoleIds, isActiveUser } from "./users.js";
 
 const SYSTEM_CONSUMER = Object.freeze({ userId: -1, nickname: "system" });
 
@@ -255,6 +255,37 @@ async function findActivePwdId(userId) {
  * @returns {Promise<{ updated: boolean }>}
  */
 export async function rotatePassword(userId, plaintext) {
+  return replacePassword(userId, plaintext, false);
+}
+
+/**
+ * Password-reset-only path: replace the secret on the newest archived password
+ * when no active password exists. Keep its 2FA enrollment and all older rows.
+ *
+ * @param {number} userId
+ * @param {string} plaintext
+ * @returns {Promise<{ updated: boolean }>}
+ */
+export async function recoverPassword(userId, plaintext) {
+  if (!(await isActiveUser(userId))) {
+    log.warn(`recoverPassword: account unavailable userId=${userId}`);
+    throw Object.assign(
+      new Error("Account unavailable for password recovery"),
+      {
+        code: "USER_UNAVAILABLE",
+      },
+    );
+  }
+  return replacePassword(userId, plaintext, true);
+}
+
+/**
+ * @param {number} userId
+ * @param {string} plaintext
+ * @param {boolean} restoreArchived
+ * @returns {Promise<{ updated: boolean }>}
+ */
+async function replacePassword(userId, plaintext, restoreArchived) {
   const policy = await getPwdPolicyForUser(userId);
   if (!(await passwordMeetsPolicy(plaintext, policy))) {
     const err = new Error("Password does not meet the security policy");
@@ -263,7 +294,18 @@ export async function rotatePassword(userId, plaintext) {
     throw err;
   }
 
-  const pwdId = await findActivePwdId(userId);
+  let pwdId = await findActivePwdId(userId);
+  let restoring = false;
+  if (pwdId == null && restoreArchived) {
+    const { query, args } = pEnt.query.select(0, 1, "id", "DESC", {
+      userId: { value: userId, matchMode: "equals" },
+      archived: { value: true, matchMode: "equals" },
+    });
+    const result = await execute(query, args, null);
+    const id = result.rows?.[0]?.id;
+    pwdId = id == null ? null : Number(id);
+    restoring = pwdId != null;
+  }
   if (pwdId == null) {
     log.error(`rotatePassword: no active pwd row for userId=${userId}`);
     const err = new Error("Password row not found");
@@ -280,19 +322,26 @@ export async function rotatePassword(userId, plaintext) {
     pwdExpiry = new Date(now.getTime() + policy.expiryDays * 86_400_000);
   }
 
-  const { query, args } = pEnt.query.update(
-    [
-      {
-        id: pwdId,
-        pwdHash,
-        pwdUpdatedAt: now,
-        pwdExpiry,
-        failedAttempts: 0,
-        lockedUntil: null,
-      },
-    ],
-    SYSTEM_CONSUMER,
-  );
+  const patch = {
+    id: pwdId,
+    pwdHash,
+    pwdUpdatedAt: now,
+    pwdExpiry,
+    failedAttempts: 0,
+    lockedUntil: null,
+    ...(restoring ? { archived: false, archivedAt: null } : {}),
+  };
+  const updateQuery = pEnt.query.update([patch], SYSTEM_CONSUMER);
+  let query = updateQuery.query;
+  const args = updateQuery.args;
+  if (restoring) {
+    const userIdArg = args.length + 1;
+    query += ` AND "userId" = $${userIdArg} AND archived = TRUE
+      AND NOT EXISTS (
+        SELECT 1 FROM pwd WHERE "userId" = $${userIdArg} AND archived = FALSE
+      )`;
+    args.push(userId);
+  }
   const updated = await execute(query, args, null);
 
   if (Number(updated.rowCount ?? 0) < 1) {
