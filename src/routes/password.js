@@ -7,6 +7,7 @@ const router = express.Router();
 
 import pEnt from "../entities/pwd.js";
 import { enforceAcl, requireConsumer } from "../middlewares/acl.js";
+import { archivePwdTokens } from "../middlewares/mappers/archive-pwd-tokens.js";
 import { checkLockout } from "../middlewares/mappers/check-lockout.js";
 import { serializeCompare } from "../middlewares/mappers/serialize-compare.js";
 import {
@@ -62,6 +63,7 @@ router.post(
   "/archive",
   requireConsumer,
   enforceAcl(pEnt, "existing"),
+  archivePwdTokens,
   pEnt.archive,
 );
 // Get entity schema

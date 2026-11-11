@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Invalidate outstanding recovery links, login challenges, and login-resume tickets before archiving passwords. Token invalidation failures stop password archival so the operation can be retried.
+
 # 0.1.0-alpha.5 (Oct 30th 2026)
 
   - **Security questions admin:** new **Security questions** page and `/foxnox/questions` API (search, history, create, update, archive, schema) to manage the recovery question catalog, including its translations. These live in the `trans` column of `security_question`, a map of language tag to text (`{"en": "…", "fr": "…"}`), so a question is a plain entity: standard create, update, archive and history, with no translation table to keep in sync. Question categories use the same `trans` column. Adding a language needs no migration.

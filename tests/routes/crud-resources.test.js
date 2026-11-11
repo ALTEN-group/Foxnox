@@ -1,3 +1,4 @@
+/** @jest-environment node */
 // @ts-check
 /**
  * Parameterized CRUD wiring for Foxnox JSON resources — mirrors Gatelin's
@@ -8,6 +9,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 import request from "supertest";
+
+// Password archive now invalidates workflow tokens through the real middleware.
+// Entity methods below stay stubbed; no request may reach a live database.
+const execute = jest.fn();
+jest.unstable_mockModule("pg-pool", () => ({
+  default: class {
+    query(...args) {
+      return execute(...args);
+    }
+  },
+}));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -282,6 +294,7 @@ describe.each(RESOURCES)("PUT $mount (update) ($name)", ({ name, mount }) => {
 describe.each(RESOURCES)("POST $mount/archive ($name)", ({ name, mount }) => {
   beforeEach(() => {
     entityArchives[name].mockClear();
+    execute.mockReset().mockResolvedValue({ rows: [], rowCount: 0 });
   });
 
   it("routes to archive", async () => {
@@ -290,7 +303,18 @@ describe.each(RESOURCES)("POST $mount/archive ($name)", ({ name, mount }) => {
       .set(CONSUMER_HEADERS)
       .send({ rows: [{ id: 1 }] });
     expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/json/);
     expect(entityArchives[name]).toHaveBeenCalledTimes(1);
+    if (name === "pwd") {
+      expect(execute).toHaveBeenCalledTimes(1);
+      expect(execute.mock.calls[0][0]).toMatch(/^\s*UPDATE token\b/);
+      expect(execute.mock.calls[0][1]).toEqual([[1], 1, "tester"]);
+      expect(execute.mock.invocationCallOrder[0]).toBeLessThan(
+        entityArchives[name].mock.invocationCallOrder[0],
+      );
+    } else {
+      expect(execute).not.toHaveBeenCalled();
+    }
   });
 });
 

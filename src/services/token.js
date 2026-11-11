@@ -22,6 +22,26 @@ export const TOKEN_TYPES = Object.freeze({
 export { hashToken } from "./token-crypto.js";
 
 /**
+ * Revoke every outstanding workflow, including login-resume tickets, for the
+ * owners of the selected passwords. Archived password rows also support retries.
+ *
+ * @param {number[]} passwordIds
+ * @param {{ userId: number, nickname: string }} consumer
+ * @param {import("@dwtechs/antity-pgsql").PGClient | null} client
+ */
+export async function archiveTokensForPasswords(passwordIds, consumer, client) {
+  await execute(
+    `UPDATE token
+     SET archived = TRUE, "archivedAt" = NOW(), "updatedAt" = NOW(),
+         "updaterId" = $2, "updaterName" = $3
+     WHERE "userId" IN (SELECT "userId" FROM pwd WHERE id = ANY($1::int[]))
+       AND archived IS NOT TRUE`,
+    [passwordIds, consumer.userId, consumer.nickname],
+    client,
+  );
+}
+
+/**
  * @param {string} typeName
  * @returns {Promise<{ id: number, name: string, ttl: number, maxAttempts: number }>}
  */
