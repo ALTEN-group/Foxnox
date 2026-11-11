@@ -175,6 +175,16 @@ Authorization: Bearer <access_token>
 
 **Response (204 No Content):** rows are soft-deleted — flagged `archived` with an `archivedAt` timestamp rather than removed. They stop matching logins immediately, and the nightly cleanup job deletes them for good after two months.
 
+Rows accept bare ids or `{ "id": n }` objects. After authorization and before
+password archival, Foxnox archives every outstanding workflow token belonging
+to the selected passwords' users, including recovery links, login challenges,
+and login-resume tickets. Existing password hashes are never restored.
+
+If token invalidation fails, the request fails and password archival does not
+run. The operation can be retried with the same password ids, including already
+archived password rows. This endpoint does not revoke Gatelin sessions:
+user-management callers must also invoke Gatelin's consumer archival endpoint.
+
 ## Get Entity Schema
 
 ```
