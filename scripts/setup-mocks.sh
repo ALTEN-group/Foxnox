@@ -49,8 +49,12 @@ fi
 ENV_TMP=$(mktemp)
 grep -v '^#' "$ENV_FILE" | grep -v '^UID=' > "$ENV_TMP"
 set -a
+# .env.dev may reference a variable before it is defined further down (compose
+# tolerates that); don't let `set -u` abort the whole script while sourcing it.
+set +u
 # shellcheck disable=SC1090
 source "$ENV_TMP"
+set -u
 set +a
 rm -f "$ENV_TMP"
 
@@ -104,17 +108,17 @@ ON CONFLICT (id) DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('"user"', 'id'), GREATEST((SELECT COALESCE(MAX(id), 1) FROM "user"), 9));
 
-INSERT INTO user_role ("userId", "roleId", "creatorId", "creatorName")
+INSERT INTO user_role ("userId", "roleId")
 VALUES
-  (1, 2, -1, 'system'),
-  (2, 3, -1, 'system'),
-  (3, 1, -1, 'system'),
-  (4, 4, -1, 'system'),
-  (5, 5, -1, 'system'),
-  (6, 1, -1, 'system'),
-  (7, 1, -1, 'system'),
-  (8, 1, -1, 'system'),
-  (9, 1, -1, 'system')
+  (1, 2),
+  (2, 3),
+  (3, 1),
+  (4, 4),
+  (5, 5),
+  (6, 1),
+  (7, 1),
+  (8, 1),
+  (9, 1)
 ON CONFLICT ("userId", "roleId") DO NOTHING;
 SQL
 

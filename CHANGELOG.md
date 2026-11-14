@@ -1,9 +1,12 @@
 # Changelog
 
-## Unreleased
+# 0.1.0-alpha.6 (Nov 14th 2026)
 
-- Allow restored, active users to complete the existing manual password-recovery flow when all passwords are archived: replace the newest archived row's hash and unarchive it together, preserving 2FA and leaving older rows archived. Revalidate profile status at reset submission and keep ordinary password rotation restricted to active passwords.
-- Invalidate outstanding recovery links, login challenges, and login-resume tickets before archiving passwords. Token invalidation failures stop password archival so the operation can be retried.
+  - **Password recovery for restored users:** restored, active users can complete the existing manual password-recovery flow when all their passwords are archived: the newest archived row's hash is replaced and unarchived together, preserving 2FA and leaving older rows archived. Profile status is revalidated at reset submission, and ordinary password rotation stays restricted to active passwords
+  - **Fix:** outstanding recovery links, login challenges and login-resume tickets are now invalidated before passwords are archived. If token invalidation fails, password archival stops so the operation can be retried
+  - **Restore:** password policies and security questions can now be restored after being archived (`POST /restore`), like other archivable entities
+  - **API cleanup:** removed the unused create/archive routes for branding, the create/update routes for tokens, and the create/update/archive routes for trusted devices
+  - **Admin:** new `ADMIN_API_USERS` setting for the base path of the user service API the admin calls to load the logged-in user
 
 # 0.1.0-alpha.5 (Oct 30th 2026)
 

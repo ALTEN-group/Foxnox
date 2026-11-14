@@ -85,6 +85,12 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "serve": {
+              "index": {
+                "input": "src/index.dev.html",
+                "output": "index.html"
+              }
             }
           },
           "defaultConfiguration": ""
@@ -92,7 +98,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "admin:build",
+            "buildTarget": "admin:build:serve",
             "servePath": "foxnox",
             "allowedHosts": [
               "traefik"
