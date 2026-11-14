@@ -50,7 +50,7 @@ Run it without a flag any time you want to rotate the mock credentials — it cl
 
 See [website/docs/guide/workflows.md](./website/docs/guide/workflows.md) for use cases and page maps.
 
-Operational paths (local Docker base `http://localhost:8100`):
+Operational paths (local Docker base `http://localhost:8200`):
 
 | Flow | Path |
 |---|---|
@@ -71,10 +71,10 @@ Requires Gatelin `gatelin-data` changesets 05–12. Run Liquibase so login chall
 
 | What | URL |
 |---|---|
-| Workflow pages | `http://localhost:8100/api/foxnox/web/<path>` |
-| Mailpit inbox | `http://localhost:8025` |
+| Workflow pages | `http://localhost:8200/api/foxnox/web/<path>` |
+| Mailpit inbox | `http://localhost:8026` |
 
-The workflow base comes from `WEB_PUBLIC_BASE` in `docker/conf/.env.dev`. Mailpit's UI port is published directly by Docker (`MAILPIT_UI_PORT`), not through Traefik; its SMTP port `1025` is only reachable inside the Docker network. On a remote host or dev container, forward ports `8100` and `8025`.
+The workflow base comes from `WEB_PUBLIC_BASE` in `docker/conf/.env.dev`. Mailpit's UI port is published directly by Docker (`MAILPIT_UI_PORT`), not through Traefik; its SMTP port `1025` is only reachable inside the Docker network. On a remote host or dev container, forward ports `8200` and `8026`.
 
 **Email-driven pages** (`/recover`, `/unlock`, `/account-recover`) need no token to open the request page. To reach the page behind the link:
 
@@ -192,7 +192,7 @@ Pin `PLAYWRIGHT_VERSION` in `.env.dev` to whatever `admin/package.json`'s `@play
 ```sh
 cd admin
 npm run e2e:install       # once per machine — downloads Chromium
-npm run e2e               # runs against Traefik on localhost:8100
+npm run e2e               # runs against Traefik on localhost:8200
 npm run e2e:ui            # Playwright's interactive UI mode
 ```
 
@@ -215,7 +215,7 @@ Notes:
 - Protected pages (`/2fa/setup`, `/security-questions`, `/trusted-devices`) need Gatelin's `Authorization` header, which a browser doesn't send on navigation; the helpers inject it with a route handler.
 - A real *expired* login can't be staged (the `pwd_expiry_guard` trigger refuses past dates), so the expired-password spec mints the challenge the way the BFF does after `pwdExpiry < now`.
 - Workflows end by redirecting to the admin login (`WEB_LOGIN_RESUME_URL`), which trades the ticket for a session; specs assert that session where it matters, and stop earlier elsewhere to save rate-limit budget.
-- Deep links use `WEB_PUBLIC_ORIGIN` (`http://localhost:8100`); inside the container Chromium remaps it to Traefik via `E2E_HOST_RULES`.
+- Deep links use `WEB_PUBLIC_ORIGIN` (`http://localhost:8200`); inside the container Chromium remaps it to Traefik via `E2E_HOST_RULES`.
 - CI: `.github/workflows/web-e2e.yml` runs the same script on pull requests to `main` that touch `web/`, `src/`, `db/`, `docker/`, or `scripts/` (the admin suite has its own `admin-e2e.yml`).
 
 The same Docker flow runs in CI via `.github/workflows/admin-e2e.yml` on pull requests that touch admin, docker, scripts, swagger, or the workflow itself.

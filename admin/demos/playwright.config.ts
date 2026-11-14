@@ -9,7 +9,7 @@ const DEMO_SIZE = { width: 1440, height: 900 };
  * Runs against the dev stack, like the e2e suite: `./scripts/start-dev.sh` first.
  */
 const baseURL = (
-  process.env.E2E_BASE_URL ?? "http://localhost:8100/foxnox/"
+  process.env.E2E_BASE_URL ?? "http://localhost:8200/foxnox/"
 ).replace(/\/?$/, "/");
 
 export default defineConfig({

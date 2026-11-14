@@ -100,7 +100,7 @@ First check whether Foxnox even tried. When `SMTP_HOST` is unset, `notifyUser` l
 docker compose logs foxnox | grep -i notify
 ```
 
-In a local stack, mail is caught by Mailpit rather than delivered; open its UI at `http://localhost:8025` and read the message there.
+In a local stack, mail is caught by Mailpit rather than delivered; open its UI at `http://localhost:8026` and read the message there.
 
 Note that the request form always shows the same confirmation page whether or not the address exists. That is intentional — it prevents attackers from discovering which email addresses have accounts — but it also means a typo looks identical to success.
 
@@ -125,7 +125,7 @@ Also check that the link was not already used, and that the user opened the most
 The pages load their CSS from `/foxnox/web/assets/…`. If that route is missing from the BFF (`getWebAssets` in seed changeset 06), the HTML renders but every asset request 404s. Confirm with:
 
 ```bash
-curl -i http://localhost:8100/api/foxnox/web/assets/css/workflows.css
+curl -i http://localhost:8200/api/foxnox/web/assets/css/workflows.css
 ```
 
 ## CSRF Errors on Workflow Forms

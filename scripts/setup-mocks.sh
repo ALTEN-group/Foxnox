@@ -206,4 +206,4 @@ done <<< "$PAIRS"
 echo ""
 echo -e "${YELLOW}🔁 Reloading swagger container...${NC}"
 docker compose -f docker/docker-compose.yml --env-file "$ENV_FILE" restart swagger >/dev/null
-echo -e "${GREEN}✅ Done. Swagger is showing the fresh mock credentials at ${SERVER_SCHEME:-http://}${SERVER_URL:-localhost}:${TRAEFIK_PORT:-8100}/swagger${NC}"
+echo -e "${GREEN}✅ Done. Swagger is showing the fresh mock credentials at ${SERVER_SCHEME:-http://}${SERVER_URL:-localhost}:${TRAEFIK_PORT:-8200}/swagger${NC}"

@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  *
  * Override with E2E_BASE_URL if needed (must end with a trailing slash).
  */
-const baseURL = (process.env.E2E_BASE_URL ?? "http://localhost:8100/foxnox/").replace(
+const baseURL = (process.env.E2E_BASE_URL ?? "http://localhost:8200/foxnox/").replace(
   /\/?$/,
   "/",
 );

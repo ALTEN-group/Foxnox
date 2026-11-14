@@ -54,7 +54,7 @@ jobs:
             docker compose -f docker/docker-compose.yml --env-file docker/conf/.env.dev "$@"
           }
           for i in $(seq 1 60); do
-            code=$(curl -o /dev/null -s -w '%{http_code}' --max-time 3 http://localhost:8100/api/foxnox/web/recover || echo 000)
+            code=$(curl -o /dev/null -s -w '%{http_code}' --max-time 3 http://localhost:8200/api/foxnox/web/recover || echo 000)
             if [[ "$code" =~ ^2 ]]; then echo "web ready after $((i * 2))s (HTTP $code)"; exit 0; fi
             printf 'attempt %d/60: HTTP %s\n' "$i" "$code"
             sleep 2

@@ -34,11 +34,11 @@ These decide what the user actually sees in their browser and in their inbox. Be
 
 | Variable | Default | Description |
 |---|---|---|
-| `WEB_PUBLIC_ORIGIN` | `{SERVER_SCHEME}{SERVER_URL}:{TRAEFIK_PORT\|8100}` | Absolute origin used to build email deep links, with no path — e.g. `https://app.example.com` |
+| `WEB_PUBLIC_ORIGIN` | `{SERVER_SCHEME}{SERVER_URL}:{TRAEFIK_PORT}` | Absolute origin used to build email deep links, with no path — e.g. `https://app.example.com` |
 | `WEB_PUBLIC_BASE` | `/api/foxnox/web` | Browser path prefix for the workflow pages. This is the edge proxy's `/api` prefix plus Foxnox's own `/foxnox/web` mount. |
 | `WEB_LOGIN_RESUME_URL` | `{origin}/foxnox/login` | Page that redeems a mid-login resume ticket. After the last login challenge, Foxnox redirects the browser here with `?ticket=…`. |
 
-A deep link is simply `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE` + the page path + the token query parameter. For example, with the defaults above, a password reset email links to `http://localhost:8100/api/foxnox/web/recover/reset?token=…`.
+A deep link is simply `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE` + the page path + the token query parameter. For example, with the local development defaults above, a password reset email links to `http://localhost:8200/api/foxnox/web/recover/reset?token=…`.
 
 ## Outbound Mail
 

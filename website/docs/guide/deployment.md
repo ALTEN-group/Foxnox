@@ -136,9 +136,9 @@ services:
       # Resolves an email address to a userId
       USER_SEARCH_URL: https://users.internal.example/users/search
       # Public URLs for workflow pages and email deep links
-      WEB_PUBLIC_ORIGIN: http://localhost:8100
+      WEB_PUBLIC_ORIGIN: http://localhost:8200
       WEB_PUBLIC_BASE: /api/foxnox/web
-      WEB_LOGIN_RESUME_URL: http://localhost:8100/foxnox/login
+      WEB_LOGIN_RESUME_URL: http://localhost:8200/foxnox/login
       # Outbound mail
       SMTP_HOST: smtp.example.com
       SMTP_PORT: 587
@@ -240,7 +240,7 @@ curl http://my-project-foxnox-local:3000/foxnox/health/ready
 Through the BFF, only if you add a custom health route to the BFF:
 
 ```bash
-curl http://localhost:8100/api/foxnox/health
+curl http://localhost:8200/api/foxnox/health
 ```
 
 The supplied BFF seed does not register Foxnox health routes. Its normal

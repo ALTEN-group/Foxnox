@@ -3,7 +3,7 @@ import { WEB_PUBLIC_BASE } from "./engine.js";
 
 /**
  * Absolute public origin for email deep links
- * (e.g. http://localhost:8100 — Traefik, no path).
+ * (e.g. http://localhost:8200 — Traefik, no path).
  */
 export function getPublicOrigin() {
   const fromEnv = process.env.WEB_PUBLIC_ORIGIN?.replace(/\/$/, "");

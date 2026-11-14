@@ -99,7 +99,7 @@ relies on network isolation, the compare grant, and the kind allow-list.
   "kind": "2fa",
   "challenge": "9f2c1a…",
   "path": "/2fa/verify",
-  "url": "http://localhost:8100/api/foxnox/web/2fa/verify?challenge=9f2c1a…",
+  "url": "http://localhost:8200/api/foxnox/web/2fa/verify?challenge=9f2c1a…",
   "expiresAt": "2026-08-19T18:10:00.000Z"
 }
 ```

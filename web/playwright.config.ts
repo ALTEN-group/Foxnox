@@ -6,12 +6,12 @@ import { defineConfig, devices } from "@playwright/test";
  * resets the e2e accounts first.
  *
  * The deep links Foxnox emits and redirects to use WEB_PUBLIC_ORIGIN
- * (http://localhost:8100). Inside the e2e container that host does not exist, so
+ * (http://localhost:8200). Inside the e2e container that host does not exist, so
  * E2E_HOST_RULES remaps it to Traefik at the Chromium DNS level; cookies keep
  * the localhost origin.
  */
 const baseURL = (
-  process.env.E2E_BASE_URL ?? "http://localhost:8100/api/foxnox/web/"
+  process.env.E2E_BASE_URL ?? "http://localhost:8200/api/foxnox/web/"
 ).replace(/\/?$/, "/");
 
 export default defineConfig({

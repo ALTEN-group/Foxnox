@@ -152,10 +152,10 @@ docker exec my-project-foxnox-local wget -qO- http://localhost:3000/foxnox/healt
 docker exec my-project-bff-local nc -zv my-project-foxnox-local 3000
 
 # 3. A workflow page renders through the BFF
-curl -i http://localhost:8100/api/foxnox/web/recover
+curl -i http://localhost:8200/api/foxnox/web/recover
 
 # 4. A login succeeds end to end (BFF login endpoint)
-curl -i -X POST http://localhost:8100/api/sessions \
+curl -i -X POST http://localhost:8200/api/sessions \
   -H 'Content-Type: application/json' \
   -d '{"email":"admin@example.com","pwd":"<plaintext>"}'
 ```

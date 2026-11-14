@@ -10,7 +10,7 @@ The documentation site lives in `website/` and is built with [VitePress](https:/
 ./scripts/start-dev.sh
 ```
 
-This starts all services including the `website` container. The VitePress dev server runs inside the container with the `website/docs/` folder mounted as a live volume, so any change to a `.md` file or to `config.mjs` is reflected immediately. The site is available via the Traefik proxy at `http://localhost:8100/docs/`.
+This starts all services including the `website` container. The VitePress dev server runs inside the container with the `website/docs/` folder mounted as a live volume, so any change to a `.md` file or to `config.mjs` is reflected immediately. The site is available via the Traefik proxy at `http://localhost:8200/docs/`.
 
 To run it outside Docker instead:
 
