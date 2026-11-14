@@ -24,7 +24,7 @@ sequenceDiagram
     participant G as BFF
     participant F as Foxnox
 
-    B->>G: POST /gatelin/sessions { email, pwd }
+    B->>G: POST /api/sessions { email, pwd }
     G->>F: POST /foxnox/pwd/compare
     F-->>G: 200 { twoFactorEnabled: true }
     G->>F: POST /foxnox/challenges { kind: "2fa" }

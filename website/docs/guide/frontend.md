@@ -6,10 +6,10 @@ Most of Foxnox needs nothing from your frontend — the workflow pages are serve
 
 A login can return **202 Accepted**. The password was correct, but a mid-login step is required before a session exists. Code that treats any non-200 as a failure will leave every 2FA user unable to sign in.
 
-The example uses Gatelin's session endpoint; a custom BFF should return the same **202** body with a `url`.
+The example uses the BFF's session endpoint; a custom BFF should return the same **202** body with a `url`.
 
 ```typescript
-const response = await fetch('/api/gatelin/sessions', {
+const response = await fetch('/api/sessions', {
   method: 'POST',
   credentials: 'include',
   headers: { 'Content-Type': 'application/json' },
@@ -41,7 +41,7 @@ Once the user has completed the workflow pages, Foxnox redirects the browser to 
 const ticket = new URLSearchParams(window.location.search).get('ticket');
 
 if (ticket) {
-  const response = await fetch('/api/gatelin/sessions/resume', {
+  const response = await fetch('/api/sessions/resume', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },

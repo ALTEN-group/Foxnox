@@ -1,14 +1,14 @@
 # Policies
 
-A password policy describes what a valid password looks like, and how lockout behaves after failed sign-ins. Each policy can be attached to Gatelin roles (`roleIds`). A user is governed by the policies attached to **all** of their roles, combined into the strictest rules; users with no role attached to a policy fall back to the **first non-archived** `pwd_policy` row (lowest `id`), which also drives server-side generation when you create a `pwd` row. The result applies to the passwords users choose in the recovery and expired-password workflows, to the password checklist shown on those pages, and to lockout and expiry.
+A password policy describes what a valid password looks like, and how lockout behaves after failed sign-ins. Each policy can be attached to BFF roles (`roleIds`). A user is governed by the policies attached to **all** of their roles, combined into the strictest rules; users with no role attached to a policy fall back to the **first non-archived** `pwd_policy` row (lowest `id`), which also drives server-side generation when you create a `pwd` row. The result applies to the passwords users choose in the recovery and expired-password workflows, to the password checklist shown on those pages, and to lockout and expiry.
 
 Keeping these rules in the database rather than in code means you can tighten requirements without redeploying, but see [How It Works](#how-it-works) for what takes effect immediately versus what needs a restart.
 
 ## How It Works
 
-There is no `active` flag. The migration seeds three policies (`Public User`, `High Security`, `Standard`), attached to the Gatelin roles `guest`, `super admin`/`admin` and `user`. Roles that no policy lists, and users unknown to the user service, get the first non-archived row by `id`.
+There is no `active` flag. The migration seeds three policies (`Public User`, `High Security`, `Standard`), attached to the BFF roles `guest`, `super admin`/`admin` and `user`. Roles that no policy lists, and users unknown to the user service, get the first non-archived row by `id`.
 
-A user's roles come from the user service (`USER_SEARCH_URL`, `roles` field). Gatelin grants the union of a user's roles and does not rank them, so Foxnox does not pick one: it merges the policies attached to the user's roles into the strictest rules.
+A user's roles come from the user service (`USER_SEARCH_URL`, `roles` field). The BFF grants the union of a user's roles and does not rank them, so Foxnox does not pick one: it merges the policies attached to the user's roles into the strictest rules.
 
 | Rule | Merged value |
 |---|---|
@@ -18,7 +18,7 @@ A user's roles come from the user service (`USER_SEARCH_URL`, `roles` field). Ga
 | `maxFailedAttempts` | the lowest |
 | `lockoutMinutes` | the longest |
 
-Roles are picked in the admin Policies page from the list returned by the Gatelin roles search route (`ADMIN_ROLES_SEARCH_URL`).
+Roles are picked in the admin Policies page from the list returned by the BFF roles search route (`ADMIN_ROLES_SEARCH_URL`).
 
 Character-class and expiry rules for **user-chosen** passwords are read at the moment a password is rotated, not at boot. **Generated** passwords (`POST /foxnox/pwd`) follow the policy that was loaded during `initPwdGeneration` at process start — restart Foxnox after changing generation rules.
 
@@ -119,7 +119,7 @@ Authorization: Bearer <access_token>
 | `expiryDays` | ≥ 0 | Days until a new password expires; `0` disables expiry |
 | `maxFailedAttempts` | ≥ 1 | Failed `POST /foxnox/pwd/compare` attempts before `lockedUntil` is set |
 | `lockoutMinutes` | ≥ 0 | How long that lock lasts |
-| `roleIds` | array of integers | Gatelin role ids this policy applies to (empty = none). Roles are not validated against Gatelin |
+| `roleIds` | array of integers | BFF role ids this policy applies to (empty = none). Roles are not validated against the BFF |
 
 At least one of `number`, `symbol`, `lowerCase`, or `upperCase` must be true (enforced by a database check).
 

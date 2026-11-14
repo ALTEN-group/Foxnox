@@ -10,7 +10,7 @@ setting `ADMIN_PORT`; Traefik routes `ADMIN_BASE_PATH` (default `/foxnox`) to
 that internal port. Development keeps the admin in its own container for live
 reloading. The documentation site is published to GitHub Pages from `website/`.
 
-See the [Integration](./integration) page for BFF wiring (Gatelin is the worked example) and [Environment Variables](./configuration) for the full variable reference.
+See the [Integration](./integration) page for BFF wiring (a generic BFF is the worked example) and [Environment Variables](./configuration) for the full variable reference.
 
 Production also requires a separate user-management service. Foxnox does not
 store email addresses or user profiles, and the production Compose stack does
@@ -22,7 +22,7 @@ upgrade the API and migration images together when adopting a newer release.
 
 ## Architecture
 
-Foxnox is an **internal service**. It has no public Traefik router for the API: browsers and API clients reach it through a BFF, which typically strips a public `/api` prefix and forwards to Foxnox on the internal network. The Compose template below uses [Gatelin](https://gatelin.fr); another BFF that issues sessions and proxies `/foxnox` and `/foxnox/web` works the same way.
+Foxnox is an **internal service**. It has no public Traefik router for the API: browsers and API clients reach it through a BFF, which typically strips a public `/api` prefix and forwards to Foxnox on the internal network. The Compose template below uses a generic BFF; any BFF that issues sessions and proxies `/foxnox` and `/foxnox/web` works the same way.
 
 ```
 Browser / Client
@@ -30,7 +30,7 @@ Browser / Client
       v
   Traefik  (:80)   ← edge gateway
       |
-      +-- /api/*   --> BFF (e.g. Gatelin)  (sessions, routing, ACL)
+      +-- /api/*   --> BFF  (sessions, routing, ACL)
       |                   |
       |                   +-- /foxnox/*      --> Foxnox JSON API
       |                   +-- /foxnox/web/*  --> Foxnox workflow pages
@@ -163,41 +163,41 @@ services:
       timeout: 5s
       retries: 5
 
-  gatelin:
-    image: ghcr.io/alten-group/gatelin:latest
-    container_name: my-project-gatelin-local
-    hostname: my-project-gatelin-local
+  bff:
+    image: <bff-image>:latest
+    container_name: my-project-bff-local
+    hostname: my-project-bff-local
     depends_on:
       foxnox:
         condition: service_healthy
     environment:
       TZ: Europe/Paris
-      # Points Gatelin at the Foxnox password check and mid-login endpoints
+      # Points the BFF at the Foxnox password check and mid-login endpoints
       PWD_CHECK_URL: http://my-project-foxnox-local:3000/foxnox/pwd/compare
       PWD_CHALLENGES_URL: http://my-project-foxnox-local:3000/foxnox/challenges
       PWD_TRUSTED_DEVICES_URL: http://my-project-foxnox-local:3000/foxnox/devices/verify
       PWD_LOGIN_TICKET_URL: http://my-project-foxnox-local:3000/foxnox/login-tickets/redeem
       USER_SEARCH_URL: https://users.internal.example/users/search
       DB_HOST: my-project-postgres-local
-      DB_NAME: gatelin
-      DB_USER: gatelin
-      DB_PWD: gatelin_pwd_change_me
+      DB_NAME: bff
+      DB_USER: bff
+      DB_PWD: bff_pwd_change_me
       TOKEN_SECRET: change_me_with_another_long_random_secret
       APP_NAME: my-project
       ENV_NAME: local
-      SERVICE_NAME: my-project-gatelin-local
+      SERVICE_NAME: my-project-bff-local
     networks:
       - internal
     labels:
       - "traefik.enable=true"
       - "stack.name=my-project-local"
-      - "traefik.http.routers.gatelin.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.gatelin.entrypoints=web"
-      - "traefik.http.routers.gatelin.service=gatelin"
-      - "traefik.http.routers.gatelin.middlewares=strip-prefix"
+      - "traefik.http.routers.bff.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.bff.entrypoints=web"
+      - "traefik.http.routers.bff.service=bff"
+      - "traefik.http.routers.bff.middlewares=strip-prefix"
       - "traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/api"
       - "traefik.http.middlewares.strip-prefix.stripprefix.forceSlash=false"
-      - "traefik.http.services.gatelin.loadBalancer.server.port=3000"
+      - "traefik.http.services.bff.loadBalancer.server.port=3000"
 
 networks:
   internal:
@@ -243,7 +243,7 @@ Through the BFF, only if you add a custom health route to the BFF:
 curl http://localhost:8100/api/foxnox/health
 ```
 
-The supplied Gatelin seed does not register Foxnox health routes. Its normal
+The supplied BFF seed does not register Foxnox health routes. Its normal
 deployment health check calls Foxnox directly on the internal network.
 
 ## Database Migration

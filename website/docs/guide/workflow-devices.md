@@ -39,7 +39,7 @@ sequenceDiagram
         F-->>B: 303 to resume URL
     end
 
-    B->>G: POST /gatelin/sessions/resume { ticket }
+    B->>G: POST /api/sessions/resume { ticket }
     G-->>B: 200 session
 ```
 

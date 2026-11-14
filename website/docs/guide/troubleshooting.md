@@ -61,8 +61,8 @@ There is no migration path for this — restore the old secret if you still have
 
 1. The frontend actually redirects the browser to the `url` from the 202 body, instead of treating 202 as a failure. This is by far the most common cause — see [Frontend Integration](./frontend).
 2. That URL is reachable. It is built from `WEB_PUBLIC_ORIGIN` + `WEB_PUBLIC_BASE`, so a wrong value here produces a link that 404s.
-3. The `foxnox/web` routes are registered on the BFF (for Gatelin: `db/liquibase/gatelin-data/`, changesets 05–08).
-4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code resumes the session (Gatelin: `POST /gatelin/sessions/resume`).
+3. The `foxnox/web` routes are registered on the BFF (in the BFF seed data, changesets 05–08).
+4. After the last challenge page, the browser lands on `WEB_LOGIN_RESUME_URL` with `?ticket=…` and your code resumes the session (for example `POST /api/sessions/resume`).
 5. Tickets are one-shot and last 10 minutes. Reloading the resume URL a second time correctly fails with **400**.
 
 ## Login Never Asks for 2FA
@@ -122,7 +122,7 @@ Also check that the link was not already used, and that the user opened the most
 
 ## Workflow Pages Look Unstyled
 
-The pages load their CSS from `/foxnox/web/assets/…`. If that route is missing from the BFF (Gatelin: `getWebAssets` in changeset 06), the HTML renders but every asset request 404s. Confirm with:
+The pages load their CSS from `/foxnox/web/assets/…`. If that route is missing from the BFF (`getWebAssets` in seed changeset 06), the HTML renders but every asset request 404s. Confirm with:
 
 ```bash
 curl -i http://localhost:8100/api/foxnox/web/assets/css/workflows.css

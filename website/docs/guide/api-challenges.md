@@ -22,7 +22,7 @@ Order matters. An expired password is checked before 2FA, because there is no po
 
 ## Login Flow
 
-The sequence uses [Gatelin](https://gatelin.fr) as the example BFF.
+The sequence uses `POST /api/sessions` as the BFF login endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -31,7 +31,7 @@ sequenceDiagram
     participant F as Foxnox
     participant U as User service
 
-    B->>G: POST /gatelin/sessions { email, pwd }
+    B->>G: POST /api/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /foxnox/pwd/compare { userId, pwd }
     alt lockedUntil in the future
@@ -59,7 +59,7 @@ sequenceDiagram
 
     B->>F: GET the challenge url, completes the step
     F-->>B: 303 to WEB_LOGIN_RESUME_URL?ticket=…
-    B->>G: POST /gatelin/sessions/resume { ticket }
+    B->>G: POST /api/sessions/resume { ticket }
     G->>F: POST /foxnox/login-tickets/redeem { ticket }
     F-->>G: 200 { userId }
     G-->>B: 200 { accessToken, refreshToken }
@@ -70,7 +70,7 @@ The important detail is the last three steps. Completing a challenge does not cr
 ## Mint a Challenge
 
 Called by the BFF after a successful password check, over the **internal**
-`PWD_CHALLENGES_URL`. It is not a Gatelin-proxied admin route: a signed-in
+`PWD_CHALLENGES_URL`. It is not a BFF-proxied admin route: a signed-in
 admin must not be able to mint a challenge for an arbitrary `userId`.
 
 Foxnox only accepts the mint when that `userId` just passed `POST /foxnox/pwd/compare`
@@ -132,7 +132,7 @@ Checking this before minting a 2FA challenge is what stops the service asking fo
 
 ## Redeem a Login Ticket
 
-Called by the BFF when the frontend posts a resume ticket (Gatelin: `POST /gatelin/sessions/resume`).
+Called by the BFF when the frontend posts a resume ticket (for example `POST /api/sessions/resume`).
 
 ```
 POST /foxnox/login-tickets/redeem

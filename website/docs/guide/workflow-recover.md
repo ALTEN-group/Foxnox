@@ -99,4 +99,4 @@ Add this to your login page:
 /api/foxnox/web/recover
 ```
 
-For the admin UI shipped with Gatelin, set `ADMIN_PASSWORD_RECOVERY_URL=/api/foxnox/web/recover` and the "Forgotten password?" link appears on the login form automatically.
+For the admin UI shipped with the BFF, set `ADMIN_PASSWORD_RECOVERY_URL=/api/foxnox/web/recover` and the "Forgotten password?" link appears on the login form automatically.

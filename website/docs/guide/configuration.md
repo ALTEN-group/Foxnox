@@ -100,18 +100,18 @@ These apply to the `foxnox-migration` container (for example,
 | `LIQUIBASE_LOG_LEVEL` | ⬜ | Liquibase log verbosity, e.g. `INFO`, `DEBUG` |
 | `TZ` | ⬜ | Timezone |
 
-## BFF Variables (Gatelin example)
+## BFF Variables
 
-These are set on the **BFF**, not on Foxnox. The names below are [Gatelin](https://gatelin.fr)'s; a custom BFF needs the same wiring under its own configuration. See [Integration](./integration).
+These are set on the **BFF**, not on Foxnox. The names below are the example BFF's; a custom BFF needs the same wiring under its own configuration. See [Integration](./integration).
 
 | Variable | Description |
 |---|---|
 | `PWD_CHECK_URL` | Must point at `http://<foxnox-host>:<port>/foxnox/pwd/compare`. |
-| `PWD_CHALLENGES_URL` | `http://<foxnox-host>:<port>/foxnox/challenges` — Gatelin configures each integration endpoint separately rather than deriving it from the compare URL. |
+| `PWD_CHALLENGES_URL` | `http://<foxnox-host>:<port>/foxnox/challenges` — The BFF configures each integration endpoint separately rather than deriving it from the compare URL. |
 | `PWD_TRUSTED_DEVICES_URL` | `http://<foxnox-host>:<port>/foxnox/devices/verify` |
 | `PWD_LOGIN_TICKET_URL` | `http://<foxnox-host>:<port>/foxnox/login-tickets/redeem` |
 | `USER_SEARCH_URL` | The BFF's own user lookup for login; normally the same URL Foxnox uses. |
-| `ADMIN_PASSWORD_RECOVERY_URL` | Set to `/api/foxnox/web/recover` so Gatelin's admin login page shows a "Forgotten password?" link pointing at the Foxnox workflow. |
+| `ADMIN_PASSWORD_RECOVERY_URL` | Set to `/api/foxnox/web/recover` so the BFF's admin login page shows a "Forgotten password?" link pointing at the Foxnox workflow. |
 
 ## Admin UI
 
@@ -119,8 +119,8 @@ These are set on the **BFF**, not on Foxnox. The names below are [Gatelin](https
 |---|---|---|
 | `ADMIN_PORT` | — | Dedicated internal port used by the bundled admin server. Unset disables that server. When set it must be an integer between 1024 and 65535, checked at startup in production. Compose commonly supplies `8080`. |
 | `ADMIN_BASE_PATH` | `/foxnox` | Public path routed by Traefik to the bundled admin server. |
-| `ADMIN_SSO_TOKEN_KEY` | `sso_access_token` | localStorage key the admin UI stores the access token under. Injected at runtime (dev entrypoint + production `src/admin-server.js`), no rebuild required. Not app-prefixed by default because Foxnox and Gatelin admin share the same slot for cookie-based silent refresh when switching between the two apps — if you override it, set the same value on both. |
-| `ADMIN_ROLES_SEARCH_URL` | `/api/gatelin/roles/search` | Gatelin "search roles" route the admin UI calls (with the user's token) to fill the roles multiselect of a password policy. Injected at runtime like `ADMIN_SSO_TOKEN_KEY`. |
+| `ADMIN_SSO_TOKEN_KEY` | `sso_access_token` | localStorage key the admin UI stores the access token under. Injected at runtime (dev entrypoint + production `src/admin-server.js`), no rebuild required. Not app-prefixed by default because Foxnox and the BFF admin share the same slot for cookie-based silent refresh when switching between the two apps — if you override it, set the same value on both. |
+| `ADMIN_ROLES_SEARCH_URL` | `/api/<bff>/roles/search` | BFF "search roles" route the admin UI calls (with the user's token) to fill the roles multiselect of a password policy. Injected at runtime like `ADMIN_SSO_TOKEN_KEY`. |
 
 ## Optional build mirrors
 

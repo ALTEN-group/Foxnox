@@ -18,7 +18,7 @@ Foxnox is the password and account-security service for a microservices architec
 
 Foxnox deliberately stops at credentials and authentication factors. **User profiles** — names, email addresses, email verification, contact details — belong to your user management service. Foxnox only ever refers to a user by a numeric `userId`, and resolves an email address to that ID by calling out to user management (see [`USER_SEARCH_URL`](./configuration)).
 
-Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?". A **Backend for Frontend** turns that answer into a session. [Gatelin](https://gatelin.fr) is the reference BFF used in these docs and in the Compose examples; any BFF that speaks the same HTTP contract works.
+Foxnox also does not issue sessions. It answers the question "is this password correct, and is anything blocking this sign-in?". A **Backend for Frontend** turns that answer into a session. Any BFF that speaks the same HTTP contract works; the Compose examples use a generic BFF service.
 
 ## Two Surfaces
 

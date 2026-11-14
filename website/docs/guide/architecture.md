@@ -78,7 +78,7 @@ See [How Workflows Work](./workflows#form-protections).
 └────────────┬─────────────────────┬───────────────┘
              │                     │
    ┌─────────▼─────────┐  ┌────────▼──────────┐
-   │   Admin Panel     │  │   BFF (Gatelin)   │
+   │   Admin Panel     │  │        BFF        │
    │   /foxnox/*       │  │   /api/*          │
    │   (Angular)       │  │   (Node.js)       │
    └───────────────────┘  └────────┬──────────┘
@@ -98,9 +98,8 @@ See [How Workflows Work](./workflows#form-protections).
 ```
 
 Foxnox has **no public API route**. Every request should reach it through a BFF,
-which keeps `/foxnox/pwd/compare` off the open internet. [Gatelin](https://gatelin.fr)
-is the example used in these docs; another BFF that authenticates callers,
-issues sessions, and proxies `/foxnox` and `/foxnox/web` is equally valid. This
+which keeps `/foxnox/pwd/compare` off the open internet. Any BFF that authenticates callers,
+issues sessions, and proxies `/foxnox` and `/foxnox/web` works. This
 boundary depends on network trust: only the BFF and controlled operator
 workloads should be able to connect to the Foxnox port, because Foxnox trusts
 the BFF's authentication and ACL headers. Do not publish a Foxnox API router
@@ -114,7 +113,7 @@ must be set explicitly for email links to work.
 
 ## Login, End to End
 
-The interesting flow is a sign-in, because it involves both surfaces and three services. The sequence uses [Gatelin](https://gatelin.fr) as the example BFF (`POST /api/gatelin/sessions`).
+The interesting flow is a sign-in, because it involves both surfaces and three services. The sequence uses `POST /api/sessions` as the BFF login endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -123,7 +122,7 @@ sequenceDiagram
     participant F as Foxnox
     participant U as User service
 
-    B->>G: POST /api/gatelin/sessions { email, pwd }
+    B->>G: POST /api/sessions { email, pwd }
     G->>U: resolve email → userId
     G->>F: POST /foxnox/pwd/compare { userId, pwd }
 
@@ -139,7 +138,7 @@ sequenceDiagram
             G-->>B: 202 { challengeRequired, kind, url }
             B->>F: workflow pages, one or more steps
             F-->>B: 303 to resume URL with ?ticket=
-            B->>G: POST /api/gatelin/sessions/resume { ticket }
+            B->>G: POST /api/sessions/resume { ticket }
             G->>F: POST /foxnox/login-tickets/redeem
             F-->>G: 200 { userId }
             G-->>B: 200 session
@@ -153,7 +152,7 @@ Note the division of labour. Foxnox answers questions about credentials and host
 
 ## Internal Integration Endpoints
 
-Four endpoints are called by the BFF rather than by browsers, each configured on its own (Gatelin uses `PWD_CHECK_URL`, `PWD_CHALLENGES_URL`, `PWD_TRUSTED_DEVICES_URL`, and `PWD_LOGIN_TICKET_URL`):
+Four endpoints are called by the BFF rather than by browsers, each configured on its own (BFF-side variable names, e.g. `PWD_CHECK_URL`, `PWD_CHALLENGES_URL`, `PWD_TRUSTED_DEVICES_URL`, and `PWD_LOGIN_TICKET_URL`):
 
 | Endpoint | Called when |
 |---|---|
@@ -163,6 +162,119 @@ Four endpoints are called by the BFF rather than by browsers, each configured on
 | `POST /foxnox/login-tickets/redeem` | When the frontend resumes after a challenge |
 
 See [Login Challenges](./api-challenges).
+
+## Working Together: Gatelin, Foxnox and Megadex
+
+Foxnox is one of three cooperating services: [Gatelin](https://gatelin.fr) is the BFF in front, [Megadex](https://megadex.fr) holds the users, and Foxnox holds their credentials.
+
+```
+┌─────────────────────────────────────────────────┐
+│                  Reverse Proxy                   │
+│                    (Traefik)                     │
+│              http://your-domain.com              │
+└────────────┬─────────────────────┬───────────────┘
+             │                     │
+   ┌─────────▼─────────┐  ┌────────▼──────────┐
+   │   Admin Panels    │  │      Gatelin      │
+   │     (Angular)     │  │   BFF  /api/*     │
+   └───────────────────┘  └────────┬──────────┘
+                                   │  internal network only
+            ┌──────────────────────┼──────────────────────┐
+            │                      │                      │
+   ┌────────▼──────────┐           │             ┌────────▼──────────┐
+   │      Megadex      │◄──────────┴─────────────┤      Foxnox       │
+   │     /megadex      │     USER_SEARCH_URL     │  /foxnox  /web    │
+   │     (Node.js)     ├────────────────────────►│     (Node.js)     │
+   └────────┬──────────┘     PWD_CREATE_URL      └────────┬──────────┘
+            │                                             │
+   ┌────────▼──────────┐                         ┌────────▼──────────┐
+   │    PostgreSQL     │                         │    PostgreSQL     │
+   │   (megadex DB)    │                         │   (foxnox DB)     │
+   └───────────────────┘                         └───────────────────┘
+```
+
+Each service owns its own database and knows the others only by HTTP contract.
+
+| Service | Owns | Never does |
+|---|---|---|
+| **Gatelin** | Sessions, JWTs, routes, roles, permissions, CORS | Store password hashes or user profiles |
+| **Megadex** | Users, roles assignment, social links, preferences, lookups | Store credentials or issue sessions |
+| **Foxnox** | Password hashes, 2FA, tokens, trusted devices, workflow pages | Mint JWTs or store user profiles |
+
+Users are identified by email at the edge and by numeric `userId` everywhere else. Megadex is the only place that translates one into the other.
+
+### Sign-in
+
+See [Login, End to End](#login-end-to-end); the user lookup in that sequence is answered by Megadex.
+
+### Account creation
+
+```mermaid
+sequenceDiagram
+    participant A as Admin
+    participant G as Gatelin
+    participant M as Megadex
+    participant F as Foxnox
+
+    A->>G: POST /api/megadex/users
+    G->>M: POST /megadex/users (+ consumer / ACL headers)
+    M->>F: POST /foxnox/pwd { rows: [{ userId }] }
+    alt Foxnox succeeds
+        M-->>A: 200 created user
+    else Foxnox fails
+        M->>M: soft-archive the new user
+        M-->>A: error
+    end
+```
+
+### Password recovery
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant G as Gatelin
+    participant F as Foxnox
+    participant M as Megadex
+
+    U->>G: GET /api/foxnox/web/recover (public route)
+    G->>F: forward
+    U->>F: submit email
+    F->>M: POST /megadex/users/search (email)
+    M-->>F: userId
+    F-->>U: email with reset link (non-enumerating confirmation page)
+    U->>F: set new password via token link
+```
+
+### Who calls whom
+
+| Caller | Callee | Variable | Purpose |
+|---|---|---|---|
+| Gatelin | Megadex | `USER_SEARCH_URL` | Resolve email to `userId` at login |
+| Gatelin | Foxnox | `PWD_CHECK_URL` | Verify the password |
+| Gatelin | Foxnox | `PWD_CHALLENGES_URL`, `PWD_TRUSTED_DEVICES_URL`, `PWD_LOGIN_TICKET_URL` | Mid-login 2FA / expired-password steps |
+| Foxnox | Megadex | `USER_SEARCH_URL` | Resolve email in recovery, unlock, and 2FA recovery |
+| Megadex | Foxnox | `PWD_CREATE_URL` | Create a password on user creation; archive it on user archival |
+| Gatelin | Megadex, Foxnox | Route and permission seeds | Proxy admin and self-service traffic with consumer and ACL headers |
+
+### Boundaries to keep in mind
+
+- **Trust**: Megadex and Foxnox trust Gatelin's `x-consumer-*` and `x-acl-*` headers, so only Gatelin (and each other) may reach their ports. Neither should have a public router.
+- **Sessions**: Gatelin owns session state. Role changes or archival in Megadex take effect only when the access token expires or refresh fails; nothing pushes a revocation.
+- **Coupling**: Megadex creating a user fails (and rolls back by archiving) if Foxnox is down. Gatelin login fails if Megadex or Foxnox is unreachable.
+- **Optional**: Each service works with other implementations of the same HTTP contract. A custom BFF, user service, or credential store can replace any one of the three.
+
+### Reference values
+
+The other pages use generic placeholders. For the three services shipped together, the concrete values are:
+
+| Placeholder | Concrete value |
+|---|---|
+| `<bff-image>` / `<bff-migration-image>` | `ghcr.io/alten-group/gatelin` / `ghcr.io/alten-group/gatelin-migration` |
+| `<bff-seed-folder>` | `gatelin-data` (`db/liquibase/gatelin-data/` in the Foxnox and Megadex checkouts) |
+| `/api/<bff>/roles/search` (`ADMIN_ROLES_SEARCH_URL`) | `/api/gatelin/roles/search` |
+| Password service URLs (`/pwd`, `/pwd/compare`, `/challenges`, `/devices/verify`, `/login-tickets/redeem`) | the same paths under `/foxnox`, on `ghcr.io/alten-group/foxnox` |
+| `ADMIN_PASSWORD_RECOVERY_URL` example (`/api/password-service/web/recover`) | `/api/foxnox/web/recover` |
+| User service URL (`/users/search`) | `/megadex/users/search`, on `ghcr.io/alten-group/megadex` |
 
 ## Background Jobs
 

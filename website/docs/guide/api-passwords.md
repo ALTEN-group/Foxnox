@@ -2,7 +2,7 @@
 
 The `pwd` resource is the core of Foxnox: one row per user, holding the hash and every piece of state that can block a sign-in.
 
-Paths below use Foxnox's internal `/foxnox/…` mount. Gatelin typically exposes
+Paths below use Foxnox's internal `/foxnox/…` mount. A BFF typically exposes
 the same routes publicly under `/api/foxnox/…`; a custom BFF may use another
 public prefix.
 
@@ -182,8 +182,8 @@ and login-resume tickets. Existing password hashes are never restored.
 
 If token invalidation fails, the request fails and password archival does not
 run. The operation can be retried with the same password ids, including already
-archived password rows. This endpoint does not revoke Gatelin sessions:
-user-management callers must also invoke Gatelin's consumer archival endpoint.
+archived password rows. This endpoint does not revoke BFF sessions:
+user-management callers must also invoke the BFF's consumer archival endpoint.
 
 ## Get Entity Schema
 

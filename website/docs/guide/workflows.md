@@ -2,7 +2,7 @@
 
 Account workflows are the server-rendered pages Foxnox serves to end users. They exist so that you do not have to build password reset, 2FA enrollment, and device management screens in every frontend you own — and so that the pages handling credentials live in the service that owns them.
 
-They are mounted at `/foxnox/web/…` internally, and reached publicly at `/api/foxnox/web/…` through the BFF (Gatelin in the examples).
+They are mounted at `/foxnox/web/…` internally, and reached publicly at `/api/foxnox/web/…` through the BFF (in the examples).
 
 ## Two Families
 
