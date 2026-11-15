@@ -23,10 +23,13 @@ const CANVAS_ID = "foxFaceCanvas";
 const ready = ref(false);
 
 let animation = null;
+let observer = null;
 let disposed = false;
+let elapsedSeconds = 0;
 
 onBeforeUnmount(() => {
   disposed = true;
+  observer?.disconnect();
   animation?.stop();
 });
 
@@ -35,10 +38,11 @@ onMounted(async () => {
     // Imported here rather than at the top of the module because VitePress
     // prerenders every page in Node, where these libraries have no document to
     // reach for. onMounted never runs during that pass.
-    const [{ Player }, { FullscreenQuad, Mesh, PerspectiveCamera, Renderer, Scene }] =
+    const [{ Player }, { FullscreenQuad, Mesh, PerspectiveCamera, Renderer, Scene }, { Vec2 }] =
       await Promise.all([
-        import("@lcluber/frameratjs"),
-        import("@lcluber/roostrjs"),
+        import("@1pizzateam/loopr"),
+        import("@1pizzateam/roostr"),
+        import("@1pizzateam/spock"),
       ]);
     if (disposed) return;
 
@@ -56,21 +60,35 @@ onMounted(async () => {
     // one corner of the buffer, so the size has to be set back afterwards.
     renderer.canvas.width = BUFFER_SIZE;
     renderer.canvas.height = BUFFER_SIZE;
-    renderer.setViewport(BUFFER_SIZE, BUFFER_SIZE);
+    renderer.setViewport(new Vec2(BUFFER_SIZE, BUFFER_SIZE));
 
     const scene = new Scene(context);
-    const camera = new PerspectiveCamera(75, 0.1, 1000, context);
+    const camera = new PerspectiveCamera(75, new Vec2(0.1, 1000), context);
     const quad = new Mesh(new FullscreenQuad(), context);
     scene.addMesh(quad);
     quad.addProgram(vertexShader, fragmentShader, null);
 
-    animation = new Player(() => {
+    animation = new Player((delta = 0) => {
+      elapsedSeconds += delta;
       renderer.clearFrame();
-      scene.render(camera, animation.getTime());
+      scene.render(camera, elapsedSeconds);
     });
     animation.capFPS(FPS_CAP);
     animation.start();
     ready.value = true;
+
+    // The hero is at the top of the page, so the fox is scrolled past within a
+    // few seconds of anyone arriving and then draws for as long as they read.
+    // requestAnimationFrame stops itself for a hidden tab but knows nothing
+    // about a canvas that has left the viewport, so that case is watched here.
+    // pause() leaves the clock where it stands, unlike stop(), which resets it
+    // and would snap the face back to the start of every cycle it is mid-way
+    // through on the way back up.
+    observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) animation.start();
+      else animation.pause();
+    });
+    observer.observe(renderer.canvas);
   } catch {
     // The fox is decoration. A machine without WebGL, or a shader that failed
     // to load, leaves the hero without it rather than without a page: `ready`
