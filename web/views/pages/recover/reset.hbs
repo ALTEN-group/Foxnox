@@ -2,13 +2,13 @@
   <h1 class="card__title">{{page.heading}}</h1>
   <p class="card__subtitle">{{page.subtitle}}</p>
 
-  <form class="form" method="POST" action="{{urls.recoverReset}}" novalidate>
+  <form class="form" method="POST" action="{{urls.recoverReset}}" autocomplete="off" novalidate>
     <input type="hidden" name="token" value="{{form.token}}">
     <input type="hidden" name="lang" value="{{lang}}">
     <input type="hidden" id="renderedAt" name="rendered_at" value="0">
     {{> csrf}}
 
-    {{> password-fields}}
+    {{> password-fields autocomplete="off"}}
 
     {{#if error}}
     <p class="form-error" role="alert" aria-live="assertive" aria-atomic="true">{{error}}</p>
