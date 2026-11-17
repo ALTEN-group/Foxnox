@@ -37,6 +37,28 @@ export const POLICY_COLUMNS: (
         },
       },
       {
+        key: "roleIds",
+        label: "Roles",
+        controlType: CONTROL_TYPES.MULTISELECT,
+        options: toSelectItems(roles, "name"),
+        columnOptions: {
+          headerTooltip:
+            "Gatelin roles this policy applies to. A user with several roles must satisfy all their policies: the strictest rules are combined (longest length, every required character class, shortest expiry, fewest failed attempts, longest lockout). Users with no mapped role get the first policy.",
+          customCellRenderer: buildColoredChipsCellRenderer(
+            sanitizer,
+            (value: unknown) => {
+              const role = roles.find((r) => r.id === Number(value));
+              return role
+                ? { label: role.name, color: role.color || null }
+                : undefined;
+            },
+          ),
+        },
+        controlOptions: {
+          validators: [required],
+        },
+      },
+      {
         key: "description",
         label: "Description",
         controlType: CONTROL_TYPES.INPUT,
@@ -145,28 +167,6 @@ export const POLICY_COLUMNS: (
         },
         controlOptions: {
           validators: [required, min(0)],
-        },
-      },
-      {
-        key: "roleIds",
-        label: "Roles",
-        controlType: CONTROL_TYPES.MULTISELECT,
-        options: toSelectItems(roles, "name"),
-        columnOptions: {
-          headerTooltip:
-            "Gatelin roles this policy applies to. A user with several roles must satisfy all their policies: the strictest rules are combined (longest length, every required character class, shortest expiry, fewest failed attempts, longest lockout). Users with no mapped role get the first policy.",
-          customCellRenderer: buildColoredChipsCellRenderer(
-            sanitizer,
-            (value: unknown) => {
-              const role = roles.find((r) => r.id === Number(value));
-              return role
-                ? { label: role.name, color: role.color || null }
-                : undefined;
-            },
-          ),
-        },
-        controlOptions: {
-          width: "100%",
         },
       },
       ...buildArchivedConfig(),
