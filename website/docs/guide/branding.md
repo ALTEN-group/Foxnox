@@ -2,13 +2,13 @@
 
 The account workflow pages are the only part of Foxnox your end users ever see, and they show up at sensitive moments — a password reset, a 2FA prompt. A page that looks nothing like the rest of your product reads as a phishing attempt.
 
-Branding is configured entirely through `WEB_BRAND_*` environment variables, applied as CSS custom properties on every page. No template editing, no rebuild.
+Branding is configured in the admin Branding page or through `WEB_BRAND_*` environment variables, then applied to every workflow page. No template editing or rebuild is needed.
 
 ## Variables
 
 | Variable | Default | Effect |
 |---|---|---|
-| `WEB_BRAND_NAME` | `Foxnox` | Product name in the page header and in email subjects. Truncated at 80 characters. |
+| `WEB_BRAND_NAME` | `Foxnox` | Product name in the page header, browser tab titles, and email subjects. Truncated at 80 characters. |
 | `WEB_BRAND_TAGLINE` | `Account security` | Short line under the name. Truncated at 160 characters. |
 | `WEB_BRAND_MARK` | first letter of the name | Letter mark shown when no logo is set. Max 2 characters. |
 | `WEB_BRAND_LOGO_URL` | — | Logo image URL. When set, replaces the letter mark. |
@@ -21,7 +21,7 @@ Branding is configured entirely through `WEB_BRAND_*` environment variables, app
 | `WEB_BRAND_CARD_TITLE_COLOR` | `#1a1d21` | `--brand-card-title-color`: card titles |
 | `WEB_BRAND_LABEL_COLOR` | `#1a1d21` | `--brand-label-color`: form field labels |
 | `WEB_BRAND_BUTTON_TEXT_COLOR` | `#ffffff` | `--brand-button-text`: text inside primary buttons |
-| `WEB_BRAND_FAVICON_URL` | packaged `favicon.svg` | Favicon URL |
+| `WEB_BRAND_FAVICON_URL` | configured logo, otherwise packaged `favicon.svg` | Favicon URL |
 | `WEB_BRAND_FOOTER_TEXT` | — | Footer copy. Omitted entirely when unset. |
 | `WEB_BRAND_FOOTER_URL` | — | Makes the footer text a link |
 
@@ -69,9 +69,9 @@ These fields are set from the admin Branding page and stored in the `branding` t
 | Card title color | `#1a1d21` | `--brand-card-title-color`: the title of each card |
 | Field label color | `#1a1d21` | `--brand-label-color`: form field labels |
 | Button text color | `#ffffff` | `--brand-button-text`: text inside primary buttons |
-| Favicon | packaged `favicon.svg` | A URL or an uploaded PNG, JPEG, WebP or script-free SVG image (max 10 MB) |
+| Favicon | configured logo, otherwise packaged `favicon.svg` | A URL or an uploaded PNG, JPEG, WebP or script-free SVG image (max 10 MB) |
 
-The favicon follows the same either/or rule as the logo: uploading an image clears the URL, and a URL typed afterwards wins over the stored file. The order is stored URL, stored file, `WEB_BRAND_FAVICON_URL`, then the packaged `web/public/assets/favicon.svg`.
+The favicon follows the same either/or rule as the logo: uploading an image clears the URL, and a URL typed afterwards wins over the stored file. The order is stored favicon URL, stored favicon file, `WEB_BRAND_FAVICON_URL`, configured logo, then the packaged `web/public/assets/favicon.svg`.
 
 The server logs a warning when the primary color has a contrast ratio below 3 against the button text color.
 
@@ -85,7 +85,7 @@ A pending logo or favicon upload is not previewed: only the image already stored
 
 ## One Brand Per Deployment
 
-Branding is read from the environment, so a Foxnox instance carries exactly one brand. Serving several tenants with different looks currently means running an instance per tenant.
+A Foxnox instance carries exactly one active brand. Environment variables provide defaults when no branding row overrides them. Serving several tenants with different looks currently means running an instance per tenant.
 
 ## Emails Too
 

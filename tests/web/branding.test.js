@@ -62,6 +62,8 @@ const FAVICON = `favicon-${"a".repeat(8)}-aaaa-aaaa-aaaa-${"a".repeat(12)}.png`;
 describe("getBranding favicon resolution", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    delete process.env.WEB_BRAND_LOGO_URL;
+    delete process.env.WEB_BRAND_FAVICON_URL;
   });
 
   it("should expose an uploaded favicon as an absolute public URL", async () => {
@@ -75,6 +77,23 @@ describe("getBranding favicon resolution", () => {
     const brand = await brandingWith({
       faviconUrl: "https://cdn.example.test/icon.png",
       faviconFile: FAVICON,
+    });
+    expect(brand.faviconUrl).toBe("https://cdn.example.test/icon.png");
+  });
+
+  it("should use the selected logo when no favicon is configured", async () => {
+    const brand = await brandingWith({
+      logoUrl: "https://cdn.example.test/logo.svg",
+      faviconUrl: "",
+      faviconFile: "",
+    });
+    expect(brand.faviconUrl).toBe("https://cdn.example.test/logo.svg");
+  });
+
+  it("should prefer a configured favicon over the selected logo", async () => {
+    const brand = await brandingWith({
+      logoUrl: "https://cdn.example.test/logo.svg",
+      faviconUrl: "https://cdn.example.test/icon.png",
     });
     expect(brand.faviconUrl).toBe("https://cdn.example.test/icon.png");
   });
