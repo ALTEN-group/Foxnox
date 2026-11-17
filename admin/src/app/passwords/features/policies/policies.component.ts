@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { TABLES } from "@core/app-config/app.tables";
 import { TableComponent } from "@dwtechs/ngx-crud-builder";
+import { policyCriteriaValidator } from "app/passwords/data-access/policies/policy-criteria.validator";
 import { PoliciesService } from "app/passwords/data-access/policies/policies.service";
 
 /**
@@ -22,6 +23,8 @@ export class PoliciesComponent {
   public readonly entityFactory = this.policiesService.entityFactory;
 
   public readonly httpCalls = this.policiesService.httpCalls;
+
+  public readonly groupValidator = policyCriteriaValidator;
 
   public readonly tableInformation = TABLES.policies;
 }
