@@ -19,10 +19,21 @@ test.describe("Password policies CRUD", () => {
     await expect(createDialog).toBeVisible();
 
     await createDialog.getByRole("textbox").first().fill(name);
+    await createDialog.locator("p-multiselect").click();
+    const guestRole = page.getByRole("option", { name: "Gatelin guest" });
+    await expect(guestRole).toBeVisible();
+    await guestRole.click();
+
+    const criteria = createDialog.getByRole("checkbox");
+    await criteria.nth(0).uncheck();
+    await expect(
+      createDialog.getByText("Select at least one password criterion."),
+    ).toBeVisible();
+    await criteria.nth(0).check();
 
     // "Allowed symbols" stays disabled until "Requires a symbol" is checked,
     // and the backend rejects a null symbols pool.
-    await createDialog.getByRole("checkbox").nth(1).click();
+    await criteria.nth(1).check();
     const symbolsInput = createDialog.getByRole("textbox").nth(2);
     await expect(symbolsInput).toBeEnabled();
     await symbolsInput.fill("!");
