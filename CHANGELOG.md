@@ -1,5 +1,13 @@
 # Changelog
 
+# 0.1.0 (Nov 21st 2026)
+
+  - First stable release: Foxnox is no longer in alpha
+  - **Branding:** the configured brand name is now applied to browser tab titles on the workflow pages, and the favicon falls back to the configured logo before the packaged default
+  - **Fix:** the password reset and expired-password pages no longer trigger the browser password manager prompt (`autocomplete` is now set per form instead of always `new-password`)
+  - **Admin:** the password policy form requires at least one password criterion to be selected, and the role field now comes second in the form. Updated `@dwtechs/ngx-crud-builder` to 0.3.6
+  - **Documentation:** the docs site is deployed on published releases, the mascot animation pauses when offscreen, and the branding and cross-service host ordering guides are clarified
+
 # 0.1.0-alpha.6 (Nov 14th 2026)
 
   - **Password recovery for restored users:** restored, active users can complete the existing manual password-recovery flow when all their passwords are archived: the newest archived row's hash is replaced and unarchived together, preserving 2FA and leaving older rows archived. Profile status is revalidated at reset submission, and ordinary password rotation stays restricted to active passwords
