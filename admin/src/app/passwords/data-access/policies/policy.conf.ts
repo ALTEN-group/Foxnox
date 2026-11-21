@@ -43,7 +43,7 @@ export const POLICY_COLUMNS: (
         options: toSelectItems(roles, "name"),
         columnOptions: {
           headerTooltip:
-            "Select the Gatelin roles to which this policy applies. A user assigned multiple roles must meet every mapped policy; for each setting, the strictest value applies (longest minimum length, every required character class, shortest expiry, fewest failed attempts, longest lockout). Users with no mapped role use the first policy.",
+            "For users with multiple roles, the strictest settings across their mapped policies apply; users with no mapped role use the first policy.",
           customCellRenderer: buildColoredChipsCellRenderer(
             sanitizer,
             (value: unknown) => {
