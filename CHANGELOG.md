@@ -2,11 +2,9 @@
 
 # 0.1.0 (Nov 21st 2026)
 
-  - First stable release: Foxnox is no longer in alpha
   - **Branding:** the configured brand name is now applied to browser tab titles on the workflow pages, and the favicon falls back to the configured logo before the packaged default
   - **Fix:** the password reset and expired-password pages no longer trigger the browser password manager prompt (`autocomplete` is now set per form instead of always `new-password`)
-  - **Admin:** the password policy form requires at least one password criterion to be selected, and the role field now comes second in the form. Updated `@dwtechs/ngx-crud-builder` to 0.3.6
-  - **Documentation:** the docs site is deployed on published releases, the mascot animation pauses when offscreen, and the branding and cross-service host ordering guides are clarified
+  - **Admin:** the password policy form requires at least one password criterion to be selected, and the role field now comes second in the form. 
 
 # 0.1.0-alpha.6 (Nov 14th 2026)
 
