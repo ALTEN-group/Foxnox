@@ -115,6 +115,10 @@ export function previewBranding(req, res, next) {
       ...ctx,
       brand,
       site: { ...ctx.site, name: brand.name, tagline: brand.tagline },
+      page: {
+        ...ctx.page,
+        title: ctx.page.title.replace(ctx.brand.name, () => brand.name),
+      },
       // brand.css is served from the stored row, so the unsaved vars travel inline.
       previewCss: `:root{${brand.cssVars}}`,
     },

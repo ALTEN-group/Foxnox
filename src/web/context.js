@@ -69,7 +69,10 @@ export function buildViewContext(req, pageKey, extra = {}) {
     },
     brand,
     common: locale.common,
-    page,
+    page: {
+      ...page,
+      title: page.title.replace(locale.site.name, () => brand.name),
+    },
     assetBase: base,
     // Set by csrfProtection middleware (signed double-submit cookie).
     // @ts-expect-error

@@ -53,6 +53,7 @@ describe("previewBranding", () => {
     const ctx = res.render.mock.calls[0][1];
     expect(ctx.brand.name).toBe("Draft Co");
     expect(ctx.site.name).toBe("Draft Co");
+    expect(ctx.page.title).toBe("Account locked — Draft Co");
     expect(ctx.previewCss).toMatch(/^:root\{.*--brand-primary:#123456/);
     expect(ctx.previewCss).toContain("--brand-label-color:#654321");
   });

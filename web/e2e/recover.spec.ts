@@ -22,6 +22,9 @@ test.describe("forgot password", () => {
 
     await page.goto(await waitForLink(user.email, "/recover/reset"));
     await expect(heading(page)).toHaveText("Choose a new password");
+    await expect(page.locator("form.form")).toHaveAttribute("autocomplete", "off");
+    await expect(page.locator("#password")).toHaveAttribute("autocomplete", "off");
+    await expect(page.locator("#confirm")).toHaveAttribute("autocomplete", "off");
 
     await fillPasswords(page, NEW_PASSWORD, `${NEW_PASSWORD}x`);
     await submit(page);

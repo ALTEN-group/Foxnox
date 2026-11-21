@@ -297,6 +297,13 @@ describe("password recover", () => {
       typeName: "Password reset",
     });
     expect(getPasswordFormPolicy).toHaveBeenCalledWith(55);
+    expect(res.text).toMatch(/<form\b[^>]*autocomplete="off"/);
+    expect(res.text).toMatch(
+      /<input\b[^>]*id="password"[^>]*autocomplete="off"/,
+    );
+    expect(res.text).toMatch(
+      /<input\b[^>]*id="confirm"[^>]*autocomplete="off"/,
+    );
   });
 
   it("POST /recover/reset recovers password before consuming token", async () => {

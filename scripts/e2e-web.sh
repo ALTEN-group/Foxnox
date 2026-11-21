@@ -52,12 +52,12 @@ ON CONFLICT (id) DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('"user"', 'id'), GREATEST((SELECT COALESCE(MAX(id), 1) FROM "user"), 9));
 
-INSERT INTO user_role ("userId", "roleId", "creatorId", "creatorName")
+INSERT INTO user_role ("userId", "roleId")
 VALUES
-  (6, 1, -1, 'system'),
-  (7, 1, -1, 'system'),
-  (8, 1, -1, 'system'),
-  (9, 1, -1, 'system')
+  (6, 1),
+  (7, 1),
+  (8, 1),
+  (9, 1)
 ON CONFLICT ("userId", "roleId") DO NOTHING;
 SQL
 

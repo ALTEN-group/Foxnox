@@ -299,6 +299,7 @@ export function getBranding(overrides = {}) {
     sanitizeUrl(row.faviconUrl) ||
     faviconFileUrl(row.faviconFile) ||
     sanitizeUrl(process.env.WEB_BRAND_FAVICON_URL) ||
+    logoUrl ||
     `${getPublicWebBase()}/assets/favicon.svg`;
   const footerText =
     sanitizeText(row.footerText, 240) ||
